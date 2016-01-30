@@ -8,22 +8,27 @@ import (
 	"github.com/minodisk/qiitactl/command"
 )
 
-var GlobalFlags = []cli.Flag{}
+var GlobalFlags = []cli.Flag{
+	cli.BoolFlag{
+		Name:  "debug, d",
+		Usage: "Panic when error occurs",
+	},
+}
 
 var Commands = []cli.Command{
 	{
-		Name:  "create",
-		Usage: "",
+		Name:  "new",
+		Usage: "Generate something in your local",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
-				Name:   "item",
-				Usage:  "Create a new item in Qiita.",
-				Action: command.CreateItem,
+				Name:   "file",
+				Usage:  "Generate a new markdown file for a new post",
+				Action: command.GenerateFile,
 				Flags: []cli.Flag{
 					cli.StringFlag{
-						Name:  "file, f",
-						Usage: "Path to the markdown file to item",
+						Name:  "title, t",
+						Usage: "The title of a new post",
 					},
 				},
 			},
@@ -31,70 +36,89 @@ var Commands = []cli.Command{
 	},
 	{
 		Name:  "show",
-		Usage: "",
+		Usage: "Display resources",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
-				Name:   "item",
-				Usage:  "",
-				Action: command.ShowItem,
-				Flags:  []cli.Flag{},
+				Name:   "post",
+				Usage:  "Print detail of a post in Qitta",
+				Action: command.ShowPost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "id, i",
+						Usage: "The ID of the post to be printed detail",
+					},
+				},
 			},
 			{
-				Name:   "items",
-				Usage:  "",
-				Action: command.ShowItems,
+				Name:   "posts",
+				Usage:  "Print a list of posts in Qiita",
+				Action: command.ShowPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
 	},
 	{
-		Name:  "fetch",
-		Usage: "",
+		Name:  "pull",
+		Usage: "Download resources from Qiita to current working directory",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
-				Name:   "item",
-				Usage:  "",
-				Action: command.FetchItem,
-				Flags:  []cli.Flag{},
+				Name:   "post",
+				Usage:  "Download a post as a file",
+				Action: command.PullPost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "id, i",
+						Usage: "The ID of the post to be downloaded",
+					},
+				},
 			},
 			{
-				Name:   "items",
-				Usage:  "",
-				Action: command.FetchItems,
+				Name:   "posts",
+				Usage:  "Download posts as files",
+				Action: command.PullPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
 	},
 	{
-		Name:  "update",
-		Usage: "",
+		Name:  "push",
+		Usage: "Upload resources from current working directory to Qiita",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
-				Name:   "item",
-				Usage:  "",
-				Action: command.UpdateItem,
-				Flags:  []cli.Flag{},
+				Name:   "post",
+				Usage:  "Upload a post",
+				Action: command.PushPost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "id, i",
+						Usage: "The ID of the post to be uploaded",
+					},
+					cli.StringFlag{
+						Name:  "filename, f",
+						Usage: "The filename of the post to be uploaded",
+					},
+				},
 			},
 			{
-				Name:   "items",
-				Usage:  "",
-				Action: command.UpdateItems,
+				Name:   "posts",
+				Usage:  "Upload posts",
+				Action: command.PushPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
 	},
 	{
 		Name:  "delete",
-		Usage: "",
+		Usage: "Delete resources from Qiita",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
-				Name:   "items",
-				Usage:  "",
-				Action: command.DeleteItem,
+				Name:   "post",
+				Usage:  "Delete a post",
+				Action: command.DeletePost,
 				Flags:  []cli.Flag{},
 			},
 		},

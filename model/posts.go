@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	itemFileFormat = `<!--
+	postFileFormat = `<!--
 {{.Meta.Format}}
 -->
 # {{.Title}}
@@ -30,23 +30,23 @@ const (
 
 var (
 	tmpl = func() (t *template.Template) {
-		t = template.New("itemfile")
-		template.Must(t.Parse(itemFileFormat))
+		t = template.New("postfile")
+		template.Must(t.Parse(postFileFormat))
 		return
 	}()
 	rInvalidFilename = regexp.MustCompile(`[^a-zA-Z0-9\-]+`)
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
 
-type Items []Item
+type Posts []Post
 
-func ShowItems(client api.Client) (err error) {
-	items, err := FetchItems(client)
+func ShowPosts(client api.Client) (err error) {
+	posts, err := FetchPosts(client)
 	if err != nil {
 		return
 	}
-	for _, item := range items {
-		fmt.Println(item.Id, item.CreatedAt.FormatDate(), item.Title)
+	for _, post := range posts {
+		fmt.Println(post.Id, post.CreatedAt.FormatDate(), post.Title)
 	}
 	return
 }
@@ -62,25 +62,25 @@ func spin(ch chan bool) {
 	}
 }
 
-func FetchItems(client api.Client) (items Items, err error) {
-	return FetchItemsInTeam(client, Team{})
+func FetchPosts(client api.Client) (posts Posts, err error) {
+	return FetchPostsInTeam(client, Team{})
 }
 
-func FetchItemsInTeam(client api.Client, team Team) (items Items, err error) {
+func FetchPostsInTeam(client api.Client, team Team) (posts Posts, err error) {
 	v := url.Values{}
 	v.Set("per_page", strconv.Itoa(perPage))
 	s := spinner.New(spinner.CharSets[9], time.Millisecond*66)
 	defer s.Stop()
 	for page := 1; ; page++ {
 		s.Stop()
-		s.Prefix = fmt.Sprintf("Fetching items from %d to %d: ", perPage*(page-1)+1, perPage*page)
+		s.Prefix = fmt.Sprintf("Fetching posts from %d to %d: ", perPage*(page-1)+1, perPage*page)
 		s.Start()
 		v.Set("page", strconv.Itoa(page))
 		body, err := client.Get(team.Name, "/authenticated_user/items", &v)
 		if err != nil {
 			return nil, err
 		}
-		var p Items
+		var p Posts
 		err = json.Unmarshal(body, &p)
 		if err != nil {
 			return nil, err
@@ -88,12 +88,12 @@ func FetchItemsInTeam(client api.Client, team Team) (items Items, err error) {
 		if len(p) == 0 {
 			break
 		}
-		items = append(items, p...)
+		posts = append(posts, p...)
 	}
 	return
 }
 
-func (items Items) SaveToLocal(dirname string) (err error) {
+func (posts Posts) SaveToLocal(dirname string) (err error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return
@@ -106,8 +106,8 @@ func (items Items) SaveToLocal(dirname string) (err error) {
 		return
 	}
 
-	for _, item := range items {
-		path := filepath.Join(dir, item.generateFilename())
+	for _, post := range posts {
+		path := filepath.Join(dir, post.generateFilename())
 		fmt.Printf("Make file: %s\n", path)
 
 		f, err := os.Create(path)
@@ -115,7 +115,7 @@ func (items Items) SaveToLocal(dirname string) (err error) {
 		if err != nil {
 			return err
 		}
-		err = tmpl.Execute(f, item)
+		err = tmpl.Execute(f, post)
 		if err != nil {
 			return err
 		}

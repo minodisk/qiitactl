@@ -11,11 +11,10 @@ func main() {
 	godotenv.Load()
 
 	app := cli.NewApp()
-	app.Name = Name
+	app.Name = "qiitactl"
 	app.Version = Version
 	app.Author = "minodisk"
-	app.Email = ""
-	app.Usage = ""
+	app.Usage = "Controls the Qiita posts"
 
 	app.Flags = GlobalFlags
 	app.Commands = Commands

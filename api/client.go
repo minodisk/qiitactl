@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	baseHost = "qiita.com"
+	envAccessToken = "QIITA_ACCESS_TOKEN"
+	baseHost       = "qiita.com"
 )
 
 type Client struct {
@@ -17,11 +18,13 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func NewClient() (c Client) {
-	c = Client{
-		Token:      os.Getenv("QIITA_ACCESS_TOKEN"),
-		httpClient: &http.Client{},
+func NewClient() (c Client, err error) {
+	c.Token = os.Getenv(envAccessToken)
+	if c.Token == "" {
+		err = fmt.Errorf("publish personal access token at https://qiita.com/settings/applications, then set environment variable as %s", envAccessToken)
+		return
 	}
+	c.httpClient = &http.Client{}
 	return
 }
 
@@ -43,7 +46,21 @@ func (c Client) process(method string, subDomain string, p string) (body []byte,
 		return
 	}
 	defer resp.Body.Close()
+
 	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode/100 != 2 {
+		e, err := NewError(body)
+		if err != nil {
+			return nil, err
+		}
+		err = e.Error()
+		return nil, err
+	}
+
 	return
 }
 

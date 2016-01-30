@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-func TestNewItemWithWrongMeta(t *testing.T) {
-	_, err := NewItem([]byte(`XXXXXXXX
+func TestNewPostWithWrongMeta(t *testing.T) {
+	_, err := NewPost([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
-url: http://example.com/myitem
+url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
 updated_at: 2015-02-25T09:26:30+09:00
 private: true
@@ -31,10 +31,10 @@ Paragraph
 	}
 }
 
-func TestNewItemWithWrongTag(t *testing.T) {
-	_, err := NewItem([]byte(`<!--
+func TestNewPostWithWrongTag(t *testing.T) {
+	_, err := NewPost([]byte(`<!--
 id: abcdefghijklmnopqrst
-url: http://example.com/myitem
+url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
 updated_at: 2015-02-25T09:26:30+09:00
 private: true
@@ -56,10 +56,10 @@ Paragraph
 	}
 }
 
-func TestNewItemWithWrongTitle(t *testing.T) {
-	_, err := NewItem([]byte(`<!--
+func TestNewPostWithWrongTitle(t *testing.T) {
+	_, err := NewPost([]byte(`<!--
 id: abcdefghijklmnopqrst
-url: http://example.com/myitem
+url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
 updated_at: 2015-02-25T09:26:30+09:00
 private: true
@@ -81,10 +81,10 @@ Paragraph
 	}
 }
 
-func TestNewItemWithCorrectText(t *testing.T) {
-	item, err := NewItem([]byte(`<!--
+func TestNewPostWithCorrectText(t *testing.T) {
+	post, err := NewPost([]byte(`<!--
 id: abcdefghijklmnopqrst
-url: http://example.com/myitem
+url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
 updated_at: 2015-02-25T09:26:30+09:00
 private: true
@@ -105,28 +105,28 @@ Paragraph
 		t.Fatal(err)
 	}
 
-	if item.Meta.Id != "abcdefghijklmnopqrst" {
+	if post.Meta.Id != "abcdefghijklmnopqrst" {
 		t.Errorf("wrong Id")
 	}
-	if item.Meta.Url != "http://example.com/myitem" {
+	if post.Meta.Url != "http://example.com/mypost" {
 		t.Errorf("wrong Url")
 	}
-	if !item.Meta.CreatedAt.Equal(time.Date(2013, 12, 10, 3, 29, 14, 0, time.UTC)) {
+	if !post.Meta.CreatedAt.Equal(time.Date(2013, 12, 10, 3, 29, 14, 0, time.UTC)) {
 		t.Errorf("wrong CreatedAt")
 	}
-	if !item.Meta.UpdatedAt.Equal(time.Date(2015, 02, 25, 0, 26, 30, 0, time.UTC)) {
+	if !post.Meta.UpdatedAt.Equal(time.Date(2015, 02, 25, 0, 26, 30, 0, time.UTC)) {
 		t.Errorf("wrong UpdatedAt")
 	}
-	if item.Meta.Private != true {
+	if post.Meta.Private != true {
 		t.Errorf("wrong Private")
 	}
-	if item.Meta.Coediting != false {
+	if post.Meta.Coediting != false {
 		t.Errorf("wrong Coediting")
 	}
-	if len(item.Meta.Tags) != 3 {
-		t.Errorf("wrong Tags length: %d", len(item.Meta.Tags))
+	if len(post.Meta.Tags) != 3 {
+		t.Errorf("wrong Tags length: %d", len(post.Meta.Tags))
 	} else {
-		for _, tag := range item.Meta.Tags {
+		for _, tag := range post.Meta.Tags {
 			switch tag.Name {
 			case "TypeScript":
 				if len(tag.Versions) != 0 {
@@ -143,10 +143,10 @@ Paragraph
 			}
 		}
 	}
-	if item.Title != "Main title" {
+	if post.Title != "Main title" {
 		t.Errorf("wrong Title")
 	}
-	if item.Body != "## Sub title\nParagraph" {
-		t.Errorf("wrong Body: %s", item.Body)
+	if post.Body != "## Sub title\nParagraph" {
+		t.Errorf("wrong Body: %s", post.Body)
 	}
 }

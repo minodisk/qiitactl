@@ -1,55 +1,69 @@
 package command
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/model"
 )
 
-func CreateItem(c *cli.Context) {
+func printError(c *cli.Context, err error) {
+	if c.GlobalBool("debug") {
+		panic(err)
+	} else {
+		fmt.Println(err)
+	}
+}
+
+func CreatePost(c *cli.Context) {
 	err := func() (err error) {
 		// client := api.NewClient()
 		filename := c.String("file")
-		_, err = model.NewItemFromFile(filename)
+		_, err = model.NewPostFromFile(filename)
 		if err != nil {
 			return
 		}
 		return
 	}()
 	if err != nil {
-		panic(err)
+		printError(c, err)
 	}
 }
 
-func ShowItems(c *cli.Context) {
+func ShowPosts(c *cli.Context) {
 	err := func() (err error) {
-		client := api.NewClient()
-		err = model.ShowItems(client)
+		client, err := api.NewClient()
+		if err != nil {
+			return
+		}
+		err = model.ShowPosts(client)
 		return
 	}()
 	if err != nil {
-		log.Fatal(err)
+		printError(c, err)
 	}
 }
 
-func ShowItem(c *cli.Context) {
+func ShowPost(c *cli.Context) {
 }
 
-func FetchItem(c *cli.Context) {
+func PullPost(c *cli.Context) {
 	// Write your code here
 }
 
-func FetchItems(c *cli.Context) {
+func PullPosts(c *cli.Context) {
 	err := func() (err error) {
-		client := api.NewClient()
-
-		items, err := model.FetchItems(client)
+		client, err := api.NewClient()
 		if err != nil {
 			return
 		}
-		err = items.SaveToLocal("mine")
+
+		posts, err := model.FetchPosts(client)
+		if err != nil {
+			return
+		}
+		err = posts.SaveToLocal("mine")
 		if err != nil {
 			return
 		}
@@ -60,12 +74,12 @@ func FetchItems(c *cli.Context) {
 			return
 		}
 		for _, team := range teams {
-			var items model.Items
-			items, err = model.FetchItemsInTeam(client, team)
+			var posts model.Posts
+			posts, err = model.FetchPostsInTeam(client, team)
 			if err != nil {
 				return
 			}
-			err = items.SaveToLocal(team.Name)
+			err = posts.SaveToLocal(team.Name)
 			if err != nil {
 				return
 			}
@@ -73,33 +87,33 @@ func FetchItems(c *cli.Context) {
 		return
 	}()
 	if err != nil {
-		panic(err)
+		printError(c, err)
 	}
 }
 
-func UpdateItem(c *cli.Context) {
+func PushPost(c *cli.Context) {
 	// Write your code here
 }
 
-func UpdateItems(c *cli.Context) {
+func PushPosts(c *cli.Context) {
 	// Write your code here
 }
 
-func DeleteItem(c *cli.Context) {
+func DeletePost(c *cli.Context) {
 	// Write your code here
 }
 
-// func fetchAllItems() (err error) {
-// 	err = fetchItems("")
+// func fetchAllPosts() (err error) {
+// 	err = fetchPosts("")
 // 	if err != nil {
 // 		return
 // 	}
-// 	err = fetchItems("")
+// 	err = fetchPosts("")
 // 	return
 // }
 
-// func ItemsDiff(commit1, commit2 string) (err error) {
-// 	fmt.Printf("Item diff between %s and %s\n", commit1, commit2)
+// func PostsDiff(commit1, commit2 string) (err error) {
+// 	fmt.Printf("Post diff between %s and %s\n", commit1, commit2)
 //
 // 	err = exec.Command("git", "config", "--local", "core.quotepath", "false").Run()
 // 	if err != nil {
@@ -125,7 +139,7 @@ func DeleteItem(c *cli.Context) {
 // 		if err != nil {
 // 			return err
 // 		}
-// 		_, err = model.NewItem(string(b))
+// 		_, err = model.NewPost(string(b))
 // 		if err != nil {
 // 			return err
 // 		}

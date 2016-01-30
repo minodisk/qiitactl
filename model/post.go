@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	rItem = regexp.MustCompile(`^(?ms:\n*<!--(.*)-->\n*# +(.*?)\n+(.*))$`)
+	rPost = regexp.MustCompile(`^(?ms:\n*<!--(.*)-->\n*# +(.*?)\n+(.*))$`)
 )
 
-type Item struct {
+type Post struct {
 	Meta
 	User         User   `json:"user"`
 	Title        string `json:"title"`         // 投稿のタイトル
@@ -75,29 +75,29 @@ func (tags *Tags) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 	return
 }
 
-func NewItemFromFile(filename string) (item Item, err error) {
+func NewPostFromFile(filename string) (post Post, err error) {
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return
 	}
-	item, err = NewItem(body)
+	post, err = NewPost(body)
 	return
 }
 
-func NewItem(b []byte) (item Item, err error) {
-	matched := rItem.FindSubmatch(b)
+func NewPost(b []byte) (post Post, err error) {
+	matched := rPost.FindSubmatch(b)
 	if len(matched) != 4 {
 		err = fmt.Errorf("wrong format")
 		return
 	}
-	item.Title = string(bytes.TrimSpace(matched[2]))
-	item.Body = string(bytes.TrimSpace(matched[3]))
-	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &item.Meta)
+	post.Title = string(bytes.TrimSpace(matched[2]))
+	post.Body = string(bytes.TrimSpace(matched[3]))
+	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &post.Meta)
 	return
 }
 
-func (item Item) generateFilename() (f string) {
-	b := fmt.Sprintf("%s-%s", item.CreatedAt.ToPath(), normalizeFilename(item.Title))
+func (post Post) generateFilename() (f string) {
+	b := fmt.Sprintf("%s-%s", post.CreatedAt.ToPath(), normalizeFilename(post.Title))
 	f = fmt.Sprintf("%s.md", shortenHyphens(b))
 	return
 }
