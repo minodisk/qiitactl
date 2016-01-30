@@ -1,4 +1,4 @@
-package model
+package api
 
 import (
 	"fmt"

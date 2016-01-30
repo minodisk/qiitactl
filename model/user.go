@@ -1,6 +1,10 @@
 package model
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/minodisk/qiitactl/api"
+)
 
 // Qiita上のユーザを表します。
 type User struct {
@@ -21,7 +25,7 @@ type User struct {
 	WebsiteUrl        string `json:"website_url"`         // 設定しているWebサイトのURL
 }
 
-func ReadAuthenticated(client Client) (user User, err error) {
+func ReadAuthenticated(client api.Client) (user User, err error) {
 	body, err := client.Get("", "/authenticated_user", nil)
 	if err != nil {
 		return
