@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewPostWithWrongMeta(t *testing.T) {
-	_, err := NewPost([]byte(`XXXXXXXX
+	_, err := NewPostWithBytes([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -32,7 +32,7 @@ Paragraph
 }
 
 func TestNewPostWithWrongTag(t *testing.T) {
-	_, err := NewPost([]byte(`<!--
+	_, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -57,7 +57,7 @@ Paragraph
 }
 
 func TestNewPostWithWrongTitle(t *testing.T) {
-	_, err := NewPost([]byte(`<!--
+	_, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -82,7 +82,7 @@ Paragraph
 }
 
 func TestNewPostWithCorrectText(t *testing.T) {
-	post, err := NewPost([]byte(`<!--
+	post, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00

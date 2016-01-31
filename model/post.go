@@ -29,26 +29,17 @@ func NewPost() (post Post) {
 	return
 }
 
-// func NewPostFromFile(filename string) (post Post, err error) {
-// 	body, err := ioutil.ReadFile(filename)
-// 	if err != nil {
-// 		return
-// 	}
-// 	post, err = NewPost(body)
-// 	return
-// }
-
-// func NewPost(b []byte) (post Post, err error) {
-// 	matched := rPost.FindSubmatch(b)
-// 	if len(matched) != 4 {
-// 		err = fmt.Errorf("wrong format")
-// 		return
-// 	}
-// 	post.Title = string(bytes.TrimSpace(matched[2]))
-// 	post.Body = string(bytes.TrimSpace(matched[3]))
-// 	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &post.Meta)
-// 	return
-// }
+func NewPostWithBytes(b []byte) (post Post, err error) {
+	matched := rPost.FindSubmatch(b)
+	if len(matched) != 4 {
+		err = fmt.Errorf("wrong format")
+		return
+	}
+	post.Title = string(bytes.TrimSpace(matched[2]))
+	post.Body = string(bytes.TrimSpace(matched[3]))
+	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &post.Meta)
+	return
+}
 
 func (post Post) BelongsToTeam() (b bool) {
 	return post.Team != nil

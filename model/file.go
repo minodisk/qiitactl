@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,6 +35,19 @@ type File struct {
 
 func NewFile(post Post) (file File) {
 	file.Post = post
+	return
+}
+
+func LoadFile(filename string) (file File, err error) {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return
+	}
+	post, err := NewPostWithBytes(b)
+	if err != nil {
+		return
+	}
+	log.Printf("%+v", post)
 	return
 }
 

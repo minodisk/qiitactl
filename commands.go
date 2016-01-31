@@ -97,21 +97,17 @@ var Commands = []cli.Command{
 				Action: command.PushPost,
 				Flags: []cli.Flag{
 					cli.StringFlag{
-						Name:  "id, i",
-						Usage: "The ID of the post to be uploaded",
-					},
-					cli.StringFlag{
 						Name:  "filename, f",
 						Usage: "The filename of the post to be uploaded",
 					},
 				},
 			},
-			{
-				Name:   "posts",
-				Usage:  "Upload posts",
-				Action: command.PushPosts,
-				Flags:  []cli.Flag{},
-			},
+			// {
+			// 	Name:   "posts",
+			// 	Usage:  "Upload posts",
+			// 	Action: command.PushPosts,
+			// 	Flags:  []cli.Flag{},
+			// },
 		},
 	},
 	{

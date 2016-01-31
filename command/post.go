@@ -104,7 +104,17 @@ func PullPosts(c *cli.Context) {
 }
 
 func PushPost(c *cli.Context) {
-	// Write your code here
+	err := func() (err error) {
+		filename := c.String("filename")
+		_, err = model.LoadFile(filename)
+		if err != nil {
+			return
+		}
+		return
+	}()
+	if err != nil {
+		printError(c, err)
+	}
 }
 
 func PushPosts(c *cli.Context) {
