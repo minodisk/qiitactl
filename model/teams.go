@@ -13,6 +13,6 @@ func FetchTeams(client api.Client) (teams Teams, err error) {
 	if err != nil {
 		return
 	}
-	json.Unmarshal(body, teams)
+	json.Unmarshal(body, &teams)
 	return
 }

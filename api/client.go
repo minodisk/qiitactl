@@ -36,6 +36,7 @@ func (c Client) process(method string, subDomain string, p string) (body []byte,
 		host = fmt.Sprintf("%s.%s", subDomain, baseHost)
 	}
 	url := fmt.Sprintf("https://%s/api/v2%s", host, p)
+	// fmt.Println(method, url)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return
@@ -65,6 +66,9 @@ func (c Client) process(method string, subDomain string, p string) (body []byte,
 }
 
 func (c Client) Get(subDomain string, p string, v *url.Values) (body []byte, err error) {
-	body, err = c.process("GET", subDomain, fmt.Sprintf("%s?%s", p, v.Encode()))
+	if v != nil {
+		p = fmt.Sprintf("%s?%s", p, v.Encode())
+	}
+	body, err = c.process("GET", subDomain, p)
 	return
 }

@@ -16,32 +16,45 @@ func printError(c *cli.Context, err error) {
 	}
 }
 
-// func CreatePost(c *cli.Context) {
-// 	err := func() (err error) {
-// 		// client := api.NewClient()
-// 		filename := c.String("file")
-// 		_, err = model.NewPostFromFile(filename)
-// 		if err != nil {
-// 			return
-// 		}
-// 		return
-// 	}()
-// 	if err != nil {
-// 		printError(c, err)
-// 	}
-// }
-
 func ShowPosts(c *cli.Context) {
 	err := func() (err error) {
 		client, err := api.NewClient()
 		if err != nil {
 			return
 		}
-		err = model.ShowPosts(client)
+
+		posts, err := model.FetchPosts(client)
+		if err != nil {
+			return
+		}
+		printPosts(posts, nil)
+
+		teams, err := model.FetchTeams(client)
+		if err != nil {
+			return
+		}
+		for _, team := range teams {
+			posts, err = model.FetchPostsInTeam(client, &team)
+			if err != nil {
+				return
+			}
+			printPosts(posts, &team)
+		}
 		return
 	}()
 	if err != nil {
 		printError(c, err)
+	}
+}
+
+func printPosts(posts model.Posts, team *model.Team) {
+	if team == nil {
+		fmt.Println("Posts in Qiita:")
+	} else {
+		fmt.Printf("Posts in Qiita:Team (%s):\n", team.Name)
+	}
+	for _, post := range posts {
+		fmt.Println(post.Id, post.CreatedAt.FormatDate(), post.Title)
 	}
 }
 

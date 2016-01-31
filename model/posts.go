@@ -2,13 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/url"
 	"strconv"
-	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/minodisk/qiitactl/api"
 )
 
@@ -18,28 +14,6 @@ const (
 
 type Posts []Post
 
-func ShowPosts(client api.Client) (err error) {
-	posts, err := FetchPosts(client)
-	if err != nil {
-		return
-	}
-	for _, post := range posts {
-		fmt.Println(post.Id, post.CreatedAt.FormatDate(), post.Title)
-	}
-	return
-}
-
-func spin(ch chan bool) {
-	s := spinner.New(spinner.CharSets[9], time.Millisecond*33)
-	s.Start()
-	for finished := range ch {
-		log.Println(finished)
-		if finished {
-			s.Stop()
-		}
-	}
-}
-
 func FetchPosts(client api.Client) (posts Posts, err error) {
 	return FetchPostsInTeam(client, nil)
 }
@@ -47,12 +21,7 @@ func FetchPosts(client api.Client) (posts Posts, err error) {
 func FetchPostsInTeam(client api.Client, team *Team) (posts Posts, err error) {
 	v := url.Values{}
 	v.Set("per_page", strconv.Itoa(perPage))
-	s := spinner.New(spinner.CharSets[9], time.Millisecond*66)
-	defer s.Stop()
 	for page := 1; ; page++ {
-		s.Stop()
-		s.Prefix = fmt.Sprintf("Fetching posts from %d to %d: ", perPage*(page-1)+1, perPage*page)
-		s.Start()
 		v.Set("page", strconv.Itoa(page))
 
 		subDomain := ""
