@@ -31,7 +31,7 @@ var Commands = []cli.Command{
 						Usage: "The title of a new post",
 					},
 					cli.StringFlag{
-						Name:  "team, t",
+						Name:  "team, T",
 						Usage: "The name of a team, when you post to the team",
 					},
 				},

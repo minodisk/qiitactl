@@ -43,8 +43,9 @@ func FetchPostsInTeam(client api.Client, team *Team) (posts Posts, err error) {
 		}
 		posts = append(posts, ps...)
 	}
-	for _, post := range posts {
+	for i, post := range posts {
 		post.Team = team
+		posts[i] = post
 	}
 	return
 }
