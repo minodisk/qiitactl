@@ -16,20 +16,20 @@ func printError(c *cli.Context, err error) {
 	}
 }
 
-func CreatePost(c *cli.Context) {
-	err := func() (err error) {
-		// client := api.NewClient()
-		filename := c.String("file")
-		_, err = model.NewPostFromFile(filename)
-		if err != nil {
-			return
-		}
-		return
-	}()
-	if err != nil {
-		printError(c, err)
-	}
-}
+// func CreatePost(c *cli.Context) {
+// 	err := func() (err error) {
+// 		// client := api.NewClient()
+// 		filename := c.String("file")
+// 		_, err = model.NewPostFromFile(filename)
+// 		if err != nil {
+// 			return
+// 		}
+// 		return
+// 	}()
+// 	if err != nil {
+// 		printError(c, err)
+// 	}
+// }
 
 func ShowPosts(c *cli.Context) {
 	err := func() (err error) {
@@ -63,23 +63,22 @@ func PullPosts(c *cli.Context) {
 		if err != nil {
 			return
 		}
-		err = posts.SaveToLocal("mine")
+		err = posts.SaveToLocal()
 		if err != nil {
 			return
 		}
 
-		var teams model.Teams
-		err = teams.Fetch(client)
+		teams, err := model.FetchTeams(client)
 		if err != nil {
 			return
 		}
 		for _, team := range teams {
 			var posts model.Posts
-			posts, err = model.FetchPostsInTeam(client, team)
+			posts, err = model.FetchPostsInTeam(client, &team)
 			if err != nil {
 				return
 			}
-			err = posts.SaveToLocal(team.Name)
+			err = posts.SaveToLocal()
 			if err != nil {
 				return
 			}

@@ -8,7 +8,7 @@ import (
 
 type Teams []Team
 
-func (teams *Teams) Fetch(client api.Client) (err error) {
+func FetchTeams(client api.Client) (teams Teams, err error) {
 	body, err := client.Get("", "/teams", nil)
 	if err != nil {
 		return

@@ -2,10 +2,7 @@ package model
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
 	"regexp"
-	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,6 +17,32 @@ type Post struct {
 	Title        string `json:"title"`         // 投稿のタイトル
 	Body         string `json:"body"`          // Markdown形式の本文
 	RenderedBody string `json:"rendered_body"` // HTML形式の本文
+	Team         *Team  // チーム
+}
+
+// func NewPostFromFile(filename string) (post Post, err error) {
+// 	body, err := ioutil.ReadFile(filename)
+// 	if err != nil {
+// 		return
+// 	}
+// 	post, err = NewPost(body)
+// 	return
+// }
+
+// func NewPost(b []byte) (post Post, err error) {
+// 	matched := rPost.FindSubmatch(b)
+// 	if len(matched) != 4 {
+// 		err = fmt.Errorf("wrong format")
+// 		return
+// 	}
+// 	post.Title = string(bytes.TrimSpace(matched[2]))
+// 	post.Body = string(bytes.TrimSpace(matched[3]))
+// 	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &post.Meta)
+// 	return
+// }
+
+func (post Post) BelongsToTeam() (b bool) {
+	return post.Team != nil
 }
 
 type Meta struct {
@@ -72,44 +95,5 @@ func (tags *Tags) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 		*tags = append(*tags, tag)
 	}
 
-	return
-}
-
-func NewPostFromFile(filename string) (post Post, err error) {
-	body, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return
-	}
-	post, err = NewPost(body)
-	return
-}
-
-func NewPost(b []byte) (post Post, err error) {
-	matched := rPost.FindSubmatch(b)
-	if len(matched) != 4 {
-		err = fmt.Errorf("wrong format")
-		return
-	}
-	post.Title = string(bytes.TrimSpace(matched[2]))
-	post.Body = string(bytes.TrimSpace(matched[3]))
-	err = yaml.Unmarshal((bytes.TrimSpace(matched[1])), &post.Meta)
-	return
-}
-
-func (post Post) generateFilename() (f string) {
-	b := fmt.Sprintf("%s-%s", post.CreatedAt.ToPath(), normalizeFilename(post.Title))
-	f = fmt.Sprintf("%s.md", shortenHyphens(b))
-	return
-}
-
-func normalizeFilename(filename string) (f string) {
-	f = rInvalidFilename.ReplaceAllString(filename, "-")
-	f = strings.ToLower(f)
-	return
-}
-
-func shortenHyphens(filename string) (f string) {
-	f = rHyphens.ReplaceAllString(filename, "-")
-	f = strings.TrimRight(f, "-")
 	return
 }

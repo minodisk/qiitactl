@@ -17,7 +17,7 @@ var GlobalFlags = []cli.Flag{
 
 var Commands = []cli.Command{
 	{
-		Name:  "new",
+		Name:  "generate",
 		Usage: "Generate something in your local",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
@@ -29,6 +29,10 @@ var Commands = []cli.Command{
 					cli.StringFlag{
 						Name:  "title, t",
 						Usage: "The title of a new post",
+					},
+					cli.StringFlag{
+						Name:  "team, t",
+						Usage: "The name of a team, when you post to the team",
 					},
 				},
 			},
