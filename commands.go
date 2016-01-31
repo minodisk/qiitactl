@@ -63,14 +63,14 @@ var Commands = []cli.Command{
 		},
 	},
 	{
-		Name:  "pull",
+		Name:  "fetch",
 		Usage: "Download resources from Qiita to current working directory",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
 				Name:   "post",
 				Usage:  "Download a post as a file",
-				Action: command.PullPost,
+				Action: command.FetchPost,
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "id, i",
@@ -81,33 +81,41 @@ var Commands = []cli.Command{
 			{
 				Name:   "posts",
 				Usage:  "Download posts as files",
-				Action: command.PullPosts,
+				Action: command.FetchPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
 	},
 	{
-		Name:  "push",
+		Name:  "create",
 		Usage: "Upload resources from current working directory to Qiita",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
 				Name:   "post",
 				Usage:  "Upload a post",
-				Action: command.PushPost,
+				Action: command.CreatePost,
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "filename, f",
 						Usage: "The filename of the post to be uploaded",
 					},
+					cli.BoolFlag{
+						Name:  "tweet, t",
+						Usage: "Tweet the post",
+					},
+					cli.BoolFlag{
+						Name:  "gist, g",
+						Usage: "Upload codes in the post to GitHub Gist",
+					},
 				},
 			},
-			// {
-			// 	Name:   "posts",
-			// 	Usage:  "Upload posts",
-			// 	Action: command.PushPosts,
-			// 	Flags:  []cli.Flag{},
-			// },
+			{
+				Name:   "posts",
+				Usage:  "Upload posts",
+				Action: command.CreatePosts,
+				Flags:  []cli.Flag{},
+			},
 		},
 	},
 	{

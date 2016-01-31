@@ -61,11 +61,11 @@ func printPosts(posts model.Posts, team *model.Team) {
 func ShowPost(c *cli.Context) {
 }
 
-func PullPost(c *cli.Context) {
+func FetchPost(c *cli.Context) {
 	// Write your code here
 }
 
-func PullPosts(c *cli.Context) {
+func FetchPosts(c *cli.Context) {
 	err := func() (err error) {
 		client, err := api.NewClient()
 		if err != nil {
@@ -103,13 +103,14 @@ func PullPosts(c *cli.Context) {
 	}
 }
 
-func PushPost(c *cli.Context) {
+func CreatePost(c *cli.Context) {
 	err := func() (err error) {
 		filename := c.String("filename")
-		_, err = model.LoadFile(filename)
+		file, err := model.NewFileFromLocal(filename)
 		if err != nil {
 			return
 		}
+		file.Post.Create()
 		return
 	}()
 	if err != nil {
@@ -117,7 +118,7 @@ func PushPost(c *cli.Context) {
 	}
 }
 
-func PushPosts(c *cli.Context) {
+func CreatePosts(c *cli.Context) {
 	// Write your code here
 }
 

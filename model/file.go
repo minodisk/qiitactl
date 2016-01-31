@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -38,16 +37,12 @@ func NewFile(post Post) (file File) {
 	return
 }
 
-func LoadFile(filename string) (file File, err error) {
+func NewFileFromLocal(filename string) (file File, err error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return
 	}
-	post, err := NewPostWithBytes(b)
-	if err != nil {
-		return
-	}
-	log.Printf("%+v", post)
+	file.Post, err = NewPostWithBytes(b)
 	return
 }
 

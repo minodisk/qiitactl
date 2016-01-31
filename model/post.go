@@ -45,6 +45,10 @@ func (post Post) BelongsToTeam() (b bool) {
 	return post.Team != nil
 }
 
+func (post Post) Create() (err error) {
+	return
+}
+
 type Meta struct {
 	Id        string `json:"id" yaml:"id"`                 // 投稿の一意なID
 	Url       string `json:"url" yaml:"url"`               // 投稿のURL
