@@ -12,10 +12,11 @@ func GenerateFile(c *cli.Context) {
 		if teamName != "" {
 			team.Name = teamName
 		}
-		file := model.NewFile(model.Post{
-			Title: c.String("title"),
-			Team:  team,
-		})
+
+		post := model.NewPost()
+		post.Title = c.String("title")
+		post.Team = team
+		file := model.NewFile(post)
 		err = file.Save()
 		return
 	}()

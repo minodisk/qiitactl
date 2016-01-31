@@ -2,7 +2,9 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -18,6 +20,13 @@ type Post struct {
 	Body         string `json:"body"`          // Markdown形式の本文
 	RenderedBody string `json:"rendered_body"` // HTML形式の本文
 	Team         *Team  // チーム
+}
+
+func NewPost() (post Post) {
+	post.CreatedAt = Time{Time: time.Now()}
+	post.UpdatedAt = post.CreatedAt
+	fmt.Println(post.CreatedAt)
+	return
 }
 
 // func NewPostFromFile(filename string) (post Post, err error) {
