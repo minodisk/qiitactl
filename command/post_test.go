@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/command"
@@ -25,6 +27,9 @@ var (
 func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			log.Fatalf("wrong method: %s", r.Method)
+		}
 		var body string
 		if r.URL.Query().Get("page") == "1" {
 			body = `[
@@ -71,6 +76,9 @@ func TestMain(m *testing.M) {
 		w.Write([]byte(body))
 	})
 	mux.HandleFunc("/api/v2/teams", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			log.Fatalf("wrong method: %s", r.Method)
+		}
 		w.Write([]byte(`[
 			{
 				"active": true,
@@ -80,8 +88,48 @@ func TestMain(m *testing.M) {
 		]`))
 	})
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, r.URL)
 		switch r.Method {
 		case "PATCH":
+			defer r.Body.Close()
+
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				responseError(w, 500, err)
+				return
+			}
+			if string(b) == "" {
+				responseAPIError(w, 500, api.Error{
+					Type:    "fatal",
+					Message: "empty body",
+				})
+				return
+			}
+
+			var post model.Post
+			err = json.Unmarshal(b, &post)
+			if err != nil {
+				responseError(w, 500, err)
+				return
+			}
+
+			post.UpdatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
+			log.Println(post)
+			b, err = json.Marshal(post)
+			if err != nil {
+				w.WriteHeader(500)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			_, err = w.Write(b)
+			if err != nil {
+				w.WriteHeader(500)
+				w.Write([]byte(err.Error()))
+				return
+			}
+		default:
+			w.WriteHeader(405)
 		}
 	})
 
@@ -167,6 +215,20 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func responseError(w http.ResponseWriter, statusCode int, err error) {
+
+	responseAPIError(w, statusCode, api.Error{
+		Type:    "error",
+		Message: err.Error(),
+	})
+}
+
+func responseAPIError(w http.ResponseWriter, statusCode int, err api.Error) {
+	w.WriteHeader(statusCode)
+	b, _ := json.Marshal(err)
+	w.Write(b)
+}
+
 func TestShowPosts(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	err := command.ShowPosts(client, buf)
@@ -250,4 +312,54 @@ tags:
 		}
 		return
 	})
+}
+
+func TestUpdatePost(t *testing.T) {
+	path := fmt.Sprintf("%s/2000-01-01-example-title.md", model.DirMine)
+	err := ioutil.WriteFile(path, []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+  Ruby:
+  - 0.0.1
+  NewTag:
+  - 1.0
+-->
+# Example new title
+## Example new body`), 664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = command.UpdatePost(client, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(b) != `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2016-02-01T21:51:42+09:00
+private: false
+coediting: false
+tags:
+  NewTag:
+  - "1.0"
+  Ruby:
+  - 0.0.1
+-->
+# Example new title
+## Example new body` {
+		t.Errorf("wrong content: %s", b)
+	}
 }

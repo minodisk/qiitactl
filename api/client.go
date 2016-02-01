@@ -1,7 +1,10 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -46,10 +49,19 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
-func (c Client) process(method string, subDomain string, path string) (body []byte, err error) {
+func (c Client) process(method string, subDomain string, path string, data interface{}) (respBody []byte, err error) {
 	url := c.BuildURL(subDomain, path)
 	// fmt.Println("->", method, url)
-	req, err := http.NewRequest(method, url, nil)
+
+	var reqBody io.Reader
+	if data != nil {
+		b, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+		reqBody = bytes.NewBuffer(b)
+	}
+	req, err := http.NewRequest(method, url, reqBody)
 	if err != nil {
 		return
 	}
@@ -60,13 +72,15 @@ func (c Client) process(method string, subDomain string, path string) (body []by
 	}
 	defer resp.Body.Close()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	respBody, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
 
+	fmt.Println(resp.StatusCode, resp.Status)
+
 	if resp.StatusCode/100 != 2 {
-		e, err := NewError(body)
+		e, err := NewError(respBody)
 		if err != nil {
 			return nil, err
 		}
@@ -77,10 +91,25 @@ func (c Client) process(method string, subDomain string, path string) (body []by
 	return
 }
 
+func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, err error) {
+	body, err = c.process("Post", subDomain, path, data)
+	return
+}
+
 func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, err error) {
 	if v != nil {
 		path = fmt.Sprintf("%s?%s", path, v.Encode())
 	}
-	body, err = c.process("GET", subDomain, path)
+	body, err = c.process("GET", subDomain, path, nil)
+	return
+}
+
+func (c Client) Patch(subDomain string, path string, data interface{}) (body []byte, err error) {
+	body, err = c.process("PATCH", subDomain, path, data)
+	return
+}
+
+func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, err error) {
+	body, err = c.process("Delete", subDomain, path, data)
 	return
 }

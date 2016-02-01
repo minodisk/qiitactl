@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"time"
@@ -27,7 +28,6 @@ type Post struct {
 func NewPost() (post Post) {
 	post.CreatedAt = Time{Time: time.Now()}
 	post.UpdatedAt = post.CreatedAt
-	fmt.Println(post.CreatedAt)
 	return
 }
 
@@ -52,6 +52,20 @@ func (post Post) Create() (err error) {
 }
 
 func (post Post) Update(client api.Client) (err error) {
+	subDomain := ""
+	if post.Team != nil {
+		subDomain = post.Team.ID
+	}
+	body, err := client.Patch(subDomain, fmt.Sprintf("/items/%s", post.Id), post)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &post)
+	if err != nil {
+		return
+	}
+	file := NewFile(post)
+	err = file.Save()
 	return
 }
 
