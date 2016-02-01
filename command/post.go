@@ -2,77 +2,88 @@ package command
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/model"
 )
 
-func printError(c *cli.Context, err error) {
-	if c.GlobalBool("debug") {
-		panic(err)
-	} else {
-		fmt.Println(err)
-	}
-}
-
-func ShowPosts(c *cli.Context) {
-	err := func() (err error) {
-		client, err := api.NewClient()
-		if err != nil {
-			return
-		}
-
-		posts, err := model.FetchPosts(client)
-		if err != nil {
-			return
-		}
-		printPosts(posts, nil)
-
-		teams, err := model.FetchTeams(client)
-		if err != nil {
-			return
-		}
-		for _, team := range teams {
-			posts, err = model.FetchPostsInTeam(client, &team)
-			if err != nil {
-				return
-			}
-			printPosts(posts, &team)
-		}
+func CmdShowPosts(c *cli.Context) {
+	client, err := api.NewClient(nil)
+	if err != nil {
+		printError(c, err)
 		return
-	}()
+	}
+	err = ShowPosts(client, os.Stdout)
 	if err != nil {
 		printError(c, err)
 	}
 }
 
-func printPosts(posts model.Posts, team *model.Team) {
-	if team == nil {
-		fmt.Println("Posts in Qiita:")
-	} else {
-		fmt.Printf("Posts in Qiita:Team (%s):\n", team.Name)
+func ShowPosts(client api.Client, w io.Writer) (err error) {
+	posts, err := model.FetchPosts(client)
+	if err != nil {
+		return
 	}
-	for _, post := range posts {
-		fmt.Println(post.Id, post.CreatedAt.FormatDate(), post.Title)
+	printPosts(w, posts, nil)
+
+	teams, err := model.FetchTeams(client)
+	if err != nil {
+		return
 	}
-}
-
-func ShowPost(c *cli.Context) {
-}
-
-func FetchPost(c *cli.Context) {
-	// Write your code here
-}
-
-func FetchPosts(c *cli.Context) {
-	err := func() (err error) {
-		client, err := api.NewClient()
+	for _, team := range teams {
+		posts, err = model.FetchPostsInTeam(client, &team)
 		if err != nil {
 			return
 		}
+		printPosts(w, posts, &team)
+	}
+	return
+}
 
-		posts, err := model.FetchPosts(client)
+func printPosts(w io.Writer, posts model.Posts, team *model.Team) {
+	if team == nil {
+		w.Write([]byte("Posts in Qiita:\n"))
+	} else {
+		w.Write([]byte(fmt.Sprintf("Posts in Qiita:Team (%s):\n", team.Name)))
+	}
+	for _, post := range posts {
+		w.Write([]byte(fmt.Sprintf("%s %s %s\n", post.Id, post.CreatedAt.FormatDate(), post.Title)))
+	}
+}
+
+func CmdFetchPosts(c *cli.Context) {
+	client, err := api.NewClient(nil)
+	if err != nil {
+		printError(c, err)
+		return
+	}
+
+	err = FetchPosts(client)
+	if err != nil {
+		printError(c, err)
+	}
+}
+
+func FetchPosts(client api.Client) (err error) {
+	posts, err := model.FetchPosts(client)
+	if err != nil {
+		return
+	}
+	err = posts.SaveToLocal()
+	if err != nil {
+		return
+	}
+
+	teams, err := model.FetchTeams(client)
+	if err != nil {
+		return
+	}
+	for _, team := range teams {
+		var posts model.Posts
+		posts, err = model.FetchPostsInTeam(client, &team)
 		if err != nil {
 			return
 		}
@@ -80,37 +91,34 @@ func FetchPosts(c *cli.Context) {
 		if err != nil {
 			return
 		}
+	}
+	return
+}
 
-		teams, err := model.FetchTeams(client)
-		if err != nil {
-			return
-		}
-		for _, team := range teams {
-			var posts model.Posts
-			posts, err = model.FetchPostsInTeam(client, &team)
-			if err != nil {
-				return
-			}
-			err = posts.SaveToLocal()
-			if err != nil {
-				return
-			}
-		}
-		return
-	}()
+func CmdCreatePost(c *cli.Context) {
+	err := CreatePost(c.String("filename"))
 	if err != nil {
 		printError(c, err)
 	}
 }
 
-func CreatePost(c *cli.Context) {
+func CreatePost(filename string) (err error) {
+	file, err := model.NewFileFromLocal(filename)
+	if err != nil {
+		return
+	}
+	err = file.Post.Create()
+	return
+}
+
+func UpdatePost(c *cli.Context) {
 	err := func() (err error) {
 		filename := c.String("filename")
 		file, err := model.NewFileFromLocal(filename)
 		if err != nil {
 			return
 		}
-		file.Post.Create()
+		err = file.Post.Update()
 		return
 	}()
 	if err != nil {
@@ -118,22 +126,8 @@ func CreatePost(c *cli.Context) {
 	}
 }
 
-func CreatePosts(c *cli.Context) {
-	// Write your code here
-}
-
 func DeletePost(c *cli.Context) {
-	// Write your code here
 }
-
-// func fetchAllPosts() (err error) {
-// 	err = fetchPosts("")
-// 	if err != nil {
-// 		return
-// 	}
-// 	err = fetchPosts("")
-// 	return
-// }
 
 // func PostsDiff(commit1, commit2 string) (err error) {
 // 	fmt.Printf("Post diff between %s and %s\n", commit1, commit2)

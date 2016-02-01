@@ -15,10 +15,28 @@ const (
 
 type Client struct {
 	Token      string
+	BuildURL   func(string, string) string
 	httpClient *http.Client
 }
 
-func NewClient() (c Client, err error) {
+func BuildURL(subDomain, path string) (url string) {
+	var host string
+	if subDomain == "" {
+		host = baseHost
+	} else {
+		host = fmt.Sprintf("%s.%s", subDomain, baseHost)
+	}
+	url = fmt.Sprintf("https://%s/api/v2%s", host, path)
+	return
+}
+
+func NewClient(buildURL func(string, string) string) (c Client, err error) {
+	if buildURL == nil {
+		c.BuildURL = BuildURL
+	} else {
+		c.BuildURL = buildURL
+	}
+
 	c.Token = os.Getenv(envAccessToken)
 	if c.Token == "" {
 		err = fmt.Errorf("publish personal access token at https://qiita.com/settings/applications, then set environment variable as %s", envAccessToken)
@@ -28,15 +46,9 @@ func NewClient() (c Client, err error) {
 	return
 }
 
-func (c Client) process(method string, subDomain string, p string) (body []byte, err error) {
-	var host string
-	if subDomain == "" {
-		host = baseHost
-	} else {
-		host = fmt.Sprintf("%s.%s", subDomain, baseHost)
-	}
-	url := fmt.Sprintf("https://%s/api/v2%s", host, p)
-	// fmt.Println(method, url)
+func (c Client) process(method string, subDomain string, path string) (body []byte, err error) {
+	url := c.BuildURL(subDomain, path)
+	// fmt.Println("->", method, url)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return
@@ -65,10 +77,10 @@ func (c Client) process(method string, subDomain string, p string) (body []byte,
 	return
 }
 
-func (c Client) Get(subDomain string, p string, v *url.Values) (body []byte, err error) {
+func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, err error) {
 	if v != nil {
-		p = fmt.Sprintf("%s?%s", p, v.Encode())
+		path = fmt.Sprintf("%s?%s", path, v.Encode())
 	}
-	body, err = c.process("GET", subDomain, p)
+	body, err = c.process("GET", subDomain, path)
 	return
 }

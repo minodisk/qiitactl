@@ -43,21 +43,21 @@ var Commands = []cli.Command{
 		Usage: "Display resources",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
-			{
-				Name:   "post",
-				Usage:  "Print detail of a post in Qitta",
-				Action: command.ShowPost,
-				Flags: []cli.Flag{
-					cli.StringFlag{
-						Name:  "id, i",
-						Usage: "The ID of the post to be printed detail",
-					},
-				},
-			},
+			// {
+			// 	Name:   "post",
+			// 	Usage:  "Print detail of a post in Qitta",
+			// 	Action: command.ShowPost,
+			// 	Flags: []cli.Flag{
+			// 		cli.StringFlag{
+			// 			Name:  "id, i",
+			// 			Usage: "The ID of the post to be printed detail",
+			// 		},
+			// 	},
+			// },
 			{
 				Name:   "posts",
 				Usage:  "Print a list of posts in Qiita",
-				Action: command.ShowPosts,
+				Action: command.CmdShowPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
@@ -67,38 +67,38 @@ var Commands = []cli.Command{
 		Usage: "Download resources from Qiita to current working directory",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
-			{
-				Name:   "post",
-				Usage:  "Download a post as a file",
-				Action: command.FetchPost,
-				Flags: []cli.Flag{
-					cli.StringFlag{
-						Name:  "id, i",
-						Usage: "The ID of the post to be downloaded",
-					},
-				},
-			},
+			// {
+			// 	Name:   "post",
+			// 	Usage:  "Download a post as a file",
+			// 	Action: command.FetchPost,
+			// 	Flags: []cli.Flag{
+			// 		cli.StringFlag{
+			// 			Name:  "id, i",
+			// 			Usage: "The ID of the post to be downloaded",
+			// 		},
+			// 	},
+			// },
 			{
 				Name:   "posts",
 				Usage:  "Download posts as files",
-				Action: command.FetchPosts,
+				Action: command.CmdFetchPosts,
 				Flags:  []cli.Flag{},
 			},
 		},
 	},
 	{
 		Name:  "create",
-		Usage: "Upload resources from current working directory to Qiita",
+		Usage: "Create resources from current working directory to Qiita",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
 			{
 				Name:   "post",
-				Usage:  "Upload a post",
-				Action: command.CreatePost,
+				Usage:  "Create a post",
+				Action: command.CmdCreatePost,
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "filename, f",
-						Usage: "The filename of the post to be uploaded",
+						Usage: "The filename of the post to be created",
 					},
 					cli.BoolFlag{
 						Name:  "tweet, t",
@@ -106,15 +106,27 @@ var Commands = []cli.Command{
 					},
 					cli.BoolFlag{
 						Name:  "gist, g",
-						Usage: "Upload codes in the post to GitHub Gist",
+						Usage: "Create codes in the post to GitHub Gist",
 					},
 				},
 			},
+		},
+	},
+	{
+		Name:  "update",
+		Usage: "Update resources from current working directory to Qiita",
+		Flags: []cli.Flag{},
+		Subcommands: []cli.Command{
 			{
-				Name:   "posts",
-				Usage:  "Upload posts",
-				Action: command.CreatePosts,
-				Flags:  []cli.Flag{},
+				Name:   "post",
+				Usage:  "Update a post",
+				Action: command.UpdatePost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "filename, f",
+						Usage: "The filename of the post to be updated",
+					},
+				},
 			},
 		},
 	},

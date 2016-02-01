@@ -26,7 +26,7 @@ func FetchPostsInTeam(client api.Client, team *Team) (posts Posts, err error) {
 
 		subDomain := ""
 		if team != nil {
-			subDomain = team.Name
+			subDomain = team.ID
 		}
 		body, err := client.Get(subDomain, "/authenticated_user/items", &v)
 		if err != nil {

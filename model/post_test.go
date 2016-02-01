@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestNewPostWithWrongMeta(t *testing.T) {
+func TestNewPostWithBytes_WrongMeta(t *testing.T) {
 	_, err := NewPostWithBytes([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
@@ -31,7 +31,7 @@ Paragraph
 	}
 }
 
-func TestNewPostWithWrongTag(t *testing.T) {
+func TestNewPostWithBytes_WrongTag(t *testing.T) {
 	_, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -56,7 +56,7 @@ Paragraph
 	}
 }
 
-func TestNewPostWithWrongTitle(t *testing.T) {
+func TestNewPostWithBytes_WrongTitle(t *testing.T) {
 	_, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -81,7 +81,7 @@ Paragraph
 	}
 }
 
-func TestNewPostWithCorrectText(t *testing.T) {
+func TestNewPostWithBytes_CorrectText(t *testing.T) {
 	post, err := NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
