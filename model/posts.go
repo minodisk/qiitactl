@@ -41,6 +41,7 @@ func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 	}
 	for i, post := range posts {
 		post.Team = team
+		post.InitFile("")
 		posts[i] = post
 	}
 	return

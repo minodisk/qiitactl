@@ -88,7 +88,6 @@ func TestMain(m *testing.M) {
 		]`))
 	})
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.Method, r.URL)
 		switch r.Method {
 		case "PATCH":
 			defer r.Body.Close()
@@ -114,7 +113,6 @@ func TestMain(m *testing.M) {
 			}
 
 			post.UpdatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
-			log.Println(post)
 			b, err = json.Marshal(post)
 			if err != nil {
 				w.WriteHeader(500)
@@ -209,8 +207,8 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Clean up trashes
-	// os.RemoveAll(model.DirMine)
-	// os.RemoveAll("increments")
+	os.RemoveAll(model.DirMine)
+	os.RemoveAll("increments")
 
 	os.Exit(code)
 }

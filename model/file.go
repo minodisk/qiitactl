@@ -28,15 +28,6 @@ var (
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
 
-// type File struct {
-// 	Post Post
-// }
-//
-// func NewFile(post Post) (file File) {
-// 	file.Post = post
-// 	return
-// }
-
 type File struct {
 	Path string
 }

@@ -73,7 +73,7 @@ func NewPostWithBytes(b []byte, path string) (post Post, err error) {
 	return
 }
 
-func (post Post) InitFile(path string) {
+func (post *Post) InitFile(path string) {
 	if path == "" {
 		post.File.FillPath(post.CreatedAt, post.Title, post.Team)
 	} else {
