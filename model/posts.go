@@ -14,11 +14,7 @@ const (
 
 type Posts []Post
 
-func FetchPosts(client api.Client) (posts Posts, err error) {
-	return FetchPostsInTeam(client, nil)
-}
-
-func FetchPostsInTeam(client api.Client, team *Team) (posts Posts, err error) {
+func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 	v := url.Values{}
 	v.Set("per_page", strconv.Itoa(perPage))
 	for page := 1; ; page++ {
@@ -50,10 +46,9 @@ func FetchPostsInTeam(client api.Client, team *Team) (posts Posts, err error) {
 	return
 }
 
-func (posts Posts) SaveToLocal() (err error) {
+func (posts Posts) Save() (err error) {
 	for _, post := range posts {
-		f := NewFile(post)
-		err = f.Save()
+		err = post.Save()
 		if err != nil {
 			return
 		}

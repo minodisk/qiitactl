@@ -16,8 +16,7 @@ func GenerateFile(c *cli.Context) {
 		post := model.NewPost()
 		post.Title = c.String("title")
 		post.Team = team
-		file := model.NewFile(post)
-		err = file.Save()
+		err = post.Save()
 		return
 	}()
 	if err != nil {

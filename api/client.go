@@ -77,8 +77,6 @@ func (c Client) process(method string, subDomain string, path string, data inter
 		return
 	}
 
-	fmt.Println(resp.StatusCode, resp.Status)
-
 	if resp.StatusCode/100 != 2 {
 		e, err := NewError(respBody)
 		if err != nil {

@@ -25,7 +25,7 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`))
+`), "")
 	if err == nil {
 		t.Errorf("start without meta comment should return error")
 	}
@@ -50,7 +50,7 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`))
+`), "")
 	if err == nil {
 		t.Errorf("should return error with non-object element in tags")
 	}
@@ -75,7 +75,7 @@ tags:
 ## Sub title
 # Main title
 Paragraph
-`))
+`), "")
 	if err == nil {
 		t.Errorf("should return error with non-object element in tags")
 	}
@@ -100,7 +100,7 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`))
+`), "")
 	if err != nil {
 		t.Fatal(err)
 	}

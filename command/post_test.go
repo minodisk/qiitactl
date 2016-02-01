@@ -209,8 +209,8 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Clean up trashes
-	os.RemoveAll(model.DirMine)
-	os.RemoveAll("increments")
+	// os.RemoveAll(model.DirMine)
+	// os.RemoveAll("increments")
 
 	os.Exit(code)
 }

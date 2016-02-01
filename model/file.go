@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -29,65 +28,51 @@ var (
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
 
+// type File struct {
+// 	Post Post
+// }
+//
+// func NewFile(post Post) (file File) {
+// 	file.Post = post
+// 	return
+// }
+
 type File struct {
-	Post Post
+	Path string
 }
 
-func NewFile(post Post) (file File) {
-	file.Post = post
-	return
-}
-
-func NewFileFromLocal(filename string) (file File, err error) {
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return
-	}
-	file.Post, err = NewPostWithBytes(b)
-	return
-}
-
-func (file *File) Save() (err error) {
-	var dir string
-	if file.Post.BelongsToTeam() {
-		dir = file.Post.Team.ID
+func (file *File) FillPath(createdAt Time, title string, team *Team) {
+	filename := rInvalidFilename.ReplaceAllString(title, "-")
+	filename = strings.ToLower(filename)
+	filename = fmt.Sprintf("%s-%s", createdAt.ToPath(), filename)
+	filename = rHyphens.ReplaceAllString(filename, "-")
+	filename = strings.TrimRight(filename, "-")
+	filename = fmt.Sprintf("%s.md", filename)
+	var dirname string
+	if team == nil {
+		dirname = DirMine
 	} else {
-		dir = DirMine
+		dirname = team.ID
 	}
+	file.Path = filepath.Join(dirname, filename)
+}
 
+func (file *File) Save(post Post) (err error) {
+	dir := filepath.Dir(file.Path)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
 		return
 	}
 
-	path := filepath.Join(dir, generateFilename(file.Post))
-	fmt.Printf("Make file: %s\n", path)
-	f, err := os.Create(path)
+	fmt.Printf("Make file: %s\n", file.Path)
+	f, err := os.Create(file.Path)
 	defer f.Close()
 	if err != nil {
 		return
 	}
-	err = tmpl.Execute(f, file.Post)
+	err = tmpl.Execute(f, post)
 	if err != nil {
 		return
 	}
-	return
-}
-
-func generateFilename(post Post) (f string) {
-	b := fmt.Sprintf("%s-%s", post.CreatedAt.ToPath(), normalizeFilename(post.Title))
-	f = fmt.Sprintf("%s.md", shortenHyphens(b))
-	return
-}
-
-func normalizeFilename(filename string) (f string) {
-	f = rInvalidFilename.ReplaceAllString(filename, "-")
-	f = strings.ToLower(f)
-	return
-}
-
-func shortenHyphens(filename string) (f string) {
-	f = rHyphens.ReplaceAllString(filename, "-")
-	f = strings.TrimRight(f, "-")
 	return
 }

@@ -23,7 +23,7 @@ func CmdShowPosts(c *cli.Context) {
 }
 
 func ShowPosts(client api.Client, w io.Writer) (err error) {
-	posts, err := model.FetchPosts(client)
+	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
 		return
 	}
@@ -34,7 +34,7 @@ func ShowPosts(client api.Client, w io.Writer) (err error) {
 		return
 	}
 	for _, team := range teams {
-		posts, err = model.FetchPostsInTeam(client, &team)
+		posts, err = model.FetchPosts(client, &team)
 		if err != nil {
 			return
 		}
@@ -67,11 +67,11 @@ func CmdFetchPosts(c *cli.Context) {
 }
 
 func FetchPosts(client api.Client) (err error) {
-	posts, err := model.FetchPosts(client)
+	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
 		return
 	}
-	err = posts.SaveToLocal()
+	err = posts.Save()
 	if err != nil {
 		return
 	}
@@ -82,11 +82,11 @@ func FetchPosts(client api.Client) (err error) {
 	}
 	for _, team := range teams {
 		var posts model.Posts
-		posts, err = model.FetchPostsInTeam(client, &team)
+		posts, err = model.FetchPosts(client, &team)
 		if err != nil {
 			return
 		}
-		err = posts.SaveToLocal()
+		err = posts.Save()
 		if err != nil {
 			return
 		}
@@ -102,11 +102,11 @@ func CmdCreatePost(c *cli.Context) {
 }
 
 func CreatePost(filename string) (err error) {
-	file, err := model.NewFileFromLocal(filename)
+	post, err := model.NewPostWithFile(filename)
 	if err != nil {
 		return
 	}
-	err = file.Post.Create()
+	err = post.Create()
 	return
 }
 
@@ -123,11 +123,11 @@ func CmdUpdatePost(c *cli.Context) {
 }
 
 func UpdatePost(client api.Client, filename string) (err error) {
-	file, err := model.NewFileFromLocal(filename)
+	post, err := model.NewPostWithFile(filename)
 	if err != nil {
 		return
 	}
-	err = file.Post.Update(client)
+	err = post.Update(client)
 	return
 }
 
