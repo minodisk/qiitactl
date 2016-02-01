@@ -1,4 +1,4 @@
-# qiitactl
+# qiitactl [![Circle CI](https://circleci.com/gh/minodisk/qiitactl.svg?style=svg)](https://circleci.com/gh/minodisk/qiitactl)
 
 Command line interface to manage the posts in Qitta.
 
