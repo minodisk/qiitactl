@@ -16,6 +16,7 @@ import (
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/command"
 	"github.com/minodisk/qiitactl/model"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 var (
@@ -243,6 +244,15 @@ Posts in Qiita:Team (Increments Inc.):
 	}
 }
 
+func diff(src1, src2 string) []diffmatchpatch.Diff {
+	dmp := diffmatchpatch.New()
+	a, b, c := dmp.DiffLinesToChars(src1, src2)
+	diffs := dmp.DiffMain(a, b, false)
+	result := dmp.DiffCharsToLines(diffs, c)
+	fmt.Println(result)
+	return result
+}
+
 func TestFetchPosts(t *testing.T) {
 	err := command.FetchPosts(client)
 	if err != nil {
@@ -261,7 +271,8 @@ func TestFetchPosts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if string(b) != `<!--
+			actual := string(b)
+			expected := `<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -273,8 +284,9 @@ tags:
   - 0.0.1
 -->
 # Example title
-## Example body` {
-				t.Errorf("wrong body \"%s\"", b)
+## Example body`
+			if actual != expected {
+				t.Errorf("wrong body: %v", diff(expected, actual))
 			}
 		}
 		return
@@ -292,7 +304,8 @@ tags:
 			if err != nil {
 				t.Fatal(err)
 			}
-			if string(b) != `<!--
+			actual := string(b)
+			expected := `<!--
 id: 4bd431809afb1bb99e4t
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -304,8 +317,9 @@ tags:
   - 0.0.1
 -->
 # Example title in team
-## Example body in team` {
-				t.Errorf("wrong body \"%s\"", b)
+## Example body in team`
+			if actual != expected {
+				t.Errorf("wrong body: %v", diff(expected, actual))
 			}
 		}
 		return
@@ -343,7 +357,8 @@ tags:
 		t.Fatal(err)
 	}
 
-	if string(b) != `<!--
+	actual := string(b)
+	expected := `<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -357,7 +372,8 @@ tags:
   - 0.0.1
 -->
 # Example new title
-## Example new body` {
-		t.Errorf("wrong content: %s", b)
+## Example new body`
+	if actual != expected {
+		t.Errorf("wrong content: %v", diff(expected, actual))
 	}
 }
