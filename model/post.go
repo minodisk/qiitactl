@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/minodisk/qiitactl/api"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -49,7 +51,7 @@ func (post Post) Create() (err error) {
 	return
 }
 
-func (post Post) Update() (err error) {
+func (post Post) Update(client api.Client) (err error) {
 	return
 }
 

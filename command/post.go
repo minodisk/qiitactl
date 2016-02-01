@@ -60,7 +60,6 @@ func CmdFetchPosts(c *cli.Context) {
 		printError(c, err)
 		return
 	}
-
 	err = FetchPosts(client)
 	if err != nil {
 		printError(c, err)
@@ -111,19 +110,25 @@ func CreatePost(filename string) (err error) {
 	return
 }
 
-func UpdatePost(c *cli.Context) {
-	err := func() (err error) {
-		filename := c.String("filename")
-		file, err := model.NewFileFromLocal(filename)
-		if err != nil {
-			return
-		}
-		err = file.Post.Update()
+func CmdUpdatePost(c *cli.Context) {
+	client, err := api.NewClient(nil)
+	if err != nil {
+		printError(c, err)
 		return
-	}()
+	}
+	err = UpdatePost(client, c.String("filename"))
 	if err != nil {
 		printError(c, err)
 	}
+}
+
+func UpdatePost(client api.Client, filename string) (err error) {
+	file, err := model.NewFileFromLocal(filename)
+	if err != nil {
+		return
+	}
+	err = file.Post.Update(client)
+	return
 }
 
 func DeletePost(c *cli.Context) {

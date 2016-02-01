@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	DirMine        = "mine"
 	postFileFormat = `<!--
 {{.Meta.Format}}
 -->
@@ -49,12 +50,11 @@ func NewFileFromLocal(filename string) (file File, err error) {
 func (file *File) Save() (err error) {
 	var dir string
 	if file.Post.BelongsToTeam() {
-		dir = file.Post.Team.Name
+		dir = file.Post.Team.ID
 	} else {
-		dir = "mine"
+		dir = DirMine
 	}
 
-	fmt.Printf("Make directory: %s\n", dir)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
 		return

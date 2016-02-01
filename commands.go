@@ -120,7 +120,7 @@ var Commands = []cli.Command{
 			{
 				Name:   "post",
 				Usage:  "Update a post",
-				Action: command.UpdatePost,
+				Action: command.CmdUpdatePost,
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "filename, f",

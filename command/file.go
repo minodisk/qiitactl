@@ -7,10 +7,10 @@ import (
 
 func GenerateFile(c *cli.Context) {
 	err := func() (err error) {
-		teamName := c.String("team")
+		teamID := c.String("team")
 		var team *model.Team
-		if teamName != "" {
-			team.Name = teamName
+		if teamID != "" {
+			team.ID = teamID
 		}
 
 		post := model.NewPost()
