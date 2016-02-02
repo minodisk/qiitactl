@@ -1,11 +1,5 @@
 package model
 
-import (
-	"encoding/json"
-
-	"github.com/minodisk/qiitactl/api"
-)
-
 // Qiita上のユーザを表します。
 type User struct {
 	Description       string `json:"description"`         // 自己紹介文
@@ -25,11 +19,11 @@ type User struct {
 	WebsiteUrl        string `json:"website_url"`         // 設定しているWebサイトのURL
 }
 
-func ReadAuthenticated(client api.Client) (user User, err error) {
-	body, err := client.Get("", "/authenticated_user", nil)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, &user)
-	return
-}
+// func ReadAuthenticated(client api.Client) (user User, err error) {
+// 	body, err := client.Get("", "/authenticated_user", nil)
+// 	if err != nil {
+// 		return
+// 	}
+// 	err = json.Unmarshal(body, &user)
+// 	return
+// }
