@@ -1,2 +1,14 @@
 machine:
   timezone: Asia/Tokyo
+
+dependencies:
+  pre:
+    - go get github.com/axw/gocov/gocov
+    - go get github.com/mattn/goveralls
+    - if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
+
+test:
+  override:
+    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/coverage.out ./...
+  post:
+    - /home/ubuntu/bin/goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
