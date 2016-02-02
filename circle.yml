@@ -14,5 +14,5 @@ test:
 deployment:
   master:
     branch: master
-  commands:
-    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    commands:
+      - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
