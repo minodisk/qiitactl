@@ -16,7 +16,7 @@ import (
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/command"
 	"github.com/minodisk/qiitactl/model"
-	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/minodisk/qiitactl/testutil"
 )
 
 var (
@@ -244,15 +244,6 @@ Posts in Qiita:Team (Increments Inc.):
 	}
 }
 
-func diff(src1, src2 string) []diffmatchpatch.Diff {
-	dmp := diffmatchpatch.New()
-	a, b, c := dmp.DiffLinesToChars(src1, src2)
-	diffs := dmp.DiffMain(a, b, false)
-	result := dmp.DiffCharsToLines(diffs, c)
-	fmt.Println(result)
-	return result
-}
-
 func TestFetchPosts(t *testing.T) {
 	err := command.FetchPosts(client)
 	if err != nil {
@@ -286,7 +277,7 @@ tags:
 # Example title
 ## Example body`
 			if actual != expected {
-				t.Errorf("wrong body: %v", diff(expected, actual))
+				t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 			}
 		}
 		return
@@ -319,7 +310,7 @@ tags:
 # Example title in team
 ## Example body in team`
 			if actual != expected {
-				t.Errorf("wrong body: %v", diff(expected, actual))
+				t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 			}
 		}
 		return
@@ -374,6 +365,6 @@ tags:
 # Example new title
 ## Example new body`
 	if actual != expected {
-		t.Errorf("wrong content: %v", diff(expected, actual))
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
 }

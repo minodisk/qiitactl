@@ -1,14 +1,43 @@
 package model_test
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
 	"github.com/minodisk/qiitactl/model"
+	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestNewPostWithBytes_WrongMeta(t *testing.T) {
-	post := new(model.Post)
+func TestEncodeWithNewPost(t *testing.T) {
+	post := model.NewPost("Example title", nil)
+	at := model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}
+	post.CreatedAt = at
+	post.UpdatedAt = at
+	buf := bytes.NewBuffer([]byte{})
+	err := post.Encode(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(buf.Bytes())
+	expected := `<!--
+id: ""
+url: ""
+created_at: 2016-02-02T15:30:46+09:00
+updated_at: 2016-02-02T15:30:46+09:00
+private: false
+coediting: false
+tags: {}
+-->
+# Example title
+`
+	if expected != actual {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestDecodeWithWrongMeta(t *testing.T) {
+	var post model.Post
 	err := post.Decode([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
@@ -34,8 +63,8 @@ Paragraph
 	}
 }
 
-func TestNewPostWithBytes_WrongTag(t *testing.T) {
-	post := new(model.Post)
+func TestDecodeWithWrongTag(t *testing.T) {
+	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -60,8 +89,8 @@ Paragraph
 	}
 }
 
-func TestNewPostWithBytes_WrongTitle(t *testing.T) {
-	post := new(model.Post)
+func TestDecodeWithWrongTitle(t *testing.T) {
+	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -86,8 +115,8 @@ Paragraph
 	}
 }
 
-func TestNewPostWithBytes_CorrectText(t *testing.T) {
-	post := new(model.Post)
+func TestDecodeWithCorrectMarkdown(t *testing.T) {
+	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
