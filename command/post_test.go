@@ -265,7 +265,7 @@ func TestFetchPosts(t *testing.T) {
 		}
 		if !info.IsDir() {
 			if path != fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine) {
-				t.Fatalf("wrong file is created:%s", path)
+				t.Fatalf("wrong file is created: %s", path)
 			}
 			b, err := ioutil.ReadFile(path)
 			if err != nil {

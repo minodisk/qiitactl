@@ -39,15 +39,16 @@ func (file *File) FillPath(createdAt ITime, title string, team *Team) {
 	} else {
 		dirname = team.ID
 	}
-	dirname = filepath.Join(dirname, createdAt.Format("2006/01/02"))
+	dirname = filepath.Join(dirname, createdAt.Format("2006/01"))
 
-	filename := rInvalidFilename.ReplaceAllString(title, "-")
+	filename := fmt.Sprintf("%s-%s", createdAt.Format("02"), title)
+	filename = rInvalidFilename.ReplaceAllString(filename, "-")
 	filename = strings.ToLower(filename)
 	filename = rHyphens.ReplaceAllString(filename, "-")
 	filename = strings.TrimRight(filename, "-")
 	filename = fmt.Sprintf("%s.md", filename)
 
-	file.Path = fmt.Sprintf("%s-%s", dirname, filename)
+	file.Path = filepath.Join(dirname, filename)
 }
 
 func (file *File) Save(post Post) (err error) {
