@@ -1,12 +1,14 @@
-package model
+package model_test
 
 import (
 	"testing"
 	"time"
+
+	"github.com/minodisk/qiitactl/model"
 )
 
 func TestNewPostWithBytes_WrongMeta(t *testing.T) {
-	_, err := NewPostWithBytes([]byte(`XXXXXXXX
+	_, err := model.NewPostWithBytes([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -32,7 +34,7 @@ Paragraph
 }
 
 func TestNewPostWithBytes_WrongTag(t *testing.T) {
-	_, err := NewPostWithBytes([]byte(`<!--
+	_, err := model.NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -57,7 +59,7 @@ Paragraph
 }
 
 func TestNewPostWithBytes_WrongTitle(t *testing.T) {
-	_, err := NewPostWithBytes([]byte(`<!--
+	_, err := model.NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -82,7 +84,7 @@ Paragraph
 }
 
 func TestNewPostWithBytes_CorrectText(t *testing.T) {
-	post, err := NewPostWithBytes([]byte(`<!--
+	post, err := model.NewPostWithBytes([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00

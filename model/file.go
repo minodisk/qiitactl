@@ -32,20 +32,22 @@ type File struct {
 	Path string
 }
 
-func (file *File) FillPath(createdAt Time, title string, team *Team) {
-	filename := rInvalidFilename.ReplaceAllString(title, "-")
-	filename = strings.ToLower(filename)
-	filename = fmt.Sprintf("%s-%s", createdAt.ToPath(), filename)
-	filename = rHyphens.ReplaceAllString(filename, "-")
-	filename = strings.TrimRight(filename, "-")
-	filename = fmt.Sprintf("%s.md", filename)
+func (file *File) FillPath(createdAt ITime, title string, team *Team) {
 	var dirname string
 	if team == nil {
 		dirname = DirMine
 	} else {
 		dirname = team.ID
 	}
-	file.Path = filepath.Join(dirname, filename)
+	dirname = filepath.Join(dirname, createdAt.Format("2006/01/02"))
+
+	filename := rInvalidFilename.ReplaceAllString(title, "-")
+	filename = strings.ToLower(filename)
+	filename = rHyphens.ReplaceAllString(filename, "-")
+	filename = strings.TrimRight(filename, "-")
+	filename = fmt.Sprintf("%s.md", filename)
+
+	file.Path = fmt.Sprintf("%s-%s", dirname, filename)
 }
 
 func (file *File) Save(post Post) (err error) {

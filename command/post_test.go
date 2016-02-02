@@ -264,8 +264,8 @@ func TestFetchPosts(t *testing.T) {
 			t.Fatal(e)
 		}
 		if !info.IsDir() {
-			if path != fmt.Sprintf("%s/2000-01-01-example-title.md", model.DirMine) {
-				t.Fatalf("wrong file is created \"%s\"", path)
+			if path != fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine) {
+				t.Fatalf("wrong file is created:%s", path)
 			}
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
@@ -297,8 +297,8 @@ tags:
 			t.Fatal(e)
 		}
 		if !info.IsDir() {
-			if path != "increments/2000-01-01-example-title-in-team.md" {
-				t.Fatalf("wrong file is created \"%s\"", path)
+			if path != "increments/2000/01/01-example-title-in-team.md" {
+				t.Fatalf("wrong file is created: %s", path)
 			}
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
@@ -327,7 +327,7 @@ tags:
 }
 
 func TestUpdatePost(t *testing.T) {
-	path := fmt.Sprintf("%s/2000-01-01-example-title.md", model.DirMine)
+	path := fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine)
 	err := ioutil.WriteFile(path, []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f

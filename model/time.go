@@ -9,6 +9,10 @@ type Time struct {
 	time.Time
 }
 
+type ITime interface {
+	Format(layout string) string
+}
+
 func (t *Time) UnmarshalJSON(b []byte) (err error) {
 	var s string
 	err = json.Unmarshal(b, &s)
@@ -37,17 +41,12 @@ func (t *Time) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 	return
 }
 
-func (t Time) Format() (s string) {
+func (t Time) FormatDateTime() (s string) {
 	s = t.Time.Format(time.RFC3339)
 	return
 }
 
 func (t Time) FormatDate() (s string) {
 	s = t.Time.Format("2006/01/02")
-	return
-}
-
-func (t Time) ToPath() (path string) {
-	path = t.Time.Format("2006-01-02")
 	return
 }
