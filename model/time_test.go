@@ -22,6 +22,24 @@ func TestTime_UnmarshalJSON(t *testing.T) {
 	}
 }
 
+func TestTime_UnmarshalJSONWithNonString(t *testing.T) {
+	s := `true`
+	var at model.Time
+	err := json.Unmarshal([]byte(s), &at)
+	if err == nil {
+		t.Errorf("error should occur")
+	}
+}
+
+func TestTime_UnmarshalJSONWithWrongFormat(t *testing.T) {
+	s := `"2016/02/03T13:05:06+09:00"`
+	var at model.Time
+	err := json.Unmarshal([]byte(s), &at)
+	if err == nil {
+		t.Errorf("error should occur")
+	}
+}
+
 func TestTime_MarshalYAML(t *testing.T) {
 	at := model.Time{time.Date(2016, 2, 3, 4, 5, 6, 0, time.UTC)}
 	b, err := yaml.Marshal(at)
