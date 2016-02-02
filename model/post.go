@@ -116,7 +116,7 @@ func (post Post) Update(client api.Client) (err error) {
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, err := client.Patch(subDomain, fmt.Sprintf("/items/%s", post.Id), post)
+	body, err := client.Patch(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
 	if err != nil {
 		return
 	}

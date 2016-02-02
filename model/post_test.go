@@ -27,7 +27,7 @@ created_at: 2016-02-02T15:30:46+09:00
 updated_at: 2016-02-02T15:30:46+09:00
 private: false
 coediting: false
-tags: {}
+tags: []
 -->
 # Example title
 `
@@ -47,12 +47,12 @@ updated_at: 2015-02-25T09:26:30+09:00
 private: true
 coediting: false
 tags:
-  TypeScript:
-  Docker:
-    - 1.9
-  Go:
-    - 1.4.3
-    - 1.5.3
+- TypeScript
+- Docker:
+  - 1.9
+- Go:
+  - 1.4.3
+  - 1.5.3
 -->
 # Main title
 ## Sub title
@@ -73,7 +73,7 @@ updated_at: 2015-02-25T09:26:30+09:00
 private: true
 coediting: false
 tags:
-  TypeScript
+  TypeScript: []
   Docker:
     - 1.9
   Go:
@@ -85,7 +85,7 @@ tags:
 Paragraph
 `))
 	if err == nil {
-		t.Errorf("should return error with non-object element in tags")
+		t.Errorf("should return error objective tags")
 	}
 }
 
@@ -99,12 +99,12 @@ updated_at: 2015-02-25T09:26:30+09:00
 private: true
 coediting: false
 tags:
-  TypeScript:
-  Docker:
-    - 1.9
-  Go:
-    - 1.4.3
-    - 1.5.3
+- TypeScript
+- Docker:
+  - 1.9
+- Go:
+  - 1.4.3
+  - 1.5.3
 -->
 ## Sub title
 # Main title
@@ -125,12 +125,12 @@ updated_at: 2015-02-25T09:26:30+09:00
 private: true
 coediting: false
 tags:
-  TypeScript:
-  Docker:
-    - 1.9
-  Go:
-    - 1.4.3
-    - 1.5.3
+- TypeScript
+- Docker:
+  - 1.9
+- Go:
+  - 1.4.3
+  - 1.5.3
 -->
 # Main title
 ## Sub title
@@ -140,10 +140,10 @@ Paragraph
 		t.Fatal(err)
 	}
 
-	if post.Meta.Id != "abcdefghijklmnopqrst" {
+	if post.Meta.ID != "abcdefghijklmnopqrst" {
 		t.Errorf("wrong Id")
 	}
-	if post.Meta.Url != "http://example.com/mypost" {
+	if post.Meta.URL != "http://example.com/mypost" {
 		t.Errorf("wrong Url")
 	}
 	if !post.Meta.CreatedAt.Equal(time.Date(2013, 12, 10, 3, 29, 14, 0, time.UTC)) {

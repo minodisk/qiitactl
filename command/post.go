@@ -50,7 +50,7 @@ func printPosts(w io.Writer, posts model.Posts, team *model.Team) {
 		w.Write([]byte(fmt.Sprintf("Posts in Qiita:Team (%s):\n", team.Name)))
 	}
 	for _, post := range posts {
-		w.Write([]byte(fmt.Sprintf("%s %s %s\n", post.Id, post.CreatedAt.FormatDate(), post.Title)))
+		w.Write([]byte(fmt.Sprintf("%s %s %s\n", post.ID, post.CreatedAt.FormatDate(), post.Title)))
 	}
 }
 

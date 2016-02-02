@@ -271,7 +271,7 @@ updated_at: 2000-01-01T09:00:00+09:00
 private: false
 coediting: false
 tags:
-  Ruby:
+- Ruby:
   - 0.0.1
 -->
 # Example title
@@ -304,7 +304,7 @@ updated_at: 2000-01-01T09:00:00+09:00
 private: false
 coediting: false
 tags:
-  Ruby:
+- Ruby:
   - 0.0.1
 -->
 # Example title in team
@@ -327,10 +327,10 @@ updated_at: 2000-01-01T09:00:00+09:00
 private: false
 coediting: false
 tags:
-  Ruby:
+- Ruby:
   - 0.0.1
-  NewTag:
-  - 1.0
+- NewTag:
+  - "1.0"
 -->
 # Example new title
 ## Example new body`), 664)
@@ -357,10 +357,10 @@ updated_at: 2016-02-01T21:51:42+09:00
 private: false
 coediting: false
 tags:
-  NewTag:
-  - "1.0"
-  Ruby:
+- Ruby:
   - 0.0.1
+- NewTag:
+  - "1.0"
 -->
 # Example new title
 ## Example new body`

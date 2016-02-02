@@ -1,29 +1,56 @@
 package model
 
+import "fmt"
+
 type Tags []Tag
 
 func (tags Tags) MarshalYAML() (data interface{}, err error) {
-	obj := make(map[string][]string)
-	for _, tag := range tags {
-		obj[tag.Name] = tag.Versions
+	arr := make([]interface{}, len(tags))
+	for i, tag := range tags {
+		if len(tag.Versions) == 0 {
+			arr[i] = tag.Name
+		} else {
+			obj := make(map[string][]string)
+			obj[tag.Name] = tag.Versions
+			arr[i] = obj
+		}
 	}
-	data = interface{}(obj)
+	data = interface{}(arr)
 	return
 }
 
 func (tags *Tags) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
-	var t map[string][]string
-	err = unmarshal(&t)
+	var ts []interface{}
+	err = unmarshal(&ts)
 	if err != nil {
 		return
 	}
 
-	for name, versions := range t {
-		tag := Tag{
-			Name:     name,
-			Versions: versions,
+	for _, t := range ts {
+		switch t := t.(type) {
+		default:
+			err = fmt.Errorf("unexpected type in tag: %s", t)
+			return
+		case string:
+			tag := Tag{
+				Name: t,
+			}
+			*tags = append(*tags, tag)
+		case map[interface{}]interface{}:
+			for n, v := range t {
+				name := n.(string)
+				vs := v.([]interface{})
+				versions := make([]string, len(vs))
+				for i, v := range vs {
+					versions[i] = fmt.Sprint(v)
+				}
+				tag := Tag{
+					Name:     name,
+					Versions: versions,
+				}
+				*tags = append(*tags, tag)
+			}
 		}
-		*tags = append(*tags, tag)
 	}
 
 	return
