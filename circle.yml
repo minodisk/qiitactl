@@ -9,12 +9,10 @@ dependencies:
 
 test:
   override:
-    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/.coverage ./
-    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/api.coverage ./api
-    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/command.coverage ./command
-    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/model.coverage ./model
+    - ./test-coverage.sh
+
+deployment:
+  master:
+    branch: master
   post:
-    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/.coverage -service=circle-ci -repotoken=$COVERALLS_TOKEN
-    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/api.coverage -service=circle-ci -repotoken=$COVERALLS_TOKEN
-    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/command.coverage -service=circle-ci -repotoken=$COVERALLS_TOKEN
-    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/model.coverage -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
