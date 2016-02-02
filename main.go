@@ -5,15 +5,16 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/joho/godotenv"
+	"github.com/minodisk/qiitactl/info"
 )
 
 func main() {
 	godotenv.Load()
 
 	app := cli.NewApp()
-	app.Name = "qiitactl"
-	app.Version = Version
-	app.Author = "minodisk"
+	app.Name = info.Name
+	app.Version = info.Version
+	app.Author = info.Author
 	app.Usage = "Controls the Qiita posts"
 
 	app.Flags = GlobalFlags

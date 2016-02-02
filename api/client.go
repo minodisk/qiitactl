@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/minodisk/qiitactl/info"
 )
 
 const (
@@ -49,9 +51,8 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
-func (c Client) process(method string, subDomain string, path string, data interface{}) (respBody []byte, err error) {
+func (c Client) Process(method string, subDomain string, path string, data interface{}) (respBody []byte, err error) {
 	url := c.BuildURL(subDomain, path)
-	// fmt.Println("->", method, url)
 
 	var reqBody io.Reader
 	if data != nil {
@@ -65,6 +66,7 @@ func (c Client) process(method string, subDomain string, path string, data inter
 	if err != nil {
 		return
 	}
+	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -77,20 +79,20 @@ func (c Client) process(method string, subDomain string, path string, data inter
 		return
 	}
 
-	if resp.StatusCode/100 != 2 {
-		e, err := NewError(respBody)
-		if err != nil {
-			return nil, err
-		}
-		err = e.Error()
-		return nil, err
+	if resp.StatusCode/100 == 2 {
+		return
 	}
 
+	e, err := NewError(respBody)
+	if err != nil {
+		return
+	}
+	err = e.Error()
 	return
 }
 
 func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.process("Post", subDomain, path, data)
+	body, err = c.Process("Post", subDomain, path, data)
 	return
 }
 
@@ -98,16 +100,16 @@ func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, 
 	if v != nil {
 		path = fmt.Sprintf("%s?%s", path, v.Encode())
 	}
-	body, err = c.process("GET", subDomain, path, nil)
+	body, err = c.Process("GET", subDomain, path, nil)
 	return
 }
 
 func (c Client) Patch(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.process("PATCH", subDomain, path, data)
+	body, err = c.Process("PATCH", subDomain, path, data)
 	return
 }
 
 func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.process("Delete", subDomain, path, data)
+	body, err = c.Process("Delete", subDomain, path, data)
 	return
 }
