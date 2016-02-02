@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// 出力時に必要に応じてローカルタイムに変換する
 type Time struct {
 	time.Time
 }
@@ -19,34 +20,38 @@ func (t *Time) UnmarshalJSON(b []byte) (err error) {
 	if err != nil {
 		return
 	}
-	ti, err := time.Parse(time.RFC3339, s)
-	t.Time = ti.Local()
+	t.Time, err = time.Parse(time.RFC3339, s)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (t *Time) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
-	var s string
-	err = unmarshal(&s)
-	if err != nil {
-		return
-	}
-	ti, err := time.Parse(time.RFC3339, s)
-	t.Time = ti.Local()
-	if err != nil {
-		return
-	}
-	return
-}
+// func (t *Time) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
+// 	var s string
+// 	err = unmarshal(&s)
+// 	if err != nil {
+// 		return
+// 	}
+// 	ti, err := time.Parse(time.RFC3339, s)
+// 	t.Time = ti.Local()
+// 	if err != nil {
+// 		return
+// 	}
+// 	return
+// }
 
-func (t Time) FormatDateTime() (s string) {
-	s = t.Time.Format(time.RFC3339)
+// func (t Time) FormatDateTime() (s string) {
+// 	s = t.Time.Format(time.RFC3339)
+// 	return
+// }
+
+func (t Time) MarshalYAML() (data interface{}, err error) {
+	data = t.Local().Format(time.RFC3339)
 	return
 }
 
 func (t Time) FormatDate() (s string) {
-	s = t.Time.Format("2006/01/02")
+	s = t.Local().Format("2006/01/02")
 	return
 }
