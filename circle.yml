@@ -9,6 +9,6 @@ dependencies:
 
 test:
   override:
-    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/coverage.out ./...
+    - go test -v -race -cover -coverprofile=$CIRCLE_ARTIFACTS/coverage.out
   post:
     - /home/ubuntu/bin/goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
