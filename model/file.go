@@ -35,9 +35,19 @@ func (file *File) FillPath(createdAt ITime, title string, team *Team) {
 	filename = strings.ToLower(filename)
 	filename = rHyphens.ReplaceAllString(filename, "-")
 	filename = strings.TrimRight(filename, "-")
-	filename = fmt.Sprintf("%s.md", filename)
 
-	file.Path = filepath.Join(dirname, filename)
+	var path string
+	for {
+		path = filepath.Join(dirname, fmt.Sprintf("%s.md", filename))
+		_, err := os.Stat(path)
+		// when not existing path, error occurs
+		if err != nil {
+			break
+		}
+		filename += "-"
+	}
+
+	file.Path = path
 }
 
 func (file *File) Save(post Post) (err error) {

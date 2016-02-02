@@ -5,21 +5,21 @@ import (
 	"github.com/minodisk/qiitactl/model"
 )
 
-func GenerateFile(c *cli.Context) {
-	err := func() (err error) {
-		teamID := c.String("team")
-		var team *model.Team
-		if teamID != "" {
-			team.ID = teamID
-		}
-
-		post := model.NewPost()
-		post.Title = c.String("title")
-		post.Team = team
-		err = post.Save()
-		return
-	}()
+func CmdGenerateFile(c *cli.Context) {
+	err := GenerateFile(c.String("team"), c.String("title"))
 	if err != nil {
 		printError(c, err)
 	}
+}
+
+func GenerateFile(teamID string, title string) (err error) {
+	var team *model.Team
+	if teamID != "" {
+		team.ID = teamID
+	}
+
+	post := model.NewPost(title, team)
+
+	err = post.Save()
+	return
 }
