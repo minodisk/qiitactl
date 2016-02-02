@@ -8,7 +8,8 @@ import (
 )
 
 func TestNewPostWithBytes_WrongMeta(t *testing.T) {
-	_, err := model.NewPostWithBytes([]byte(`XXXXXXXX
+	post := new(model.Post)
+	err := post.Decode([]byte(`XXXXXXXX
 <!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
@@ -27,14 +28,15 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`), "")
+`))
 	if err == nil {
 		t.Errorf("start without meta comment should return error")
 	}
 }
 
 func TestNewPostWithBytes_WrongTag(t *testing.T) {
-	_, err := model.NewPostWithBytes([]byte(`<!--
+	post := new(model.Post)
+	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -52,14 +54,15 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`), "")
+`))
 	if err == nil {
 		t.Errorf("should return error with non-object element in tags")
 	}
 }
 
 func TestNewPostWithBytes_WrongTitle(t *testing.T) {
-	_, err := model.NewPostWithBytes([]byte(`<!--
+	post := new(model.Post)
+	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -77,14 +80,15 @@ tags:
 ## Sub title
 # Main title
 Paragraph
-`), "")
+`))
 	if err == nil {
 		t.Errorf("should return error with non-object element in tags")
 	}
 }
 
 func TestNewPostWithBytes_CorrectText(t *testing.T) {
-	post, err := model.NewPostWithBytes([]byte(`<!--
+	post := new(model.Post)
+	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
 url: http://example.com/mypost
 created_at: 2013-12-10T12:29:14+09:00
@@ -102,7 +106,7 @@ tags:
 # Main title
 ## Sub title
 Paragraph
-`), "")
+`))
 	if err != nil {
 		t.Fatal(err)
 	}

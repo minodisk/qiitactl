@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"regexp"
+	"text/template"
 	"time"
 
 	"github.com/minodisk/qiitactl/api"
@@ -13,8 +15,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	postFileFormat = `<!--
+{{.Meta.Format}}
+-->
+# {{.Title}}
+{{.Body}}`
+)
+
 var (
 	rPost = regexp.MustCompile(`^(?ms:\n*<!--(.*)-->\n*# +(.*?)\n+(.*))$`)
+	tmpl  = func() (t *template.Template) {
+		t = template.New("postfile")
+		template.Must(t.Parse(postFileFormat))
+		return
+	}()
 )
 
 type Post struct {
@@ -35,7 +50,7 @@ func (post *Post) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 
-	post.InitFile("")
+	post.FillFilePath()
 	(*post) = Post(p)
 	return
 }
@@ -43,7 +58,7 @@ func (post *Post) UnmarshalJSON(data []byte) (err error) {
 func NewPost() (post Post) {
 	post.CreatedAt = Time{Time: time.Now()}
 	post.UpdatedAt = post.CreatedAt
-	post.InitFile("")
+	post.FillFilePath()
 	return
 }
 
@@ -52,11 +67,20 @@ func NewPostWithFile(path string) (post Post, err error) {
 	if err != nil {
 		return
 	}
-	post, err = NewPostWithBytes(b, path)
+	err = post.Decode(b)
+	if err != nil {
+		return
+	}
+	post.File.Path = path
 	return
 }
 
-func NewPostWithBytes(b []byte, path string) (post Post, err error) {
+func (post Post) Encode(w io.Writer) (err error) {
+	err = tmpl.Execute(w, post)
+	return
+}
+
+func (post *Post) Decode(b []byte) (err error) {
 	matched := rPost.FindSubmatch(b)
 	if len(matched) != 4 {
 		err = fmt.Errorf("wrong format")
@@ -69,16 +93,11 @@ func NewPostWithBytes(b []byte, path string) (post Post, err error) {
 	}
 	post.Title = string(bytes.TrimSpace(matched[2]))
 	post.Body = string(bytes.TrimSpace(matched[3]))
-	post.InitFile(path)
 	return
 }
 
-func (post *Post) InitFile(path string) {
-	if path == "" {
-		post.File.FillPath(post.CreatedAt, post.Title, post.Team)
-	} else {
-		post.File.Path = path
-	}
+func (post *Post) FillFilePath() {
+	post.File.FillPath(post.CreatedAt, post.Title, post.Team)
 }
 
 func (post Post) BelongsToTeam() (b bool) {

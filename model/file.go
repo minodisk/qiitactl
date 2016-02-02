@@ -6,24 +6,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"text/template"
 )
 
 const (
-	DirMine        = "mine"
-	postFileFormat = `<!--
-{{.Meta.Format}}
--->
-# {{.Title}}
-{{.Body}}`
+	DirMine = "mine"
 )
 
 var (
-	tmpl = func() (t *template.Template) {
-		t = template.New("postfile")
-		template.Must(t.Parse(postFileFormat))
-		return
-	}()
 	rInvalidFilename = regexp.MustCompile(`[^a-zA-Z0-9\-]+`)
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
@@ -64,7 +53,7 @@ func (file *File) Save(post Post) (err error) {
 	if err != nil {
 		return
 	}
-	err = tmpl.Execute(f, post)
+	err = post.Encode(f)
 	if err != nil {
 		return
 	}
