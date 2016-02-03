@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -182,7 +181,7 @@ func TestMain(m *testing.M) {
 					"rendered_body": "<h2>Example body in team</h2>",
 					"body": "## Example body in team",
 					"coediting": false,
-					"created_at": "2000-01-01T00:00:00+00:00",
+					"created_at": "2015-09-25T00:00:00+00:00",
 					"id": "4bd431809afb1bb99e4t",
 					"private": false,
 					"tags": [
@@ -194,8 +193,8 @@ func TestMain(m *testing.M) {
 						}
 					],
 					"title": "Example title in team",
-					"updated_at": "2000-01-01T00:00:00+00:00",
-					"url": "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f",
+					"updated_at": "2015-09-25T00:00:00+00:00",
+					"url": "https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t",
 					"user": {
 						"description": "Hello, world.",
 						"facebook_id": "yaotti",
@@ -375,7 +374,7 @@ func TestShowPosts(t *testing.T) {
 	if string(buf.Bytes()) != `Posts in Qiita:
 4bd431809afb1bb99e4f 2000/01/01 Example title
 Posts in Qiita:Team (Increments Inc.):
-4bd431809afb1bb99e4t 2000/01/01 Example title in team
+4bd431809afb1bb99e4t 2015/09/25 Example title in team
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
@@ -389,20 +388,13 @@ func TestFetchPosts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	filepath.Walk(model.DirMine, func(path string, info os.FileInfo, e error) (err error) {
-		if e != nil {
-			t.Fatal(e)
+	func() {
+		b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+		if err != nil {
+			t.Fatal(err)
 		}
-		if !info.IsDir() {
-			if path != fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine) {
-				t.Fatalf("wrong file is created: %s", path)
-			}
-			b, err := ioutil.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			actual := string(b)
-			expected := `<!--
+		actual := string(b)
+		expected := `<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -415,31 +407,22 @@ tags:
 -->
 # Example title
 ## Example body`
-			if actual != expected {
-				t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-			}
+		if actual != expected {
+			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 		}
-		return
-	})
+	}()
 
-	filepath.Walk("increments", func(path string, info os.FileInfo, e error) (err error) {
-		if e != nil {
-			t.Fatal(e)
+	func() {
+		b, err := ioutil.ReadFile("increments/2015/09/25-example-title-in-team.md")
+		if err != nil {
+			t.Fatal(err)
 		}
-		if !info.IsDir() {
-			if path != "increments/2000/01/01-example-title-in-team.md" {
-				t.Fatalf("wrong file is created: %s", path)
-			}
-			b, err := ioutil.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			actual := string(b)
-			expected := `<!--
+		actual := string(b)
+		expected := `<!--
 id: 4bd431809afb1bb99e4t
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
+url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
+created_at: 2015-09-25T09:00:00+09:00
+updated_at: 2015-09-25T09:00:00+09:00
 private: false
 coediting: false
 tags:
@@ -448,12 +431,10 @@ tags:
 -->
 # Example title in team
 ## Example body in team`
-			if actual != expected {
-				t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-			}
+		if actual != expected {
+			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 		}
-		return
-	})
+	}()
 }
 
 func TestUpdatePost(t *testing.T) {
@@ -480,7 +461,7 @@ tags:
   - "1.0"
 -->
 # Example edited title
-## Example edited body`), 664)
+## Example edited body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -513,6 +494,153 @@ tags:
 ## Example edited body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestTracingPostFileWithPostID(t *testing.T) {
+	defer cleanUp()
+
+	err := os.MkdirAll("mine/1990/07", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/1990/07/03-example-old-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 1990-07-03T09:00:00+09:00
+updated_at: 1990-07-03T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.0
+-->
+# Example old title
+## Example old body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile("mine/1990/07/03-example-old-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestTracingPostFilesWithPostIDs(t *testing.T) {
+	defer cleanUp()
+
+	err := os.MkdirAll("mine/1990/07", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/1990/07/03-example-old-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 1990-07-03T09:00:00+09:00
+updated_at: 1990-07-03T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.0
+-->
+# Example old title
+## Example old body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.MkdirAll("increments/1993/12", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("increments/1993/12/30-example-old-title-in-team.md", []byte(`<!--
+id: 4bd431809afb1bb99e4t
+url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
+created_at: 1993-12-30:22:11:31+09:00
+updated_at: 1993-12-30:22:11:31+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example old title in team
+## Example old body in team`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = command.FetchPosts(client)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile("mine/1990/07/03-example-old-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+
+	b, err = ioutil.ReadFile("increments/1993/12/30-example-old-title-in-team.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual = string(b)
+	expected = `<!--
+id: 4bd431809afb1bb99e4t
+url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
+created_at: 2015-09-25T09:00:00+09:00
+updated_at: 2015-09-25T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example title in team
+## Example body in team`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 	}
 }
 
