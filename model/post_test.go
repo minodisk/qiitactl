@@ -9,11 +9,8 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestEncodeWithNewPost(t *testing.T) {
-	post := model.NewPost("Example title", nil)
-	at := model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}
-	post.CreatedAt = at
-	post.UpdatedAt = at
+func TestPost_EncodeWithNewPost(t *testing.T) {
+	post := model.NewPost("Example title", &model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}, nil)
 	buf := bytes.NewBuffer([]byte{})
 	err := post.Encode(buf)
 	if err != nil {
@@ -36,7 +33,7 @@ tags: []
 	}
 }
 
-func TestDecodeWithWrongMeta(t *testing.T) {
+func TestPost_DecodeWithWrongMeta(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`XXXXXXXX
 <!--
@@ -63,7 +60,7 @@ Paragraph
 	}
 }
 
-func TestDecodeWithWrongTag(t *testing.T) {
+func TestPost_DecodeWithWrongTag(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
@@ -115,7 +112,7 @@ Paragraph
 	}
 }
 
-func TestDecodeWithCorrectMarkdown(t *testing.T) {
+func TestPost_DecodeWithCorrectMarkdown(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst

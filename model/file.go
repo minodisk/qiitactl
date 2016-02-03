@@ -51,6 +51,11 @@ func (file *File) FillPath(createdAt ITime, title string, team *Team) {
 }
 
 func (file *File) Save(post Post) (err error) {
+	if file.Path == "" {
+		err = EmptyPathError{}
+		return
+	}
+
 	dir := filepath.Dir(file.Path)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -67,5 +72,12 @@ func (file *File) Save(post Post) (err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+type EmptyPathError struct{}
+
+func (err EmptyPathError) Error() (msg string) {
+	msg = "file: can't save with empty path"
 	return
 }

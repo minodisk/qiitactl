@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	mux.HandleFunc("/api/v2", func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if auth != "Bearer XXXXXXXXXXXX" {
-			b, _ := json.Marshal(api.Error{
+			b, _ := json.Marshal(api.ResponseError{
 				Type:    "unauthorized",
 				Message: "Unauthorized",
 			})
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 		}
 		ua := r.Header.Get("User-Agent")
 		if !rUserAgent.MatchString(ua) {
-			b, _ := json.Marshal(api.Error{
+			b, _ := json.Marshal(api.ResponseError{
 				Type:    "bad_request",
 				Message: "Bad Request",
 			})
@@ -73,5 +73,25 @@ func TestProcess(t *testing.T) {
 	_, err := client.Process("OPTIONS", "", "", nil)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestResponseError(t *testing.T) {
+	err := api.ResponseError{
+		Type:    "not_found",
+		Message: "Not found",
+	}
+	if err.Error() != "Not found" {
+		t.Errorf("wrong Error: %s", err.Error())
+	}
+}
+
+func TestStatusError(t *testing.T) {
+	err := api.StatusError{
+		Code:    404,
+		Message: "404 Not Found",
+	}
+	if err.Error() != "404 Not Found" {
+		t.Errorf("wrong Error: %s", err.Error())
 	}
 }

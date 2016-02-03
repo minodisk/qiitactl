@@ -55,9 +55,12 @@ func (post *Post) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
-func NewPost(title string, team *Team) (post Post) {
-	post.CreatedAt = Time{Time: time.Now()}
-	post.UpdatedAt = post.CreatedAt
+func NewPost(title string, createdAt *Time, team *Team) (post Post) {
+	if createdAt == nil {
+		createdAt = &Time{Time: time.Now()}
+	}
+	post.CreatedAt = *createdAt
+	post.UpdatedAt = *createdAt
 	post.Title = title
 	post.Team = team
 	post.FillFilePath()

@@ -18,7 +18,7 @@ func GenerateFile(teamID string, title string) (err error) {
 		team.ID = teamID
 	}
 
-	post := model.NewPost(title, team)
+	post := model.NewPost(title, nil, team)
 
 	err = post.Save()
 	return

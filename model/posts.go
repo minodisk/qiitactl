@@ -15,15 +15,16 @@ const (
 type Posts []Post
 
 func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
+	subDomain := ""
+	if team != nil {
+		subDomain = team.ID
+	}
+
 	v := url.Values{}
 	v.Set("per_page", strconv.Itoa(perPage))
 	for page := 1; ; page++ {
 		v.Set("page", strconv.Itoa(page))
 
-		subDomain := ""
-		if team != nil {
-			subDomain = team.ID
-		}
 		body, err := client.Get(subDomain, "/authenticated_user/items", &v)
 		if err != nil {
 			return nil, err

@@ -99,7 +99,7 @@ func TestMain(m *testing.M) {
 				return
 			}
 			if string(b) == "" {
-				responseAPIError(w, 500, api.Error{
+				responseAPIError(w, 500, api.ResponseError{
 					Type:    "fatal",
 					Message: "empty body",
 				})
@@ -216,13 +216,13 @@ func TestMain(m *testing.M) {
 
 func responseError(w http.ResponseWriter, statusCode int, err error) {
 
-	responseAPIError(w, statusCode, api.Error{
+	responseAPIError(w, statusCode, api.ResponseError{
 		Type:    "error",
 		Message: err.Error(),
 	})
 }
 
-func responseAPIError(w http.ResponseWriter, statusCode int, err api.Error) {
+func responseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseError) {
 	w.WriteHeader(statusCode)
 	b, _ := json.Marshal(err)
 	w.Write(b)

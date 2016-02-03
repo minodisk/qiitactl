@@ -83,11 +83,17 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 		return
 	}
 
-	e, err := NewError(respBody)
-	if err != nil {
+	var respError ResponseError
+	err = json.Unmarshal(respBody, &respError)
+	if err == nil {
+		err = respError
 		return
 	}
-	err = e.Error()
+
+	err = StatusError{
+		Code:    resp.StatusCode,
+		Message: resp.Status,
+	}
 	return
 }
 
@@ -111,5 +117,25 @@ func (c Client) Patch(subDomain string, path string, data interface{}) (body []b
 
 func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, err error) {
 	body, err = c.Process("Delete", subDomain, path, data)
+	return
+}
+
+type ResponseError struct {
+	Type    string `json:"type"`
+	Message string `json:"message"`
+}
+
+func (err ResponseError) Error() (msg string) {
+	msg = err.Message
+	return
+}
+
+type StatusError struct {
+	Code    int
+	Message string
+}
+
+func (err StatusError) Error() (msg string) {
+	msg = err.Message
 	return
 }
