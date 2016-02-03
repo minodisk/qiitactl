@@ -55,6 +55,24 @@ func (post *Post) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+func FetchPost(client api.Client, team *Team, id string) (post Post, err error) {
+	subDomain := ""
+	if team != nil {
+		subDomain = team.ID
+	}
+	body, err := client.Get(subDomain, fmt.Sprintf("/items/%s", id), nil)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &post)
+	if err != nil {
+		return
+	}
+	post.Team = team
+	post.FillFilePath()
+	return
+}
+
 func NewPost(title string, createdAt *Time, team *Team) (post Post) {
 	if createdAt == nil {
 		createdAt = &Time{Time: time.Now()}

@@ -43,17 +43,21 @@ var Commands = []cli.Command{
 		Usage: "Display resources",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
-			// {
-			// 	Name:   "post",
-			// 	Usage:  "Print detail of a post in Qitta",
-			// 	Action: command.ShowPost,
-			// 	Flags: []cli.Flag{
-			// 		cli.StringFlag{
-			// 			Name:  "id, i",
-			// 			Usage: "The ID of the post to be printed detail",
-			// 		},
-			// 	},
-			// },
+			{
+				Name:   "post",
+				Usage:  "Print detail of a post in Qitta",
+				Action: command.CmdShowPost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "id, i",
+						Usage: "The ID of the post to be printed detail",
+					},
+					cli.StringFlag{
+						Name:  "filename, f",
+						Usage: "The filename of the post to be created",
+					},
+				},
+			},
 			{
 				Name:   "posts",
 				Usage:  "Print a list of posts in Qiita",
@@ -67,17 +71,21 @@ var Commands = []cli.Command{
 		Usage: "Download resources from Qiita to current working directory",
 		Flags: []cli.Flag{},
 		Subcommands: []cli.Command{
-			// {
-			// 	Name:   "post",
-			// 	Usage:  "Download a post as a file",
-			// 	Action: command.FetchPost,
-			// 	Flags: []cli.Flag{
-			// 		cli.StringFlag{
-			// 			Name:  "id, i",
-			// 			Usage: "The ID of the post to be downloaded",
-			// 		},
-			// 	},
-			// },
+			{
+				Name:   "post",
+				Usage:  "Download a post as a file",
+				Action: command.CmdFetchPost,
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "id, i",
+						Usage: "The ID of the post to be downloaded",
+					},
+					cli.StringFlag{
+						Name:  "filename, f",
+						Usage: "The filename of the post to be created",
+					},
+				},
+			},
 			{
 				Name:   "posts",
 				Usage:  "Download posts as files",

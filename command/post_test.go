@@ -90,6 +90,44 @@ func TestMain(m *testing.M) {
 	})
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
+		case "GET":
+			w.Write([]byte(`{
+					"rendered_body": "<h2>Example body</h2>",
+					"body": "## Example body",
+					"coediting": false,
+					"created_at": "2000-01-01T00:00:00+00:00",
+					"id": "4bd431809afb1bb99e4f",
+					"private": false,
+					"tags": [
+						{
+							"name": "Ruby",
+							"versions": [
+								"0.0.1"
+							]
+						}
+					],
+					"title": "Example title",
+					"updated_at": "2000-01-01T00:00:00+00:00",
+					"url": "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f",
+					"user": {
+						"description": "Hello, world.",
+						"facebook_id": "yaotti",
+						"followees_count": 100,
+						"followers_count": 200,
+						"github_login_name": "yaotti",
+						"id": "yaotti",
+						"items_count": 300,
+						"linkedin_id": "yaotti",
+						"location": "Tokyo, Japan",
+						"name": "Hiroshige Umino",
+						"organization": "Increments Inc",
+						"permanent_id": 1,
+						"profile_image_url": "https://si0.twimg.com/profile_images/2309761038/1ijg13pfs0dg84sk2y0h_normal.jpeg",
+						"twitter_screen_name": "yaotti",
+						"website_url": "http://yaotti.hatenablog.com"
+					}
+				}`))
+
 		case "PATCH":
 			defer r.Body.Close()
 
@@ -208,8 +246,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Clean up trashes
-	os.RemoveAll(model.DirMine)
-	os.RemoveAll("increments")
+	// cleanUp()
 
 	os.Exit(code)
 }
@@ -226,6 +263,106 @@ func responseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseErr
 	w.WriteHeader(statusCode)
 	b, _ := json.Marshal(err)
 	w.Write(b)
+}
+
+func TestFetchPostWithID(t *testing.T) {
+	defer cleanUp()
+
+	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestFetchPostWithFilename(t *testing.T) {
+	defer cleanUp()
+
+	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = command.FetchPost(client, "", "mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestShowPostWithID(t *testing.T) {
+	buf := bytes.NewBuffer([]byte{})
+	err := command.ShowPost(client, buf, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+` {
+		t.Errorf("written text is wrong: %s", buf.Bytes())
+	}
+}
+
+func TestShowPostWithFilename(t *testing.T) {
+	defer cleanUp()
+
+	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	err = command.ShowPost(client, buf, "", "mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+` {
+		t.Errorf("written text is wrong: %s", buf.Bytes())
+	}
 }
 
 func TestShowPosts(t *testing.T) {
@@ -245,6 +382,8 @@ Posts in Qiita:Team (Increments Inc.):
 }
 
 func TestFetchPosts(t *testing.T) {
+	defer cleanUp()
+
 	err := command.FetchPosts(client)
 	if err != nil {
 		t.Fatal(err)
@@ -318,8 +457,16 @@ tags:
 }
 
 func TestUpdatePost(t *testing.T) {
+	defer cleanUp()
+
 	path := fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine)
-	err := ioutil.WriteFile(path, []byte(`<!--
+
+	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ioutil.WriteFile(path, []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -332,8 +479,8 @@ tags:
 - NewTag:
   - "1.0"
 -->
-# Example new title
-## Example new body`), 664)
+# Example edited title
+## Example edited body`), 664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,9 +509,14 @@ tags:
 - NewTag:
   - "1.0"
 -->
-# Example new title
-## Example new body`
+# Example edited title
+## Example edited body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
+}
+
+func cleanUp() {
+	os.RemoveAll("mine")
+	os.RemoveAll("increments")
 }

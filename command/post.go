@@ -10,6 +10,32 @@ import (
 	"github.com/minodisk/qiitactl/model"
 )
 
+func CmdShowPost(c *cli.Context) {
+	client, err := api.NewClient(nil)
+	if err != nil {
+		printError(c, err)
+		return
+	}
+
+	err = ShowPost(client, os.Stdout, c.String("id"), c.String("filename"))
+	if err != nil {
+		printError(c, err)
+	}
+}
+
+func ShowPost(client api.Client, w io.Writer, id, filename string) (err error) {
+	id, err = getID(id, filename)
+	if err != nil {
+		return
+	}
+	post, err := model.FetchPost(client, nil, id)
+	if err != nil {
+		return
+	}
+	err = printPost(w, post)
+	return
+}
+
 func CmdShowPosts(c *cli.Context) {
 	client, err := api.NewClient(nil)
 	if err != nil {
@@ -27,7 +53,10 @@ func ShowPosts(client api.Client, w io.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	printPosts(w, posts, nil)
+	err = printPosts(w, posts, nil)
+	if err != nil {
+		return
+	}
 
 	teams, err := model.FetchTeams(client)
 	if err != nil {
@@ -38,22 +67,61 @@ func ShowPosts(client api.Client, w io.Writer) (err error) {
 		if err != nil {
 			return
 		}
-		printPosts(w, posts, &team)
+		err = printPosts(w, posts, &team)
+		if err != nil {
+			return
+		}
 	}
 	return
 }
 
-func printPosts(w io.Writer, posts model.Posts, team *model.Team) {
+func printPosts(w io.Writer, posts model.Posts, team *model.Team) (err error) {
 	if team == nil {
-		w.Write([]byte("Posts in Qiita:\n"))
+		_, err = w.Write([]byte("Posts in Qiita:\n"))
 	} else {
-		w.Write([]byte(fmt.Sprintf("Posts in Qiita:Team (%s):\n", team.Name)))
+		_, err = w.Write([]byte(fmt.Sprintf("Posts in Qiita:Team (%s):\n", team.Name)))
+	}
+	if err != nil {
+		return
 	}
 	for _, post := range posts {
-		w.Write([]byte(fmt.Sprintf("%s %s %s\n", post.ID, post.CreatedAt.FormatDate(), post.Title)))
+		err = printPost(w, post)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func printPost(w io.Writer, post model.Post) (err error) {
+	_, err = w.Write([]byte(fmt.Sprintf("%s %s %s\n", post.ID, post.CreatedAt.FormatDate(), post.Title)))
+	return
+}
+
+func CmdFetchPost(c *cli.Context) {
+	client, err := api.NewClient(nil)
+	if err != nil {
+		printError(c, err)
+		return
+	}
+	err = FetchPost(client, c.String("id"), c.String("filename"))
+	if err != nil {
+		printError(c, err)
 	}
 }
 
+func FetchPost(client api.Client, id, filename string) (err error) {
+	id, err = getID(id, filename)
+	if err != nil {
+		return
+	}
+	post, err := model.FetchPost(client, nil, id)
+	if err != nil {
+		return
+	}
+	err = post.Save()
+	return
+}
 func CmdFetchPosts(c *cli.Context) {
 	client, err := api.NewClient(nil)
 	if err != nil {
@@ -64,6 +132,23 @@ func CmdFetchPosts(c *cli.Context) {
 	if err != nil {
 		printError(c, err)
 	}
+}
+
+func getID(id, filename string) (i string, err error) {
+	if id != "" {
+		i = id
+		return
+	}
+	if filename == "" {
+		err = fmt.Errorf("fetch post: id or filename is required")
+		return
+	}
+	post, err := model.NewPostWithFile(filename)
+	if err != nil {
+		return
+	}
+	i = post.ID
+	return
 }
 
 func FetchPosts(client api.Client) (err error) {
