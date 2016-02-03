@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -213,6 +214,11 @@ func UpdatePost(client api.Client, filename string) (err error) {
 		return
 	}
 	err = post.Update(client)
+	if err != nil {
+		return
+	}
+	log.Println(post)
+	err = post.Save()
 	return
 }
 
