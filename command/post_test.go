@@ -245,7 +245,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Clean up trashes
-	// cleanUp()
+	cleanUp()
 
 	os.Exit(code)
 }

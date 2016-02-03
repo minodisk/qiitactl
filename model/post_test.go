@@ -246,7 +246,7 @@ func TestFetchPost_StatusError(t *testing.T) {
 	}
 }
 
-func TestPost_Save(t *testing.T) {
+func TestPostSave(t *testing.T) {
 	post := model.NewPost("Example Title 0", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
 	err := post.Save()
 	if err != nil {
@@ -278,19 +278,7 @@ tags: []
 	}()
 }
 
-func TestPost_SaveError(t *testing.T) {
-	post := model.Post{}
-	err := post.Save()
-	if err == nil {
-		t.Fatal("error should occur")
-	}
-	_, ok := err.(model.EmptyPathError)
-	if !ok {
-		t.Fatal("empty path error should occur")
-	}
-}
-
-func TestPost_EncodeWithNewPost(t *testing.T) {
+func TestPostEncodeWithNewPost(t *testing.T) {
 	post := model.NewPost("Example title", &model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}, nil)
 	buf := bytes.NewBuffer([]byte{})
 	err := post.Encode(buf)
@@ -314,7 +302,7 @@ tags: []
 	}
 }
 
-func TestPost_DecodeWithWrongMeta(t *testing.T) {
+func TestPostDecodeWithWrongMeta(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`XXXXXXXX
 <!--
@@ -341,7 +329,7 @@ Paragraph
 	}
 }
 
-func TestPost_DecodeWithWrongTag(t *testing.T) {
+func TestPostDecodeWithWrongTag(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
@@ -393,7 +381,7 @@ Paragraph
 	}
 }
 
-func TestPost_DecodeWithCorrectMarkdown(t *testing.T) {
+func TestPostDecodeWithCorrectMarkdown(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst

@@ -91,7 +91,7 @@ func FetchPost(client api.Client, team *Team, id string) (post Post, err error) 
 	return
 }
 
-func (post Post) Update(client api.Client) (err error) {
+func (post *Post) Update(client api.Client) (err error) {
 	subDomain := ""
 	if post.Team != nil {
 		subDomain = post.Team.ID
@@ -100,7 +100,7 @@ func (post Post) Update(client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(body, &post)
+	err = json.Unmarshal(body, post)
 	if err != nil {
 		return
 	}
@@ -113,11 +113,6 @@ func (post Post) Delete(client api.Client) (err error) {
 
 func (post Post) Save() (err error) {
 	path := post.CreatePath()
-	if path == "" {
-		err = EmptyPathError{}
-		return
-	}
-
 	dir := filepath.Dir(path)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -206,12 +201,5 @@ func findPath(id string) (pathes []string) {
 		}
 		return
 	})
-	return
-}
-
-type EmptyPathError struct{}
-
-func (err EmptyPathError) Error() (msg string) {
-	msg = "file: can't save with empty path"
 	return
 }
