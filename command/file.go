@@ -12,7 +12,9 @@ func GenerateFile(c *cli.Context, client api.Client) (err error) {
 
 	var team *model.Team
 	if teamID != "" {
-		team.ID = teamID
+		team = &model.Team{
+			ID: teamID,
+		}
 	}
 	post := model.NewPost(title, nil, team)
 	err = post.Save()

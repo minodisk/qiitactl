@@ -13,7 +13,7 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestGenerateFile(t *testing.T) {
+func TestGenerateFileInMine(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -23,7 +23,7 @@ func TestGenerateFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	matched, err := filepath.Glob(fmt.Sprintf("%s/*/*/*.md", model.DirMine))
+	matched, err := filepath.Glob("*/*/*/*.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,31 @@ func TestGenerateFile(t *testing.T) {
 		t.Fatalf("wrong number of files: %d", len(matched))
 	}
 	actual := matched[0]
-	expected := fmt.Sprintf("%s/%s-example-title.md", model.DirMine, time.Now().Format("2006/01/02"))
+	expected := fmt.Sprintf("mine/%s-example-title.md", time.Now().Format("2006/01/02"))
+	if actual != expected {
+		t.Errorf("wrong path: expected %s, but actual %s", expected, actual)
+	}
+}
+
+func TestGenerateFileInTeam(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
+	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title", "-T", "increments"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	matched, err := filepath.Glob("*/*/*/*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matched) != 1 {
+		t.Fatalf("wrong number of files: %d", len(matched))
+	}
+	actual := matched[0]
+	expected := fmt.Sprintf("increments/%s-example-title.md", time.Now().Format("2006/01/02"))
 	if actual != expected {
 		t.Errorf("wrong path: expected %s, but actual %s", expected, actual)
 	}
@@ -51,7 +75,7 @@ func TestGenerateUniqueFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	matched, err := filepath.Glob(fmt.Sprintf("%s/*/*/*.md", model.DirMine))
+	matched, err := filepath.Glob("*/*/*/*.md")
 	if err != nil {
 		t.Fatal(err)
 	}
