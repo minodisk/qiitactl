@@ -40,6 +40,7 @@ func prefix(pre, text string) (s string) {
 }
 
 func CleanUp() {
+	os.Unsetenv("QIITA_ACCESS_TOKEN")
 	os.RemoveAll("mine")
 	os.RemoveAll("increments")
 }

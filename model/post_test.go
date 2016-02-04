@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -339,6 +340,10 @@ func TestPostUpdateWithEmptyID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
 	client, err := api.NewClient(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -433,6 +438,10 @@ func TestPostDeleteWithEmptyID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
 	client, err := api.NewClient(nil)
 	if err != nil {
 		t.Fatal(err)

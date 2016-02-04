@@ -44,7 +44,7 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 
 	c.Token = os.Getenv(envAccessToken)
 	if c.Token == "" {
-		err = fmt.Errorf("publish personal access token at https://qiita.com/settings/applications, then set environment variable as %s", envAccessToken)
+		err = EmptyTokenError{}
 		return
 	}
 	c.httpClient = &http.Client{}
@@ -86,17 +86,24 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 		return
 	}
 
-	var respError ResponseError
-	err = json.Unmarshal(respBody, &respError)
-	if err == nil {
-		err = respError
+	switch resp.StatusCode {
+	case 401:
+		err = WrongTokenError{}
+		return
+	default:
+		var respError ResponseError
+		err = json.Unmarshal(respBody, &respError)
+		if err == nil {
+			err = respError
+			return
+		}
+		err = StatusError{
+			Code:    resp.StatusCode,
+			Message: resp.Status,
+		}
 		return
 	}
 
-	err = StatusError{
-		Code:    resp.StatusCode,
-		Message: resp.Status,
-	}
 	return
 }
 
@@ -120,6 +127,20 @@ func (c Client) Patch(subDomain string, path string, data interface{}) (body []b
 
 func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
 	body, header, err = c.Process("DELETE", subDomain, path, data)
+	return
+}
+
+type EmptyTokenError struct{}
+
+func (err EmptyTokenError) Error() (msg string) {
+	msg = fmt.Sprintf("empty token: publish personal access token at https://qiita.com/settings/applications, then set environment variable as %s", envAccessToken)
+	return
+}
+
+type WrongTokenError struct{}
+
+func (err WrongTokenError) Error() (msg string) {
+	msg = fmt.Sprintf("wrong token: publish personal access token at https://qiita.com/settings/applications, then set environment variable as %s", envAccessToken)
 	return
 }
 
