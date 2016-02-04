@@ -266,6 +266,6 @@ func (post *Post) Decode(b []byte) (err error) {
 type EmptyIDError struct{}
 
 func (err EmptyIDError) Error() (msg string) {
-	msg = "post: ID is empty"
+	msg = "empty ID"
 	return
 }

@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -781,5 +782,12 @@ Paragraph
 	}
 	if post.Body != "## Sub title\nParagraph" {
 		t.Errorf("wrong Body: %s", post.Body)
+	}
+}
+
+func TestEmptyIDError(t *testing.T) {
+	err := model.EmptyIDError{}
+	if !strings.HasPrefix(err.Error(), "empty ID") {
+		t.Errorf("wrong error: %s", err.Error())
 	}
 }
