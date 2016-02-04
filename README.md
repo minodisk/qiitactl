@@ -4,14 +4,49 @@ Command line interface to manage the posts in Qitta.
 
 ## Description
 
+`qiitactl` makes it possible to CRUD posts of Qiita in your terminal.
+
+`qiitactl` fetches posts from Qiita and write it as markdown file to current working directory. Editing the file in any editor you like, then `qiitactl update post -f path/to/file.md`, the post in Qiita will be updated. You can also generate a new file for post, create a new post and delete a post with this tool.
+
 ## Usage
+
+### Preparing for use
+
+1. Create a token at https://qiita.com/settings/applications .
+2. Set the `QIITA_ACCESS_TOKEN` environment variable to created token.
+
+### Fetch all posts
+
+```bash
+qiitactl fetch posts
+```
+
+### Update a post
+
+```bash
+qiitactl update post -f path/to/file.md
+```
+
+### Create a new post
+
+```bash
+qiitactl generate file -t "The title of new post"
+vim path/to/file.md
+qiitactl create post -f path/to/file.md
+```
+
+### Others
+
+```bash
+qiitactl help
+```
 
 ## Install
 
 To install, use `go get`:
 
 ```bash
-$ go get -d github.com/minodisk/qiitactl
+go get -d github.com/minodisk/qiitactl
 ```
 
 ## Contribution
