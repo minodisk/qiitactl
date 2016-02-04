@@ -25,7 +25,7 @@ var Commands = []cli.Command{
 			{
 				Name:   "file",
 				Usage:  "Generate a new markdown file for a new post",
-				Action: command.CmdGenerateFile,
+				Action: command.GenerateFile,
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "title, t",
@@ -154,7 +154,7 @@ var Commands = []cli.Command{
 	},
 }
 
-func NewApp() (app *cli.App) {
+func GenerateApp() (app *cli.App) {
 	app = cli.NewApp()
 	app.Name = info.Name
 	app.Version = info.Version

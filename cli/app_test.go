@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewApp(t *testing.T) {
-	app := cli.NewApp()
+	app := cli.GenerateApp()
 	err := app.Run([]string{"qiitactl"})
 	if err != nil {
 		t.Error(err)

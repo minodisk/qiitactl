@@ -9,6 +9,6 @@ import (
 
 func main() {
 	godotenv.Load()
-	app := cli.NewApp()
+	app := cli.GenerateApp()
 	app.Run(os.Args)
 }
