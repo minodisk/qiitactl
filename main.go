@@ -18,6 +18,6 @@ func main() {
 		return
 	}
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	app.Run(os.Args)
 }

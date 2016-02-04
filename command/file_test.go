@@ -17,7 +17,7 @@ func TestGenerateFile(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
@@ -41,12 +41,12 @@ func TestGenerateUniqueFile(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
-	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
 	}

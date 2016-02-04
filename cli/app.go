@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
@@ -11,8 +10,9 @@ import (
 	"github.com/minodisk/qiitactl/info"
 )
 
-func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
+func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (app *cli.App) {
 	app = cli.NewApp()
+	app.Writer = outWriter
 	app.Name = info.Name
 	app.Version = info.Version
 	app.Author = info.Author
@@ -32,7 +32,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "file",
 					Usage:  "Generate a new markdown file for a new post",
-					Action: partialize(command.GenerateFile, client),
+					Action: partialize(command.GenerateFile, client, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "title, t",
@@ -54,7 +54,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "post",
 					Usage:  "Print detail of a post in Qitta",
-					Action: partializeWithWriter(command.ShowPost, client, w),
+					Action: partializeWithWriter(command.ShowPost, client, outWriter, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "id, i",
@@ -69,7 +69,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "posts",
 					Usage:  "Print a list of posts in Qiita",
-					Action: partializeWithWriter(command.ShowPosts, client, w),
+					Action: partializeWithWriter(command.ShowPosts, client, outWriter, errWriter),
 					Flags:  []cli.Flag{},
 				},
 			},
@@ -82,7 +82,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "post",
 					Usage:  "Download a post as a file",
-					Action: partialize(command.FetchPost, client),
+					Action: partialize(command.FetchPost, client, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "id, i",
@@ -97,7 +97,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "posts",
 					Usage:  "Download posts as files",
-					Action: partialize(command.FetchPosts, client),
+					Action: partialize(command.FetchPosts, client, errWriter),
 					Flags:  []cli.Flag{},
 				},
 			},
@@ -110,7 +110,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "post",
 					Usage:  "Create a post",
-					Action: partialize(command.CreatePost, client),
+					Action: partialize(command.CreatePost, client, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "filename, f",
@@ -136,7 +136,7 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "post",
 					Usage:  "Update a post",
-					Action: partialize(command.UpdatePost, client),
+					Action: partialize(command.UpdatePost, client, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "filename, f",
@@ -154,43 +154,41 @@ func GenerateApp(client api.Client, w io.Writer) (app *cli.App) {
 				{
 					Name:   "post",
 					Usage:  "Delete a post",
-					Action: partialize(command.DeletePost, client),
+					Action: partialize(command.DeletePost, client, errWriter),
 					Flags:  []cli.Flag{},
 				},
 			},
 		},
 	}
-	app.CommandNotFound = commandNotFound
+	app.CommandNotFound = func(c *cli.Context, command string) {
+		fmt.Fprintf(errWriter, "%s: '%s' is not a %s command. See '%s --help'.", c.App.Name, command, c.App.Name, c.App.Name)
+		// os.Exit(2)
+	}
 	return
 }
 
-func commandNotFound(c *cli.Context, command string) {
-	fmt.Fprintf(os.Stderr, "%s: '%s' is not a %s command. See '%s --help'.", c.App.Name, command, c.App.Name, c.App.Name)
-	os.Exit(2)
-}
-
-func partialize(cmdFunc func(*cli.Context, api.Client) error, client api.Client) func(ctx *cli.Context) {
+func partialize(cmdFunc func(*cli.Context, api.Client) error, client api.Client, errWriter io.Writer) func(ctx *cli.Context) {
 	return func(ctx *cli.Context) {
 		err := cmdFunc(ctx, client)
 		if err != nil {
-			printError(ctx, err)
+			printError(ctx, errWriter, err)
 		}
 	}
 }
 
-func partializeWithWriter(cmdFunc func(*cli.Context, api.Client, io.Writer) error, client api.Client, w io.Writer) func(ctx *cli.Context) {
+func partializeWithWriter(cmdFunc func(*cli.Context, api.Client, io.Writer) error, client api.Client, outWriter io.Writer, errWriter io.Writer) func(ctx *cli.Context) {
 	return func(ctx *cli.Context) {
-		err := cmdFunc(ctx, client, w)
+		err := cmdFunc(ctx, client, outWriter)
 		if err != nil {
-			printError(ctx, err)
+			printError(ctx, errWriter, err)
 		}
 	}
 }
 
-func printError(ctx *cli.Context, err error) {
+func printError(ctx *cli.Context, w io.Writer, err error) {
 	if ctx.GlobalBool("debug") {
 		panic(err)
 	} else {
-		fmt.Println(err)
+		fmt.Fprint(w, err)
 	}
 }

@@ -268,7 +268,7 @@ func TestFetchPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
@@ -322,7 +322,7 @@ tags:
 		t.Fatal(err)
 	}
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
@@ -356,7 +356,7 @@ func TestShowPostWithID(t *testing.T) {
 	defer testutil.CleanUp()
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf)
+	app := cli.GenerateApp(client, buf, os.Stderr)
 	err := app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
@@ -394,7 +394,7 @@ tags:
 	}
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf)
+	app := cli.GenerateApp(client, buf, os.Stderr)
 	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
@@ -411,7 +411,7 @@ func TestShowPosts(t *testing.T) {
 	defer testutil.CleanUp()
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf)
+	app := cli.GenerateApp(client, buf, os.Stderr)
 	err := app.Run([]string{"qiitactl", "show", "posts"})
 	if err != nil {
 		t.Fatal(err)
@@ -430,7 +430,7 @@ func TestFetchPosts(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err := app.Run([]string{"qiitactl", "fetch", "posts"})
 	if err != nil {
 		t.Fatal(err)
@@ -512,7 +512,7 @@ tags:
 		t.Fatal(err)
 	}
 
-	app := cli.GenerateApp(client, os.Stdout)
+	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
