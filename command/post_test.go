@@ -70,8 +70,10 @@ func TestMain(m *testing.M) {
 				}
 			]`
 			} else {
-				body = "[]"
+				testutil.ResponseError(w, 500, fmt.Errorf("shouldn't access over total count"))
+				return
 			}
+			w.Header().Set("Total-Count", fmt.Sprint(1))
 			w.Write([]byte(body))
 		default:
 			w.WriteHeader(405)
@@ -292,8 +294,10 @@ func TestMain(m *testing.M) {
 				}
 			]`
 		} else {
-			body = "[]"
+			testutil.ResponseError(w, 500, fmt.Errorf("shouldn't access over total count"))
+			return
 		}
+		w.Header().Set("Total-Count", fmt.Sprint(1))
 		w.Write([]byte(body))
 	})
 	serverTeam = httptest.NewServer(mux)

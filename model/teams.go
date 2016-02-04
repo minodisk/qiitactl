@@ -9,7 +9,7 @@ import (
 type Teams []Team
 
 func FetchTeams(client api.Client) (teams Teams, err error) {
-	body, err := client.Get("", "/teams", nil)
+	body, _, err := client.Get("", "/teams", nil)
 	if err != nil {
 		return
 	}

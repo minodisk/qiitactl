@@ -51,14 +51,14 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
-func (c Client) Process(method string, subDomain string, path string, data interface{}) (respBody []byte, err error) {
+func (c Client) Process(method string, subDomain string, path string, data interface{}) (respBody []byte, respHeader http.Header, err error) {
 	url := c.BuildURL(subDomain, path)
 
 	var reqBody io.Reader
 	if data != nil {
 		b, err := json.Marshal(data)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		reqBody = bytes.NewBuffer(b)
 	}
@@ -72,6 +72,9 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	if err != nil {
 		return
 	}
+
+	respHeader = resp.Header
+
 	defer resp.Body.Close()
 
 	respBody, err = ioutil.ReadAll(resp.Body)
@@ -97,26 +100,26 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	return
 }
 
-func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.Process("POST", subDomain, path, data)
+func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
+	body, header, err = c.Process("POST", subDomain, path, data)
 	return
 }
 
-func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, err error) {
+func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, header http.Header, err error) {
 	if v != nil {
 		path = fmt.Sprintf("%s?%s", path, v.Encode())
 	}
-	body, err = c.Process("GET", subDomain, path, nil)
+	body, header, err = c.Process("GET", subDomain, path, nil)
 	return
 }
 
-func (c Client) Patch(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.Process("PATCH", subDomain, path, data)
+func (c Client) Patch(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
+	body, header, err = c.Process("PATCH", subDomain, path, data)
 	return
 }
 
-func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.Process("DELETE", subDomain, path, data)
+func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
+	body, header, err = c.Process("DELETE", subDomain, path, data)
 	return
 }
 

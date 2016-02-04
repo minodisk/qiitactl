@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/minodisk/qiitactl/api"
+	"github.com/minodisk/qiitactl/testutil"
 )
 
 var (
@@ -65,12 +66,13 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// clean up
+	testutil.CleanUp()
 
 	os.Exit(code)
 }
 
 func TestProcess(t *testing.T) {
-	_, err := client.Process("OPTIONS", "", "", nil)
+	_, _, err := client.Process("OPTIONS", "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

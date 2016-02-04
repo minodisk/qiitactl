@@ -25,7 +25,7 @@ func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 	for page := 1; ; page++ {
 		v.Set("page", strconv.Itoa(page))
 
-		body, err := client.Get(subDomain, "/authenticated_user/items", &v)
+		body, header, err := client.Get(subDomain, "/authenticated_user/items", &v)
 		if err != nil {
 			return nil, err
 		}
@@ -35,14 +35,18 @@ func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 		if err != nil {
 			return nil, err
 		}
-		if len(ps) == 0 {
+		posts = append(posts, ps...)
+
+		totalCount, err := strconv.Atoi(header.Get("Total-Count"))
+		if err != nil {
+			return nil, err
+		}
+		if perPage*page >= totalCount {
 			break
 		}
-		posts = append(posts, ps...)
 	}
 	for i, post := range posts {
 		post.Team = team
-		// post.FillFilePath()
 		posts[i] = post
 	}
 	return

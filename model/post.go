@@ -75,7 +75,7 @@ func (post *Post) Create(client api.Client) (err error) {
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, err := client.Post(subDomain, "/items", post)
+	body, _, err := client.Post(subDomain, "/items", post)
 	if err != nil {
 		return
 	}
@@ -91,7 +91,7 @@ func FetchPost(client api.Client, team *Team, id string) (post Post, err error) 
 	if team != nil {
 		subDomain = team.ID
 	}
-	body, err := client.Get(subDomain, fmt.Sprintf("/items/%s", id), nil)
+	body, _, err := client.Get(subDomain, fmt.Sprintf("/items/%s", id), nil)
 	if err != nil {
 		return
 	}
@@ -113,7 +113,7 @@ func (post *Post) Update(client api.Client) (err error) {
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, err := client.Patch(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
+	body, _, err := client.Patch(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
 	if err != nil {
 		return
 	}
@@ -134,7 +134,7 @@ func (post *Post) Delete(client api.Client) (err error) {
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, err := client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
+	body, _, err := client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
 	if err != nil {
 		return
 	}

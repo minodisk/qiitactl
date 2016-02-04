@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -15,6 +16,82 @@ import (
 	"github.com/minodisk/qiitactl/model"
 	"github.com/minodisk/qiitactl/testutil"
 )
+
+func TestFetchPostsTotalCount(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			w.WriteHeader(405)
+			b, _ := json.Marshal(api.ResponseError{"method_not_allowed", "Method Not Allowed"})
+			w.Write(b)
+			return
+		}
+		total := 1422
+		q := r.URL.Query()
+		perPage, err := strconv.Atoi(q.Get("per_page"))
+		if err != nil {
+			perPage = 10
+		}
+		page, err := strconv.Atoi(q.Get("page"))
+		if err != nil {
+			page = 1
+		}
+
+		var posts []model.Post
+
+		from := perPage*(page-1) + 1
+		if from <= total {
+			to := perPage * page
+			if to > total {
+				to = total
+			}
+			for i := from; i <= to; i++ {
+				post := model.Post{Meta: model.Meta{ID: fmt.Sprint(i)}}
+				posts = append(posts, post)
+			}
+		} else {
+			testutil.ResponseError(w, 500, fmt.Errorf("shouldn't access over total count"))
+			return
+		}
+
+		b, _ := json.Marshal(posts)
+		w.Header().Set("Total-Count", fmt.Sprint(total))
+		w.Write(b)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	team := model.Team{
+		Active: true,
+		ID:     "increments",
+		Name:   "Increments Inc",
+	}
+	posts, err := model.FetchPosts(client, &team)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(posts) != 1422 {
+		t.Errorf("wrong posts length: %d", len(posts))
+	}
+}
 
 func TestFetchPosts(t *testing.T) {
 	testutil.CleanUp()
@@ -69,8 +146,10 @@ func TestFetchPosts(t *testing.T) {
 				}
 			]`
 		} else {
-			body = "[]"
+			testutil.ResponseError(w, 500, fmt.Errorf("shouldn't access over total count"))
+			return
 		}
+		w.Header().Set("Total-Count", fmt.Sprint(1))
 		w.Write([]byte(body))
 	})
 
