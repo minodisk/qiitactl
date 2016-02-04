@@ -155,7 +155,12 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 					Name:   "post",
 					Usage:  "Delete a post",
 					Action: partialize(command.DeletePost, client, errWriter),
-					Flags:  []cli.Flag{},
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "filename, f",
+							Usage: "The filename of the post to be updated",
+						},
+					},
 				},
 			},
 		},

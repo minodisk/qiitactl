@@ -103,13 +103,6 @@ func FetchPost(client api.Client, team *Team, id string) (post Post, err error) 
 	return
 }
 
-type EmptyIDError struct{}
-
-func (err EmptyIDError) Error() (msg string) {
-	msg = "post: ID is empty"
-	return
-}
-
 func (post *Post) Update(client api.Client) (err error) {
 	if post.ID == "" {
 		err = EmptyIDError{}
@@ -131,7 +124,24 @@ func (post *Post) Update(client api.Client) (err error) {
 	return
 }
 
-func (post Post) Delete(client api.Client) (err error) {
+func (post *Post) Delete(client api.Client) (err error) {
+	if post.ID == "" {
+		err = EmptyIDError{}
+		return
+	}
+
+	subDomain := ""
+	if post.Team != nil {
+		subDomain = post.Team.ID
+	}
+	body, err := client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, post)
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -250,5 +260,12 @@ func (post *Post) Decode(b []byte) (err error) {
 	}
 	post.Title = string(bytes.TrimSpace(matched[2]))
 	post.Body = string(bytes.TrimSpace(matched[3]))
+	return
+}
+
+type EmptyIDError struct{}
+
+func (err EmptyIDError) Error() (msg string) {
+	msg = "post: ID is empty"
 	return
 }

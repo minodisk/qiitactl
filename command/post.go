@@ -166,6 +166,17 @@ func UpdatePost(c *cli.Context, client api.Client) (err error) {
 }
 
 func DeletePost(c *cli.Context, client api.Client) (err error) {
+	filename := c.String("filename")
+
+	post, err := model.NewPostWithFile(filename)
+	if err != nil {
+		return
+	}
+	err = post.Delete(client)
+	if err != nil {
+		return
+	}
+	err = post.Save()
 	return
 }
 

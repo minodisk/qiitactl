@@ -208,6 +208,39 @@ func TestMain(m *testing.M) {
 				return
 			}
 
+		case "DELETE":
+			defer r.Body.Close()
+
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			if string(b) == "" {
+				testutil.ResponseAPIError(w, 500, api.ResponseError{
+					Type:    "fatal",
+					Message: "empty body",
+				})
+				return
+			}
+
+			var post model.Post
+			err = json.Unmarshal(b, &post)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			b, err = json.Marshal(post)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			_, err = w.Write(b)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+
 		default:
 			w.WriteHeader(405)
 		}
@@ -658,6 +691,70 @@ id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
 updated_at: 2016-02-01T21:51:42+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+-->
+# Example edited title
+## Example edited body`
+	if actual != expected {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestDeletePost(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
 private: false
 coediting: false
 tags:
