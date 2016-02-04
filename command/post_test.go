@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/minodisk/qiitactl/api"
-	"github.com/minodisk/qiitactl/command"
+	"github.com/minodisk/qiitactl/cli"
 	"github.com/minodisk/qiitactl/model"
 	"github.com/minodisk/qiitactl/testutil"
 )
@@ -245,7 +245,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Clean up trashes
-	cleanUp()
+	testutil.CleanUp()
 
 	os.Exit(code)
 }
@@ -265,9 +265,11 @@ func responseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseErr
 }
 
 func TestFetchPostWithID(t *testing.T) {
-	defer cleanUp()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	app := cli.GenerateApp(client, os.Stdout)
+	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,14 +298,32 @@ tags:
 }
 
 func TestFetchPostWithFilename(t *testing.T) {
-	defer cleanUp()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	err := os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example old title
+## Example old body`), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = command.FetchPost(client, "", "mine/2000/01/01-example-title.md")
+	app := cli.GenerateApp(client, os.Stdout)
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -332,8 +352,12 @@ tags:
 }
 
 func TestShowPostWithID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	buf := bytes.NewBuffer([]byte{})
-	err := command.ShowPost(client, buf, "4bd431809afb1bb99e4f", "")
+	app := cli.GenerateApp(client, buf)
+	err := app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -345,15 +369,33 @@ func TestShowPostWithID(t *testing.T) {
 }
 
 func TestShowPostWithFilename(t *testing.T) {
-	defer cleanUp()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	err := os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+-->
+# Example old title
+## Example old body`), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	buf := bytes.NewBuffer([]byte{})
-	err = command.ShowPost(client, buf, "", "mine/2000/01/01-example-title.md")
+	app := cli.GenerateApp(client, buf)
+	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -365,8 +407,12 @@ func TestShowPostWithFilename(t *testing.T) {
 }
 
 func TestShowPosts(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	buf := bytes.NewBuffer([]byte{})
-	err := command.ShowPosts(client, buf)
+	app := cli.GenerateApp(client, buf)
+	err := app.Run([]string{"qiitactl", "show", "posts"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -381,9 +427,11 @@ Posts in Qiita:Team (Increments Inc.):
 }
 
 func TestFetchPosts(t *testing.T) {
-	defer cleanUp()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	err := command.FetchPosts(client)
+	app := cli.GenerateApp(client, os.Stdout)
+	err := app.Run([]string{"qiitactl", "fetch", "posts"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -438,16 +486,14 @@ tags:
 }
 
 func TestUpdatePost(t *testing.T) {
-	defer cleanUp()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	path := fmt.Sprintf("%s/2000/01/01-example-title.md", model.DirMine)
-
-	err := command.FetchPost(client, "4bd431809afb1bb99e4f", "")
+	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	err = ioutil.WriteFile(path, []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -466,12 +512,13 @@ tags:
 		t.Fatal(err)
 	}
 
-	err = command.UpdatePost(client, path)
+	app := cli.GenerateApp(client, os.Stdout)
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -643,8 +690,3 @@ tags:
 // 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
 // 	}
 // }
-
-func cleanUp() {
-	os.RemoveAll("mine")
-	os.RemoveAll("increments")
-}

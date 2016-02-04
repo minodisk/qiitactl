@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -16,7 +17,7 @@ func TestGenerateFile(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp()
+	app := cli.GenerateApp(client, os.Stdout)
 	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +41,7 @@ func TestGenerateUniqueFile(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp()
+	app := cli.GenerateApp(client, os.Stdout)
 	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {

@@ -3,27 +3,15 @@ package command
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/model"
 )
 
-func CmdShowPost(c *cli.Context) {
-	client, err := api.NewClient(nil)
-	if err != nil {
-		printError(c, err)
-		return
-	}
-
-	err = ShowPost(client, os.Stdout, c.String("id"), c.String("filename"))
-	if err != nil {
-		printError(c, err)
-	}
-}
-
-func ShowPost(client api.Client, w io.Writer, id, filename string) (err error) {
+func ShowPost(c *cli.Context, client api.Client, w io.Writer) (err error) {
+	id := c.String("id")
+	filename := c.String("filename")
 	id, err = getID(id, filename)
 	if err != nil {
 		return
@@ -36,19 +24,7 @@ func ShowPost(client api.Client, w io.Writer, id, filename string) (err error) {
 	return
 }
 
-func CmdShowPosts(c *cli.Context) {
-	client, err := api.NewClient(nil)
-	if err != nil {
-		printError(c, err)
-		return
-	}
-	err = ShowPosts(client, os.Stdout)
-	if err != nil {
-		printError(c, err)
-	}
-}
-
-func ShowPosts(client api.Client, w io.Writer) (err error) {
+func ShowPosts(c *cli.Context, client api.Client, w io.Writer) (err error) {
 	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
 		return
@@ -98,19 +74,10 @@ func printPost(w io.Writer, post model.Post) (err error) {
 	return
 }
 
-func CmdFetchPost(c *cli.Context) {
-	client, err := api.NewClient(nil)
-	if err != nil {
-		printError(c, err)
-		return
-	}
-	err = FetchPost(client, c.String("id"), c.String("filename"))
-	if err != nil {
-		printError(c, err)
-	}
-}
+func FetchPost(c *cli.Context, client api.Client) (err error) {
+	id := c.String("id")
+	filename := c.String("filename")
 
-func FetchPost(client api.Client, id, filename string) (err error) {
 	id, err = getID(id, filename)
 	if err != nil {
 		return
@@ -121,17 +88,6 @@ func FetchPost(client api.Client, id, filename string) (err error) {
 	}
 	err = post.Save()
 	return
-}
-func CmdFetchPosts(c *cli.Context) {
-	client, err := api.NewClient(nil)
-	if err != nil {
-		printError(c, err)
-		return
-	}
-	err = FetchPosts(client)
-	if err != nil {
-		printError(c, err)
-	}
 }
 
 func getID(id, filename string) (i string, err error) {
@@ -151,7 +107,7 @@ func getID(id, filename string) (i string, err error) {
 	return
 }
 
-func FetchPosts(client api.Client) (err error) {
+func FetchPosts(c *cli.Context, client api.Client) (err error) {
 	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
 		return
@@ -179,14 +135,9 @@ func FetchPosts(client api.Client) (err error) {
 	return
 }
 
-func CmdCreatePost(c *cli.Context) {
-	err := CreatePost(c.String("filename"))
-	if err != nil {
-		printError(c, err)
-	}
-}
+func CreatePost(c *cli.Context, client api.Client) (err error) {
+	filename := c.String("filename")
 
-func CreatePost(filename string) (err error) {
 	post, err := model.NewPostWithFile(filename)
 	if err != nil {
 		return
@@ -195,19 +146,9 @@ func CreatePost(filename string) (err error) {
 	return
 }
 
-func CmdUpdatePost(c *cli.Context) {
-	client, err := api.NewClient(nil)
-	if err != nil {
-		printError(c, err)
-		return
-	}
-	err = UpdatePost(client, c.String("filename"))
-	if err != nil {
-		printError(c, err)
-	}
-}
+func UpdatePost(c *cli.Context, client api.Client) (err error) {
+	filename := c.String("filename")
 
-func UpdatePost(client api.Client, filename string) (err error) {
 	post, err := model.NewPostWithFile(filename)
 	if err != nil {
 		return
@@ -220,7 +161,8 @@ func UpdatePost(client api.Client, filename string) (err error) {
 	return
 }
 
-func DeletePost(c *cli.Context) {
+func DeletePost(c *cli.Context, client api.Client) (err error) {
+	return
 }
 
 // func PostsDiff(commit1, commit2 string) (err error) {
