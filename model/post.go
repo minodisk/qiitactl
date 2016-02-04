@@ -20,7 +20,7 @@ import (
 
 const (
 	postTemplate = `<!--
-{{.Meta}}
+{{.Meta.Format}}
 -->
 # {{.Title}}
 {{.Body}}`

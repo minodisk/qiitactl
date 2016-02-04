@@ -8,7 +8,7 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestMetaString(t *testing.T) {
+func TestMetaFormat(t *testing.T) {
 	at := model.Time{time.Date(2011, 2, 3, 4, 5, 6, 0, time.UTC)}
 	meta := model.Meta{
 		ID:        "XXXXXXXX",
@@ -31,7 +31,7 @@ private: true
 coediting: true
 tags:
 - Go`
-	actual := meta.String()
+	actual := meta.Format()
 	if actual != expected {
 		t.Errorf("wrong string:\n%s", testutil.Diff(expected, actual))
 	}

@@ -16,7 +16,7 @@ type Meta struct {
 	Tags      Tags   `json:"tags" yaml:"tags"`             // 投稿に付いたタグ一覧
 }
 
-func (meta Meta) String() (out string) {
+func (meta Meta) Format() (out string) {
 	o, err := yaml.Marshal(meta)
 	if err != nil {
 		panic(err)
