@@ -112,7 +112,17 @@ func (post Post) Delete(client api.Client) (err error) {
 }
 
 func (post Post) Save() (err error) {
-	path := post.CreatePath()
+	var path string
+	if post.ID != "" {
+		path, err = post.findPath()
+		if err != nil {
+			return err
+		}
+	}
+	if path == "" {
+		path = post.createPath()
+	}
+
 	dir := filepath.Dir(path)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -132,7 +142,45 @@ func (post Post) Save() (err error) {
 	return
 }
 
-func (post Post) CreatePath() (path string) {
+func (post Post) findPath() (path string, err error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	found := false
+	filepath.Walk(dir, func(p string, info os.FileInfo, e error) (err error) {
+		if e != nil {
+			err = e
+			return
+		}
+		if found {
+			return filepath.SkipDir
+		}
+		if info.IsDir() {
+			return
+		}
+		if filepath.Ext(p) != ".md" {
+			return
+		}
+
+		fmt.Println(p)
+
+		postInLocal, err := NewPostWithFile(p)
+		if err != nil {
+			err = nil
+			return
+		}
+		if postInLocal.ID == post.ID {
+			path = p
+			found = true
+			return filepath.SkipDir
+		}
+		return
+	})
+	return
+}
+
+func (post Post) createPath() (path string) {
 	var dirname string
 	if post.Team == nil {
 		dirname = DirMine
@@ -178,28 +226,5 @@ func (post *Post) Decode(b []byte) (err error) {
 	}
 	post.Title = string(bytes.TrimSpace(matched[2]))
 	post.Body = string(bytes.TrimSpace(matched[3]))
-	return
-}
-
-func findPath(id string) (pathes []string) {
-	filepath.Walk(".", func(path string, info os.FileInfo, e error) (err error) {
-		if e != nil {
-			err = e
-			return
-		}
-		if info.IsDir() {
-			err = filepath.SkipDir
-			return
-		}
-		post, err := NewPostWithFile(path)
-		if err != nil {
-			err = nil
-			return
-		}
-		if post.ID == id {
-			pathes = append(pathes, post.CreatePath())
-		}
-		return
-	})
 	return
 }
