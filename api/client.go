@@ -98,7 +98,7 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 }
 
 func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.Process("Post", subDomain, path, data)
+	body, err = c.Process("POST", subDomain, path, data)
 	return
 }
 
@@ -116,7 +116,7 @@ func (c Client) Patch(subDomain string, path string, data interface{}) (body []b
 }
 
 func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, err error) {
-	body, err = c.Process("Delete", subDomain, path, data)
+	body, err = c.Process("DELETE", subDomain, path, data)
 	return
 }
 

@@ -17,6 +17,83 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
+func TestPostCreate(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/items", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(405)
+			b, _ := json.Marshal(api.ResponseError{"method_not_allowed", "Method Not Allowed"})
+			w.Write(b)
+			return
+		}
+
+		defer r.Body.Close()
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+		if string(b) == "" {
+			testutil.ResponseAPIError(w, 500, api.ResponseError{
+				Type:    "fatal",
+				Message: "empty body",
+			})
+			return
+		}
+
+		var post model.Post
+		err = json.Unmarshal(b, &post)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+
+		post.CreatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
+		post.UpdatedAt = post.CreatedAt
+		b, err = json.Marshal(post)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+
+		_, err = w.Write(b)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+	err = post.Create(client)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !post.CreatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
+		t.Errorf("wrong CreatedAt: %s", post.CreatedAt)
+	}
+	if !post.UpdatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
+		t.Errorf("wrong UpdatedAt: %s", post.UpdatedAt)
+	}
+}
+
 func TestFetchPost(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {

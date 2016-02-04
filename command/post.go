@@ -142,7 +142,11 @@ func CreatePost(c *cli.Context, client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = post.Create()
+	err = post.Create(client)
+	if err != nil {
+		return
+	}
+	err = post.Save()
 	return
 }
 

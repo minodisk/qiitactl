@@ -70,7 +70,19 @@ func NewPostWithFile(path string) (post Post, err error) {
 	return
 }
 
-func (post Post) Create() (err error) {
+func (post *Post) Create(client api.Client) (err error) {
+	subDomain := ""
+	if post.Team != nil {
+		subDomain = post.Team.ID
+	}
+	body, err := client.Post(subDomain, "/items", post)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, post)
+	if err != nil {
+		return
+	}
 	return
 }
 

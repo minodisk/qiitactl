@@ -1,9 +1,13 @@
 package testutil
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
+	"github.com/minodisk/qiitactl/api"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
@@ -38,4 +42,22 @@ func prefix(pre, text string) (s string) {
 func CleanUp() {
 	os.RemoveAll("mine")
 	os.RemoveAll("increments")
+}
+
+func ResponseError(w http.ResponseWriter, statusCode int, err error) {
+
+	ResponseAPIError(w, statusCode, api.ResponseError{
+		Type:    "error",
+		Message: err.Error(),
+	})
+}
+
+func ResponseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseError) {
+	w.WriteHeader(statusCode)
+	b, e := json.Marshal(err)
+	if e != nil {
+		fmt.Fprintf(w, "\"%s\"", e.Error())
+		return
+	}
+	w.Write(b)
 }

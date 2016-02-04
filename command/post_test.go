@@ -27,12 +27,11 @@ var (
 func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			log.Fatalf("wrong method: %s", r.Method)
-		}
-		var body string
-		if r.URL.Query().Get("page") == "1" {
-			body = `[
+		switch r.Method {
+		case "GET":
+			var body string
+			if r.URL.Query().Get("page") == "1" {
+				body = `[
 				{
 					"rendered_body": "<h2>Example body</h2>",
 					"body": "## Example body",
@@ -70,23 +69,71 @@ func TestMain(m *testing.M) {
 					}
 				}
 			]`
-		} else {
-			body = "[]"
+			} else {
+				body = "[]"
+			}
+			w.Write([]byte(body))
+		default:
+			w.WriteHeader(405)
 		}
-		w.Write([]byte(body))
 	})
 	mux.HandleFunc("/api/v2/teams", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			log.Fatalf("wrong method: %s", r.Method)
-		}
-		w.Write([]byte(`[
+		switch r.Method {
+		case "GET":
+			w.Write([]byte(`[
 			{
 				"active": true,
 				"id": "increments",
 				"name": "Increments Inc."
 			}
 		]`))
+		default:
+			w.WriteHeader(405)
+		}
 	})
+
+	mux.HandleFunc("/api/v2/items", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			defer r.Body.Close()
+
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			if string(b) == "" {
+				testutil.ResponseAPIError(w, 500, api.ResponseError{
+					Type:    "fatal",
+					Message: "empty body",
+				})
+				return
+			}
+
+			var post model.Post
+			err = json.Unmarshal(b, &post)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			post.CreatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
+			post.UpdatedAt = post.CreatedAt
+			b, err = json.Marshal(post)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			_, err = w.Write(b)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+
+		default:
+			w.WriteHeader(405)
+		}
+	})
+
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -132,11 +179,11 @@ func TestMain(m *testing.M) {
 
 			b, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				responseError(w, 500, err)
+				testutil.ResponseError(w, 500, err)
 				return
 			}
 			if string(b) == "" {
-				responseAPIError(w, 500, api.ResponseError{
+				testutil.ResponseAPIError(w, 500, api.ResponseError{
 					Type:    "fatal",
 					Message: "empty body",
 				})
@@ -146,24 +193,21 @@ func TestMain(m *testing.M) {
 			var post model.Post
 			err = json.Unmarshal(b, &post)
 			if err != nil {
-				responseError(w, 500, err)
+				testutil.ResponseError(w, 500, err)
 				return
 			}
-
 			post.UpdatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
 			b, err = json.Marshal(post)
 			if err != nil {
-				w.WriteHeader(500)
-				w.Write([]byte(err.Error()))
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			_, err = w.Write(b)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
 				return
 			}
 
-			_, err = w.Write(b)
-			if err != nil {
-				w.WriteHeader(500)
-				w.Write([]byte(err.Error()))
-				return
-			}
 		default:
 			w.WriteHeader(405)
 		}
@@ -250,28 +294,19 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func responseError(w http.ResponseWriter, statusCode int, err error) {
-
-	responseAPIError(w, statusCode, api.ResponseError{
-		Type:    "error",
-		Message: err.Error(),
-	})
-}
-
-func responseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseError) {
-	w.WriteHeader(statusCode)
-	b, _ := json.Marshal(err)
-	w.Write(b)
-}
-
 func TestFetchPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
@@ -322,10 +357,15 @@ tags:
 		t.Fatal(err)
 	}
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
@@ -356,10 +396,15 @@ func TestShowPostWithID(t *testing.T) {
 	defer testutil.CleanUp()
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
 	err := app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
@@ -394,10 +439,15 @@ tags:
 	}
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
 	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
@@ -411,10 +461,15 @@ func TestShowPosts(t *testing.T) {
 	defer testutil.CleanUp()
 
 	buf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
 	err := app.Run([]string{"qiitactl", "show", "posts"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	if string(buf.Bytes()) != `Posts in Qiita:
@@ -430,10 +485,15 @@ func TestFetchPosts(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err := app.Run([]string{"qiitactl", "fetch", "posts"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	func() {
@@ -485,6 +545,70 @@ tags:
 	}()
 }
 
+func TestCreatePost(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2016-02-01T21:51:42+09:00
+updated_at: 2016-02-01T21:51:42+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+-->
+# Example edited title
+## Example edited body`
+	if actual != expected {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
 func TestUpdatePost(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -512,10 +636,15 @@ tags:
 		t.Fatal(err)
 	}
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
 	if err != nil {
 		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
 	}
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
