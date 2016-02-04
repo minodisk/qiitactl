@@ -58,6 +58,22 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func TestBuildURL(t *testing.T) {
+	func() {
+		actual := api.BuildURL("", "/test")
+		if actual != "https://qiita.com/api/v2/test" {
+			t.Errorf("wrong url: %s", actual)
+		}
+	}()
+
+	func() {
+		actual := api.BuildURL("increments", "/test")
+		if actual != "https://increments.qiita.com/api/v2/test" {
+			t.Errorf("wrong url: %s", actual)
+		}
+	}()
+}
+
 func TestNewClientWithEmptyToken(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
