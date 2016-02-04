@@ -103,7 +103,19 @@ func FetchPost(client api.Client, team *Team, id string) (post Post, err error) 
 	return
 }
 
+type EmptyIDError struct{}
+
+func (err EmptyIDError) Error() (msg string) {
+	msg = "post: ID is empty"
+	return
+}
+
 func (post *Post) Update(client api.Client) (err error) {
+	if post.ID == "" {
+		err = EmptyIDError{}
+		return
+	}
+
 	subDomain := ""
 	if post.Team != nil {
 		subDomain = post.Team.ID
