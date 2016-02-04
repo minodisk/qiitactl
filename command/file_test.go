@@ -8,16 +8,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minodisk/qiitactl/command"
+	"github.com/minodisk/qiitactl/cli"
 	"github.com/minodisk/qiitactl/model"
+	"github.com/minodisk/qiitactl/testutil"
 )
 
 func TestGenerateFile(t *testing.T) {
-	defer func() {
-		os.RemoveAll(model.DirMine)
-	}()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	err := command.GenerateFile("", "Example Title")
+	app := cli.GenerateApp(client, os.Stdout)
+	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,13 +38,15 @@ func TestGenerateFile(t *testing.T) {
 }
 
 func TestGenerateUniqueFile(t *testing.T) {
-	defer func() {
-		os.RemoveAll(model.DirMine)
-	}()
+	testutil.CleanUp()
+	defer testutil.CleanUp()
 
-	var err error
-	err = command.GenerateFile("", "Example Title")
-	err = command.GenerateFile("", "Example Title")
+	app := cli.GenerateApp(client, os.Stdout)
+	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
+	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

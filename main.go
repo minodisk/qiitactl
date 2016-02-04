@@ -1,25 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/codegangsta/cli"
 	"github.com/joho/godotenv"
-	"github.com/minodisk/qiitactl/info"
+	"github.com/minodisk/qiitactl/api"
+	"github.com/minodisk/qiitactl/cli"
 )
 
 func main() {
 	godotenv.Load()
 
-	app := cli.NewApp()
-	app.Name = info.Name
-	app.Version = info.Version
-	app.Author = info.Author
-	app.Usage = "Controls the Qiita posts"
+	client, err := api.NewClient(nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	app.Flags = GlobalFlags
-	app.Commands = Commands
-	app.CommandNotFound = CommandNotFound
-
+	app := cli.GenerateApp(client, os.Stdout)
 	app.Run(os.Args)
 }
