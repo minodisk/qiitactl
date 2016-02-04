@@ -17,6 +17,9 @@ import (
 )
 
 func TestFetchPosts(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -189,6 +192,9 @@ func TestFetchPosts(t *testing.T) {
 }
 
 func TestFetchPosts_ResponseError(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
@@ -225,6 +231,9 @@ func TestFetchPosts_ResponseError(t *testing.T) {
 }
 
 func TestFetchPosts_StatusError(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
@@ -256,12 +265,14 @@ func TestFetchPosts_StatusError(t *testing.T) {
 	}
 }
 
-func TestPosts_Save(t *testing.T) {
+func TestPostsSave(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	post0 := model.NewPost("Example Title 0", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
 	post1 := model.NewPost("Example Title 1", &model.Time{time.Date(2016, 2, 1, 5, 21, 49, 0, time.UTC)}, nil)
 
 	posts := model.Posts{post0, post1}
-
 	err := posts.Save()
 	if err != nil {
 		t.Fatal(err)
@@ -310,18 +321,4 @@ tags: []
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 		}
 	}()
-
-	os.RemoveAll("mine")
-}
-
-func TestPosts_SaveError(t *testing.T) {
-	posts := model.Posts{model.Post{}}
-	err := posts.Save()
-	if err == nil {
-		t.Fatal("error should occur")
-	}
-	_, ok := err.(model.EmptyPathError)
-	if !ok {
-		t.Fatal("empty path error should occur")
-	}
 }

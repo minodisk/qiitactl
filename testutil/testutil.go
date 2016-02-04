@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"os"
 	"strings"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -32,4 +33,9 @@ func prefix(pre, text string) (s string) {
 	}
 	s = strings.Join(lines, "\n")
 	return
+}
+
+func CleanUp() {
+	os.RemoveAll("mine")
+	os.RemoveAll("increments")
 }

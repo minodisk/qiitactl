@@ -213,6 +213,10 @@ func UpdatePost(client api.Client, filename string) (err error) {
 		return
 	}
 	err = post.Update(client)
+	if err != nil {
+		return
+	}
+	err = post.Save()
 	return
 }
 

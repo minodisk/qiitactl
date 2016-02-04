@@ -10,9 +10,5 @@ dependencies:
 test:
   override:
     - ./test-coverage.sh
-
-deployment:
-  master:
-    branch: master
-    commands:
-      - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+  post:
+    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN

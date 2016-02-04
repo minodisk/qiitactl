@@ -246,23 +246,25 @@ func TestFetchPost_StatusError(t *testing.T) {
 	}
 }
 
-func TestPost_Save(t *testing.T) {
-	post := model.NewPost("Example Title 0", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+func TestPostSave(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+	post.ID = "abcdefghijklmnopqrst"
 	err := post.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer os.RemoveAll("mine")
-
 	func() {
-		a, err := ioutil.ReadFile("mine/2015/11/28-example-title-0.md")
+		a, err := ioutil.ReadFile("mine/2015/11/28-example-title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
 		actual := string(a)
 		expected := `<!--
-id: ""
+id: abcdefghijklmnopqrst
 url: ""
 created_at: 2015-11-28T22:02:37+09:00
 updated_at: 2015-11-28T22:02:37+09:00
@@ -270,7 +272,44 @@ private: false
 coediting: false
 tags: []
 -->
-# Example Title 0
+# Example Title
+`
+		if actual != expected {
+			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+
+	post.Title = "Example Edited Title"
+	post.CreatedAt = model.Time{time.Date(2015, 12, 28, 13, 2, 37, 0, time.UTC)}
+	post.UpdatedAt = post.CreatedAt
+	err = post.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	func() {
+		_, err := os.Stat("mine/2015/12/28-example-edited-title.md")
+		if err == nil {
+			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28-example-edited-title.md")
+		}
+	}()
+
+	func() {
+		a, err := ioutil.ReadFile("mine/2015/11/28-example-title.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(a)
+		expected := `<!--
+id: abcdefghijklmnopqrst
+url: ""
+created_at: 2015-12-28T22:02:37+09:00
+updated_at: 2015-12-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+-->
+# Example Edited Title
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -278,19 +317,7 @@ tags: []
 	}()
 }
 
-func TestPost_SaveError(t *testing.T) {
-	post := model.Post{}
-	err := post.Save()
-	if err == nil {
-		t.Fatal("error should occur")
-	}
-	_, ok := err.(model.EmptyPathError)
-	if !ok {
-		t.Fatal("empty path error should occur")
-	}
-}
-
-func TestPost_EncodeWithNewPost(t *testing.T) {
+func TestPostEncodeWithNewPost(t *testing.T) {
 	post := model.NewPost("Example title", &model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}, nil)
 	buf := bytes.NewBuffer([]byte{})
 	err := post.Encode(buf)
@@ -314,7 +341,7 @@ tags: []
 	}
 }
 
-func TestPost_DecodeWithWrongMeta(t *testing.T) {
+func TestPostDecodeWithWrongMeta(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`XXXXXXXX
 <!--
@@ -341,7 +368,7 @@ Paragraph
 	}
 }
 
-func TestPost_DecodeWithWrongTag(t *testing.T) {
+func TestPostDecodeWithWrongTag(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
@@ -393,7 +420,7 @@ Paragraph
 	}
 }
 
-func TestPost_DecodeWithCorrectMarkdown(t *testing.T) {
+func TestPostDecodeWithCorrectMarkdown(t *testing.T) {
 	var post model.Post
 	err := post.Decode([]byte(`<!--
 id: abcdefghijklmnopqrst
