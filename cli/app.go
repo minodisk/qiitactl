@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/command"
+	"github.com/minodisk/qiitactl/info"
 )
 
 var GlobalFlags = []cli.Flag{
@@ -151,6 +152,18 @@ var Commands = []cli.Command{
 			},
 		},
 	},
+}
+
+func NewApp() (app *cli.App) {
+	app = cli.NewApp()
+	app.Name = info.Name
+	app.Version = info.Version
+	app.Author = info.Author
+	app.Usage = "Controls the Qiita posts"
+	app.Flags = GlobalFlags
+	app.Commands = Commands
+	app.CommandNotFound = CommandNotFound
+	return
 }
 
 func CommandNotFound(c *cli.Context, command string) {
