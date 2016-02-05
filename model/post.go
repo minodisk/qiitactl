@@ -163,15 +163,9 @@ func (post *Post) Delete(client api.Client) (err error) {
 }
 
 func (post Post) Save() (err error) {
-	var path string
-	if post.ID != "" {
-		path, err = post.findPath()
-		if err != nil {
-			return err
-		}
-	}
-	if path == "" {
-		path = post.createPath()
+	path, err := post.Path()
+	if err != nil {
+		return
 	}
 
 	dir := filepath.Dir(path)
@@ -189,6 +183,19 @@ func (post Post) Save() (err error) {
 	err = post.Encode(f)
 	if err != nil {
 		return
+	}
+	return
+}
+
+func (post Post) Path() (path string, err error) {
+	if post.ID != "" {
+		path, err = post.findPath()
+		if err != nil {
+			return
+		}
+	}
+	if path == "" {
+		path = post.createPath()
 	}
 	return
 }

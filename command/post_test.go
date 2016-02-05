@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -607,8 +608,8 @@ func TestCreatePost(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+id: ""
+url: ""
 created_at: 2000-01-01T09:00:00+09:00
 updated_at: 2000-01-01T09:00:00+09:00
 private: false
@@ -634,6 +635,14 @@ tags:
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
+	}
+
+	matches, err := filepath.Glob("*/*/*/*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) > 1 {
+		t.Fatal("shouldn't make a new file")
 	}
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
@@ -698,6 +707,14 @@ tags:
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
+	}
+
+	matches, err := filepath.Glob("*/*/*/*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) > 1 {
+		t.Fatal("shouldn't make a new file")
 	}
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")

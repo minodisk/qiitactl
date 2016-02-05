@@ -92,9 +92,23 @@ func TestPostCreate(t *testing.T) {
 	}
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+
+	prevPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = post.Create(client, model.CreationOptions{})
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	postPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if postPath != prevPath {
+		t.Errorf("wrong path: expected %s, but actual %s", prevPath, postPath)
 	}
 
 	if !post.CreatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
@@ -177,9 +191,23 @@ func TestPostCreateWithTweetAndGist(t *testing.T) {
 	}
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+
+	prevPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = post.Create(client, model.CreationOptions{true, true})
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	postPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if postPath != prevPath {
+		t.Errorf("wrong path: expected %s, but actual %s", prevPath, postPath)
 	}
 
 	if !post.CreatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
@@ -516,9 +544,23 @@ func TestPostUpdate(t *testing.T) {
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
+
+	prevPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = post.Update(client)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	postPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if postPath != prevPath {
+		t.Errorf("wrong path: expected %s, but actual %s", prevPath, postPath)
 	}
 
 	if !post.UpdatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
@@ -613,9 +655,23 @@ func TestPostDelete(t *testing.T) {
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
+
+	prevPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = post.Delete(client)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	postPath, err := post.Path()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if postPath != prevPath {
+		t.Errorf("wrong path: expected %s, but actual %s", prevPath, postPath)
 	}
 }
 
