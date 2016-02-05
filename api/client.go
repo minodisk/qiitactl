@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/minodisk/qiitactl/info"
 )
 
@@ -22,6 +24,7 @@ type Client struct {
 	Token      string
 	BuildURL   func(string, string) string
 	httpClient *http.Client
+	debug      bool
 }
 
 func BuildURL(subDomain, path string) (url string) {
@@ -51,6 +54,10 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
+func (c *Client) SetDebug(debug bool) {
+	c.debug = debug
+}
+
 func (c Client) Process(method string, subDomain string, path string, data interface{}) (respBody []byte, respHeader http.Header, err error) {
 	url := c.BuildURL(subDomain, path)
 
@@ -68,6 +75,15 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	}
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+
+	if c.debug {
+		blueBold := color.New(color.FgBlue).SprintFunc()
+		blue := color.New(color.FgBlue).SprintFunc()
+		magenta := color.New(color.FgCyan).SprintFunc()
+		white := color.New(color.FgWhite).SprintFunc()
+		fmt.Printf("%s %s %s\n%s\n%s\n", blueBold(req.Method), blue(req.URL), blue(req.Proto), magenta(stringifyHeader(req.Header)), white(stringifyBody(data)))
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return
@@ -76,8 +92,13 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	respHeader = resp.Header
 
 	defer resp.Body.Close()
-
 	respBody, err = ioutil.ReadAll(resp.Body)
+	if c.debug {
+		blue := color.New(color.FgBlue).SprintFunc()
+		magenta := color.New(color.FgCyan).SprintFunc()
+		white := color.New(color.FgWhite).SprintFunc()
+		fmt.Printf("%s %s\n%s\n%s\n", blue(resp.Proto), blue(resp.StatusCode), magenta(stringifyHeader(respHeader)), white(string(respBody)))
+	}
 	if err != nil {
 		return
 	}
@@ -105,6 +126,27 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	}
 
 	return
+}
+
+func stringifyHeader(header http.Header) string {
+	var lines []string
+	for key, val := range header {
+		for _, v := range val {
+			lines = append(lines, fmt.Sprintf("%s: %s", key, v))
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func stringifyBody(data interface{}) string {
+	if data == nil {
+		return ""
+	}
+	str, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return ""
+	}
+	return string(str)
 }
 
 func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
