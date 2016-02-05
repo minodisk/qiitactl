@@ -91,9 +91,11 @@ func TestPostCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 
-	prevPath, err := post.Path()
+	prevPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +105,7 @@ func TestPostCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	postPath, err := post.Path()
+	postPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,6 +119,8 @@ func TestPostCreate(t *testing.T) {
 	if !post.UpdatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
 		t.Errorf("wrong UpdatedAt: %s", post.UpdatedAt)
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostCreateWithTweetAndGist(t *testing.T) {
@@ -190,9 +194,11 @@ func TestPostCreateWithTweetAndGist(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 
-	prevPath, err := post.Path()
+	prevPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +208,7 @@ func TestPostCreateWithTweetAndGist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	postPath, err := post.Path()
+	postPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,6 +222,8 @@ func TestPostCreateWithTweetAndGist(t *testing.T) {
 	if !post.UpdatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
 		t.Errorf("wrong UpdatedAt: %s", post.UpdatedAt)
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestFetchPost(t *testing.T) {
@@ -285,6 +293,8 @@ func TestFetchPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	testutil.ShouldExistFile(t, 0)
 
 	team := model.Team{
 		Active: true,
@@ -380,6 +390,8 @@ func TestFetchPost(t *testing.T) {
 	if post.Tags[0].Versions[0] != "0.0.1" {
 		t.Errorf("wrong tag Versions: %s", post.Tags[0].Versions[0])
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestFetchPost_ResponseError(t *testing.T) {
@@ -411,6 +423,8 @@ func TestFetchPost_ResponseError(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	_, err = model.FetchPost(client, nil, "4bd431809afb1bb99e4f")
 	if err == nil {
 		t.Fatal("error should occur")
@@ -419,6 +433,8 @@ func TestFetchPost_ResponseError(t *testing.T) {
 	if !ok {
 		t.Fatalf("wrong type error: %s", reflect.TypeOf(err))
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestFetchPost_StatusError(t *testing.T) {
@@ -446,6 +462,8 @@ func TestFetchPost_StatusError(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	_, err = model.FetchPost(client, nil, "4bd431809afb1bb99e4f")
 	if err == nil {
 		t.Fatal("error should occur")
@@ -454,6 +472,8 @@ func TestFetchPost_StatusError(t *testing.T) {
 	if !ok {
 		t.Fatalf("wrong type error: %s", reflect.TypeOf(err))
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostUpdateWithEmptyID(t *testing.T) {
@@ -469,12 +489,16 @@ func TestPostUpdateWithEmptyID(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	err = post.Update(client)
 	err, ok := err.(model.EmptyIDError)
 	if !ok {
 		t.Fatal("empty ID error should occur")
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostUpdate(t *testing.T) {
@@ -542,10 +566,12 @@ func TestPostUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
 
-	prevPath, err := post.Path()
+	prevPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -555,7 +581,7 @@ func TestPostUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	postPath, err := post.Path()
+	postPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -566,6 +592,8 @@ func TestPostUpdate(t *testing.T) {
 	if !post.UpdatedAt.Equal(time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)) {
 		t.Errorf("wrong UpdatedAt: %s", post.UpdatedAt)
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostDeleteWithEmptyID(t *testing.T) {
@@ -581,12 +609,16 @@ func TestPostDeleteWithEmptyID(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	err = post.Delete(client)
 	err, ok := err.(model.EmptyIDError)
 	if !ok {
 		t.Fatal("empty ID error should occur")
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostDelete(t *testing.T) {
@@ -653,10 +685,12 @@ func TestPostDelete(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
 
-	prevPath, err := post.Path()
+	prevPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -666,18 +700,22 @@ func TestPostDelete(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	postPath, err := post.Path()
+	postPath := post.Path
 	if err != nil {
 		t.Fatal(err)
 	}
 	if postPath != prevPath {
 		t.Errorf("wrong path: expected %s, but actual %s", prevPath, postPath)
 	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestPostSave(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
@@ -685,6 +723,8 @@ func TestPostSave(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	testutil.ShouldExistFile(t, 1)
 
 	func() {
 		a, err := ioutil.ReadFile("mine/2015/11/28-example-title.md")
@@ -715,6 +755,8 @@ tags: []
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	testutil.ShouldExistFile(t, 1)
 
 	func() {
 		_, err := os.Stat("mine/2015/12/28-example-edited-title.md")

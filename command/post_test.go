@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -135,6 +134,8 @@ func TestMain(m *testing.M) {
 				testutil.ResponseError(w, 500, err)
 				return
 			}
+			post.ID = "4bd431809afb1bb99e4f"
+			post.URL = "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f"
 			post.CreatedAt = model.Time{Time: time.Date(2016, 2, 1, 12, 51, 42, 0, time.UTC)}
 			post.UpdatedAt = post.CreatedAt
 			b, err = json.Marshal(post)
@@ -352,6 +353,8 @@ func TestFetchPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
@@ -362,6 +365,8 @@ func TestFetchPostWithID(t *testing.T) {
 	if len(e) != 0 {
 		t.Fatal(string(e))
 	}
+
+	testutil.ShouldExistFile(t, 1)
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
@@ -390,6 +395,8 @@ func TestFetchPostWithFilename(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
 		t.Fatal(err)
@@ -411,6 +418,8 @@ tags:
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
@@ -421,6 +430,8 @@ tags:
 	if len(e) != 0 {
 		t.Fatal(string(e))
 	}
+
+	testutil.ShouldExistFile(t, 1)
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
@@ -449,6 +460,8 @@ func TestShowPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
@@ -461,6 +474,8 @@ func TestShowPostWithID(t *testing.T) {
 		t.Fatal(string(e))
 	}
 
+	testutil.ShouldExistFile(t, 0)
+
 	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
@@ -470,6 +485,8 @@ func TestShowPostWithID(t *testing.T) {
 func TestShowPostWithFilename(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
 
 	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
@@ -492,6 +509,8 @@ tags:
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
@@ -504,6 +523,8 @@ tags:
 		t.Fatal(string(e))
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
@@ -513,6 +534,8 @@ tags:
 func TestShowPosts(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
@@ -525,6 +548,8 @@ func TestShowPosts(t *testing.T) {
 	if len(e) != 0 {
 		t.Fatal(string(e))
 	}
+
+	testutil.ShouldExistFile(t, 0)
 
 	if string(buf.Bytes()) != `Posts in Qiita:
 4bd431809afb1bb99e4f 2000/01/01 Example title
@@ -539,6 +564,8 @@ func TestFetchPosts(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err := app.Run([]string{"qiitactl", "fetch", "posts"})
@@ -549,6 +576,8 @@ func TestFetchPosts(t *testing.T) {
 	if len(e) != 0 {
 		t.Fatal(string(e))
 	}
+
+	testutil.ShouldExistFile(t, 2)
 
 	func() {
 		b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
@@ -603,6 +632,8 @@ func TestCreatePost(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
 		t.Fatal(err)
@@ -626,6 +657,8 @@ tags:
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
@@ -637,13 +670,7 @@ tags:
 		t.Fatal(string(e))
 	}
 
-	matches, err := filepath.Glob("*/*/*/*.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(matches) > 1 {
-		t.Fatal("shouldn't make a new file")
-	}
+	testutil.ShouldExistFile(t, 1)
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
@@ -675,6 +702,8 @@ func TestUpdatePost(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
 		t.Fatal(err)
@@ -698,6 +727,8 @@ tags:
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
@@ -709,13 +740,7 @@ tags:
 		t.Fatal(string(e))
 	}
 
-	matches, err := filepath.Glob("*/*/*/*.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(matches) > 1 {
-		t.Fatal("shouldn't make a new file")
-	}
+	testutil.ShouldExistFile(t, 1)
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
@@ -747,6 +772,8 @@ func TestDeletePost(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	testutil.ShouldExistFile(t, 0)
+
 	err := os.MkdirAll("mine/2000/01", 0755)
 	if err != nil {
 		t.Fatal(err)
@@ -770,6 +797,8 @@ tags:
 		t.Fatal(err)
 	}
 
+	testutil.ShouldExistFile(t, 1)
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
 	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
@@ -780,6 +809,8 @@ tags:
 	if len(e) != 0 {
 		t.Fatal(string(e))
 	}
+
+	testutil.ShouldExistFile(t, 1)
 
 	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
 	if err != nil {
