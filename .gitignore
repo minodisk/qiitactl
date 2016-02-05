@@ -25,3 +25,5 @@ _testmain.go
 
 qiitactl
 .env
+.goxc.local.json
+build
