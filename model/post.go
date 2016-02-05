@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -197,14 +198,12 @@ func (post Post) findPath() (path string, err error) {
 	if err != nil {
 		return
 	}
-	found := false
-	filepath.Walk(dir, func(p string, info os.FileInfo, e error) (err error) {
+
+	found := errors.New("found")
+	err = filepath.Walk(dir, func(p string, info os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
-		}
-		if found {
-			return filepath.SkipDir
 		}
 		if info.IsDir() {
 			return
@@ -220,11 +219,13 @@ func (post Post) findPath() (path string, err error) {
 		}
 		if postInLocal.ID == post.ID {
 			path = p
-			found = true
-			return filepath.SkipDir
+			return found
 		}
 		return
 	})
+	if err == found {
+		err = nil
+	}
 	return
 }
 
