@@ -47,6 +47,32 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 			},
 		},
 		{
+			Name:  "create",
+			Usage: "Create resources from current working directory to Qiita",
+			Flags: []cli.Flag{},
+			Subcommands: []cli.Command{
+				{
+					Name:   "post",
+					Usage:  "Create a post",
+					Action: partialize(command.CreatePost, client, errWriter),
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:  "filename, f",
+							Usage: "The filename of the post to be created",
+						},
+						cli.BoolFlag{
+							Name:  "tweet, t",
+							Usage: "Tweet the created post in Twitter",
+						},
+						cli.BoolFlag{
+							Name:  "gist, g",
+							Usage: "Post codes in the created post to GitHub Gist",
+						},
+					},
+				},
+			},
+		},
+		{
 			Name:  "show",
 			Usage: "Display resources",
 			Flags: []cli.Flag{},
@@ -99,32 +125,6 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 					Usage:  "Download posts as files",
 					Action: partialize(command.FetchPosts, client, errWriter),
 					Flags:  []cli.Flag{},
-				},
-			},
-		},
-		{
-			Name:  "create",
-			Usage: "Create resources from current working directory to Qiita",
-			Flags: []cli.Flag{},
-			Subcommands: []cli.Command{
-				{
-					Name:   "post",
-					Usage:  "Create a post",
-					Action: partialize(command.CreatePost, client, errWriter),
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name:  "filename, f",
-							Usage: "The filename of the post to be created",
-						},
-						cli.BoolFlag{
-							Name:  "tweet, t",
-							Usage: "Tweet the post",
-						},
-						cli.BoolFlag{
-							Name:  "gist, g",
-							Usage: "Create codes in the post to GitHub Gist",
-						},
-					},
 				},
 			},
 		},

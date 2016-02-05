@@ -3,6 +3,7 @@ package command_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -104,11 +105,26 @@ func TestMain(m *testing.M) {
 				testutil.ResponseError(w, 500, err)
 				return
 			}
-			if string(b) == "" {
+			if len(b) == 0 {
 				testutil.ResponseAPIError(w, 500, api.ResponseError{
 					Type:    "fatal",
 					Message: "empty body",
 				})
+				return
+			}
+
+			type Options struct {
+				Tweet *bool `json:"tweet"`
+				Gist  *bool `json:"gist"`
+			}
+			var options Options
+			err = json.Unmarshal(b, &options)
+			if err != nil {
+				testutil.ResponseError(w, 500, err)
+				return
+			}
+			if options.Tweet == nil || options.Gist == nil {
+				testutil.ResponseError(w, 500, errors.New("tweet or gist is required"))
 				return
 			}
 

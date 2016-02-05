@@ -47,6 +47,16 @@ type Post struct {
 	Team         *Team  `json:"-"`             // チーム
 }
 
+type CreationOptions struct {
+	Tweet bool `json:"tweet"`
+	Gist  bool `json:"gist"`
+}
+
+type CreationPost struct {
+	Post
+	CreationOptions
+}
+
 func NewPost(title string, createdAt *Time, team *Team) (post Post) {
 	if createdAt == nil {
 		createdAt = &Time{Time: time.Now()}
@@ -70,15 +80,21 @@ func NewPostWithFile(path string) (post Post, err error) {
 	return
 }
 
-func (post *Post) Create(client api.Client) (err error) {
+func (post *Post) Create(client api.Client, opts CreationOptions) (err error) {
 	subDomain := ""
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, _, err := client.Post(subDomain, "/items", post)
+
+	cPost := CreationPost{
+		Post:            *post,
+		CreationOptions: opts,
+	}
+	body, _, err := client.Post(subDomain, "/items", cPost)
 	if err != nil {
 		return
 	}
+
 	err = json.Unmarshal(body, post)
 	if err != nil {
 		return
@@ -196,8 +212,6 @@ func (post Post) findPath() (path string, err error) {
 		if filepath.Ext(p) != ".md" {
 			return
 		}
-
-		fmt.Println(p)
 
 		postInLocal, err := NewPostWithFile(p)
 		if err != nil {

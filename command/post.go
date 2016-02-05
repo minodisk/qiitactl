@@ -137,12 +137,16 @@ func FetchPosts(c *cli.Context, client api.Client) (err error) {
 
 func CreatePost(c *cli.Context, client api.Client) (err error) {
 	filename := c.String("filename")
+	opts := model.CreationOptions{
+		Tweet: c.Bool("tweet"),
+		Gist:  c.Bool("gist"),
+	}
 
 	post, err := model.NewPostWithFile(filename)
 	if err != nil {
 		return
 	}
-	err = post.Create(client)
+	err = post.Create(client, opts)
 	if err != nil {
 		return
 	}
