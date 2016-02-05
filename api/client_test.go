@@ -3,6 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -22,7 +23,7 @@ var (
 
 func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v2/test", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v2/echo", func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if auth != "Bearer XXXXXXXXXXXX" {
 			b, _ := json.Marshal(api.ResponseError{
@@ -33,6 +34,7 @@ func TestMain(m *testing.M) {
 			w.Write(b)
 			return
 		}
+
 		ua := r.Header.Get("User-Agent")
 		if !rUserAgent.MatchString(ua) {
 			b, _ := json.Marshal(api.ResponseError{
@@ -44,7 +46,40 @@ func TestMain(m *testing.M) {
 			return
 		}
 
-		fmt.Fprintf(w, "%s %s is accepted", r.Method, r.URL)
+		defer r.Body.Close()
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+
+		if len(b) == 0 {
+			fmt.Fprintf(w, "%s %s is accepted", r.Method, r.URL)
+			return
+		}
+
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/json" {
+			testutil.ResponseError(w, 400, api.ResponseError{
+				Type:    "bad_request",
+				Message: "Bad Request",
+			})
+			return
+		}
+
+		var v interface{}
+		err = json.Unmarshal(b, &v)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+		b, err = json.Marshal(v)
+		if err != nil {
+			testutil.ResponseError(w, 500, err)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(b)
 	})
 
 	server = httptest.NewServer(mux)
@@ -60,15 +95,15 @@ func TestMain(m *testing.M) {
 
 func TestBuildURL(t *testing.T) {
 	func() {
-		actual := api.BuildURL("", "/test")
-		if actual != "https://qiita.com/api/v2/test" {
+		actual := api.BuildURL("", "/echo")
+		if actual != "https://qiita.com/api/v2/echo" {
 			t.Errorf("wrong url: %s", actual)
 		}
 	}()
 
 	func() {
-		actual := api.BuildURL("increments", "/test")
-		if actual != "https://increments.qiita.com/api/v2/test" {
+		actual := api.BuildURL("increments", "/echo")
+		if actual != "https://increments.qiita.com/api/v2/echo" {
 			t.Errorf("wrong url: %s", actual)
 		}
 	}()
@@ -101,12 +136,12 @@ func TestClientProcess(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Process("OPTIONS", "", "/test", nil)
+	body, _, err := client.Process("OPTIONS", "", "/echo", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(body) == fmt.Sprintf("%s %s/api/v2%s is accepted", "OPTIONS", server.URL, "/test") {
+	if string(body) != fmt.Sprintf("%s /api/v2%s is accepted", "OPTIONS", "/echo") {
 		t.Errorf("wrong body: %s", body)
 	}
 }
@@ -127,7 +162,7 @@ func TestClientProcessWithWrongToken(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	_, _, err = client.Process("OPTIONS", "", "/test", nil)
+	_, _, err = client.Process("OPTIONS", "", "/echo", nil)
 	_, ok := err.(api.WrongTokenError)
 	if !ok {
 		t.Fatal("wrong token error should occur")
@@ -173,13 +208,18 @@ func TestClientPost(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Post("", "/test", "data")
+	body, _, err := client.Post("", "/echo", "data")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(body) == fmt.Sprintf("%s %s/api/v2%s is accepted", "POST", server.URL, "/test") {
-		t.Errorf("wrong body: %s", body)
+	var b string
+	err = json.Unmarshal(body, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b != "data" {
+		t.Errorf("wrong body: %s", b)
 	}
 }
 
@@ -199,12 +239,12 @@ func TestClientGet(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Get("", "/test", nil)
+	body, _, err := client.Get("", "/echo", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(body) == fmt.Sprintf("%s %s/api/v2%s is accepted", "GET", server.URL, "/test") {
+	if string(body) != fmt.Sprintf("%s /api/v2%s is accepted", "GET", "/echo") {
 		t.Errorf("wrong body: %s", body)
 	}
 }
@@ -225,12 +265,12 @@ func TestClientPatch(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Patch("", "/test", nil)
+	body, _, err := client.Patch("", "/echo", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(body) == fmt.Sprintf("%s %s/api/v2%s is accepted", "PATCH", server.URL, "/test") {
+	if string(body) != fmt.Sprintf("%s /api/v2%s is accepted", "PATCH", "/echo") {
 		t.Errorf("wrong body: %s", body)
 	}
 }
@@ -251,12 +291,12 @@ func TestClientDelete(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Delete("", "/test", nil)
+	body, _, err := client.Delete("", "/echo", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(body) == fmt.Sprintf("%s %s/api/v2%s is accepted", "DELETE", server.URL, "/test") {
+	if string(body) != fmt.Sprintf("%s /api/v2%s is accepted", "DELETE", "/echo") {
 		t.Errorf("wrong body: %s", body)
 	}
 }

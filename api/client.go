@@ -75,6 +75,9 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 	}
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	if data != nil {
+		req.Header.Add("Content-Type", "application/json")
+	}
 
 	if c.debug {
 		blueBold := color.New(color.FgBlue).SprintFunc()
