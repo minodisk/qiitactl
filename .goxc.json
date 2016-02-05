@@ -1,0 +1,16 @@
+{
+	"ArtifactsDest": "build",
+	"Tasks": [
+		"default",
+		"publish-github"
+	],
+	"BuildConstraints": "linux darwin windows",
+	"PackageVersion": "0.0.1",
+	"TaskSettings": {
+		"publish-github": {
+			"owner": "minodisk",
+			"repository": "qiitactl"
+		}
+	},
+	"ConfigVersion": "0.9"
+}
