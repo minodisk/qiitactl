@@ -23,7 +23,7 @@ func TestTagsMarshalYAMLWithEmptyTags(t *testing.T) {
 	}
 }
 
-func TestTagsMarshalYAMLWithATagAndNoVersion(t *testing.T) {
+func TestTagsMarshalYAMLWithATagNoVersion(t *testing.T) {
 	tags := model.Tags{
 		model.Tag{
 			Name: "Go",
@@ -41,7 +41,7 @@ func TestTagsMarshalYAMLWithATagAndNoVersion(t *testing.T) {
 	}
 }
 
-func TestTagsMarshalYAMLWithATagAndAVersion(t *testing.T) {
+func TestTagsMarshalYAMLWithATagAVersion(t *testing.T) {
 	tags := model.Tags{
 		model.Tag{
 			Name: "Go",
@@ -63,7 +63,7 @@ func TestTagsMarshalYAMLWithATagAndAVersion(t *testing.T) {
 	}
 }
 
-func TestTagsMarshalYAMLWithATagAndVersions(t *testing.T) {
+func TestTagsMarshalYAMLWithATagVersions(t *testing.T) {
 	tags := model.Tags{
 		model.Tag{
 			Name: "Go",
@@ -87,7 +87,7 @@ func TestTagsMarshalYAMLWithATagAndVersions(t *testing.T) {
 	}
 }
 
-func TestTagsMarshalYAMLWithTagsAndVersions(t *testing.T) {
+func TestTagsMarshalYAMLWithTagsVersions(t *testing.T) {
 	tags := model.Tags{
 		model.Tag{
 			Name: "Go",
@@ -132,7 +132,7 @@ func TestTagsUnmarshalYAMLWithEmptyTags(t *testing.T) {
 	}
 }
 
-func TestTagsUnmrshalYAMLWithATagAndNoVersion(t *testing.T) {
+func TestTagsUnmrshalYAMLWithATagNoVersion(t *testing.T) {
 	var tags model.Tags
 	err := yaml.Unmarshal([]byte(`- Go
 `), &tags)
@@ -151,7 +151,7 @@ func TestTagsUnmrshalYAMLWithATagAndNoVersion(t *testing.T) {
 	}
 }
 
-func TestTagsUnmarshalYAMLWithATagAndAVersion(t *testing.T) {
+func TestTagsUnmarshalYAMLWithATagAVersion(t *testing.T) {
 	var tags model.Tags
 	err := yaml.Unmarshal([]byte(`- Go:
   - 1.5.3
@@ -174,7 +174,7 @@ func TestTagsUnmarshalYAMLWithATagAndAVersion(t *testing.T) {
 	}
 }
 
-func TestTagsUnmarshalYAMLWithATagAndVersions(t *testing.T) {
+func TestTagsUnmarshalYAMLWithATagVersions(t *testing.T) {
 	var tags model.Tags
 	err := yaml.Unmarshal([]byte(`- Go:
   - 1.5.3
@@ -201,7 +201,7 @@ func TestTagsUnmarshalYAMLWithATagAndVersions(t *testing.T) {
 	}
 }
 
-func TestTagsUnmarshalYAMLWithTagsAndVersions(t *testing.T) {
+func TestTagsUnmarshalYAMLWithTagsVersions(t *testing.T) {
 	var tags model.Tags
 	err := yaml.Unmarshal([]byte(`- Go:
   - 1.5.3

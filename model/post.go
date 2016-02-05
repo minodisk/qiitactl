@@ -44,7 +44,7 @@ type Post struct {
 	Title        string `json:"title"`         // 投稿のタイトル
 	Body         string `json:"body"`          // Markdown形式の本文
 	RenderedBody string `json:"rendered_body"` // HTML形式の本文
-	Team         *Team  // チーム
+	Team         *Team  `json:"-"`             // チーム
 }
 
 func NewPost(title string, createdAt *Time, team *Team) (post Post) {
