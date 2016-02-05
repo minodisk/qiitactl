@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"testing"
 
 	"github.com/minodisk/qiitactl/api"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -61,4 +63,14 @@ func ResponseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseErr
 		return
 	}
 	w.Write(b)
+}
+
+func ShouldExistFile(t *testing.T, num int) {
+	matches, err := filepath.Glob("*/*/*/*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) != num {
+		t.Fatalf("file should exist %d file, but actual %s", num, matches)
+	}
 }

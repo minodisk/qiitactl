@@ -46,6 +46,7 @@ type Post struct {
 	Body         string `json:"body"`          // Markdown形式の本文
 	RenderedBody string `json:"rendered_body"` // HTML形式の本文
 	Team         *Team  `json:"-"`             // チーム
+	Path         string `json:"-"`
 }
 
 type CreationOptions struct {
@@ -78,6 +79,7 @@ func NewPostWithFile(path string) (post Post, err error) {
 	if err != nil {
 		return
 	}
+	post.Path = path
 	return
 }
 
@@ -162,26 +164,21 @@ func (post *Post) Delete(client api.Client) (err error) {
 	return
 }
 
-func (post Post) Save() (err error) {
-	var path string
-	if post.ID != "" {
-		path, err = post.findPath()
-		if err != nil {
-			return err
-		}
-	}
-	if path == "" {
-		path = post.createPath()
+func (post *Post) Save() (err error) {
+	err = post.FillPath()
+	if err != nil {
+		return
 	}
 
-	dir := filepath.Dir(path)
+	dir := filepath.Dir(post.Path)
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
 		return
 	}
 
-	fmt.Printf("Make file: %s\n", path)
-	f, err := os.Create(path)
+	fmt.Printf("Make file: %s\n", post.Path)
+
+	f, err := os.Create(post.Path)
 	defer f.Close()
 	if err != nil {
 		return
@@ -193,14 +190,26 @@ func (post Post) Save() (err error) {
 	return
 }
 
-func (post Post) findPath() (path string, err error) {
-	dir, err := os.Getwd()
-	if err != nil {
+func (post *Post) FillPath() (err error) {
+	if post.Path != "" {
 		return
 	}
 
+	if post.ID != "" {
+		path, err := post.findPath()
+		if err == nil {
+			post.Path = path
+			return err
+		}
+	}
+
+	post.Path = post.createPath()
+	return
+}
+
+func (post Post) findPath() (path string, err error) {
 	found := errors.New("found")
-	err = filepath.Walk(dir, func(p string, info os.FileInfo, e error) (err error) {
+	err = filepath.Walk(".", func(p string, info os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
@@ -223,10 +232,11 @@ func (post Post) findPath() (path string, err error) {
 		}
 		return
 	})
-	if err == found {
-		err = nil
+	if err != found {
+		err = PathNotFoundError{}
+		return
 	}
-	return
+	return path, nil
 }
 
 func (post Post) createPath() (path string) {
@@ -249,7 +259,9 @@ func (post Post) createPath() (path string) {
 		_, err := os.Stat(path)
 		// no error means: a file exists at the path
 		// error occurs means: no file exists at the path
-		if err != nil { //TODO test me
+		if err != nil {
+			// no file at the path,
+			// so possible to create file with the path
 			break
 		}
 		filename += "-"
@@ -282,5 +294,12 @@ type EmptyIDError struct{}
 
 func (err EmptyIDError) Error() (msg string) {
 	msg = "empty ID"
+	return
+}
+
+type PathNotFoundError struct{}
+
+func (err PathNotFoundError) Error() (msg string) {
+	msg = "path not found"
 	return
 }
