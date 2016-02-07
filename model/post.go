@@ -58,6 +58,12 @@ type CreationPost struct {
 	CreationOptions
 }
 
+func (post Post) Validate() (err error) {
+	if post.Team == nil {
+	}
+	return
+}
+
 func NewPost(title string, createdAt *Time, team *Team) (post Post) {
 	if createdAt == nil {
 		createdAt = &Time{Time: time.Now()}

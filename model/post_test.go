@@ -983,6 +983,19 @@ Paragraph
 	}
 }
 
+func TestPostValidate(t *testing.T) {
+	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+	post.Body = "Example Body"
+	post.Tags = model.Tags{
+		model.Tag{
+			Name: "Go",
+		},
+	}
+	if err := post.Validate(); err != nil {
+		t.Error("should be valid")
+	}
+}
+
 func TestEmptyIDError(t *testing.T) {
 	err := model.EmptyIDError{}
 	if !strings.HasPrefix(err.Error(), "empty ID") {
