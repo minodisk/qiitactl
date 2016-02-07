@@ -371,6 +371,7 @@ updated_at: 2015-11-28T22:02:37+09:00
 private: false
 coediting: false
 tags: []
+team: null
 -->
 # Example Title 0
 `
@@ -393,6 +394,7 @@ updated_at: 2016-02-01T14:21:49+09:00
 private: false
 coediting: false
 tags: []
+team: null
 -->
 # Example Title 1
 `

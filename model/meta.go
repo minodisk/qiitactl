@@ -14,13 +14,18 @@ type Meta struct {
 	Private   bool   `json:"private" yaml:"private"`       // 限定共有状態かどうかを表すフラグ (Qiita:Teamでは無効)
 	Coediting bool   `json:"coediting" yaml:"coediting"`   // この投稿が共同更新状態かどうか (Qiita:Teamでのみ有効)
 	Tags      Tags   `json:"tags" yaml:"tags"`             // 投稿に付いたタグ一覧
+	Team      *Team  `json:"-"`                            // チーム
 }
 
-func (meta Meta) Format() (out string) {
+func (meta Meta) Encode() (out string) {
 	o, err := yaml.Marshal(meta)
 	if err != nil {
 		panic(err)
 	}
 	out = string(bytes.TrimSpace(o))
 	return
+}
+
+func (meta *Meta) Decode(s string) (err error) {
+	return yaml.Unmarshal([]byte(s), meta)
 }

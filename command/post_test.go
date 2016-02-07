@@ -383,6 +383,7 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team: null
 -->
 # Example title
 ## Example body`
@@ -411,6 +412,7 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team: null
 -->
 # Example old title
 ## Example old body`), 0644)
@@ -448,6 +450,7 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team: null
 -->
 # Example title
 ## Example body`
@@ -502,6 +505,7 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team: null
 -->
 # Example old title
 ## Example old body`), 0644)
@@ -595,6 +599,7 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team: null
 -->
 # Example title
 ## Example body`
@@ -619,6 +624,10 @@ coediting: false
 tags:
 - Ruby:
   - 0.0.1
+team:
+  active: true
+  id: increments
+  name: Increments Inc.
 -->
 # Example title in team
 ## Example body in team`
@@ -650,6 +659,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`), 0664)
@@ -690,6 +700,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`
@@ -720,6 +731,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`), 0664)
@@ -760,6 +772,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`
@@ -790,6 +803,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`), 0664)
@@ -830,6 +844,7 @@ tags:
   - 0.0.1
 - NewTag:
   - "1.0"
+team: null
 -->
 # Example edited title
 ## Example edited body`

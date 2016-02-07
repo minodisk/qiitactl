@@ -740,6 +740,7 @@ updated_at: 2015-11-28T22:02:37+09:00
 private: false
 coediting: false
 tags: []
+team: null
 -->
 # Example Title
 `
@@ -779,6 +780,7 @@ updated_at: 2015-12-28T22:02:37+09:00
 private: false
 coediting: false
 tags: []
+team: null
 -->
 # Example Edited Title
 `
@@ -790,6 +792,8 @@ tags: []
 
 func TestPostEncodeWithNewPost(t *testing.T) {
 	post := model.NewPost("Example title", &model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}, nil)
+	post.ID = "4bd431809afb1bb99e4f"
+	post.URL = "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f"
 	buf := bytes.NewBuffer([]byte{})
 	err := post.Encode(buf)
 	if err != nil {
@@ -797,13 +801,14 @@ func TestPostEncodeWithNewPost(t *testing.T) {
 	}
 	actual := string(buf.Bytes())
 	expected := `<!--
-id: ""
-url: ""
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2016-02-02T15:30:46+09:00
 updated_at: 2016-02-02T15:30:46+09:00
 private: false
 coediting: false
 tags: []
+team: null
 -->
 # Example title
 `
@@ -832,6 +837,7 @@ tags:
 - Go:
   - 1.4.3
   - 1.5.3
+team: null
 -->
 # Main title
 ## Sub title
@@ -861,6 +867,7 @@ tags:
   Go:
     - 1.4.3
     - 1.5.3
+team: null
 -->
 # Main title
 ## Sub title
@@ -890,6 +897,7 @@ tags:
 - Go:
   - 1.4.3
   - 1.5.3
+team: null
 -->
 ## Sub title
 # Main title
@@ -919,6 +927,7 @@ tags:
 - Go:
   - 1.4.3
   - 1.5.3
+team: null
 -->
 # Main title
 ## Sub title
