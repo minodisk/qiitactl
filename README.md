@@ -12,7 +12,7 @@ Command line interface to manage the posts in Qitta.
 
 ### Preparing for use
 
-1. Create a token at[https://qiita.com/settings/applications](https://qiita.com/settings/applications).
+1. Create a token at [https://qiita.com/settings/applications](https://qiita.com/settings/applications).
 2. Set the created token to `QIITA_ACCESS_TOKEN` environment variable.
 
 ### Fetch all posts
