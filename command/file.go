@@ -6,6 +6,7 @@ import (
 	"github.com/minodisk/qiitactl/model"
 )
 
+// GenerateFile generates markdown file at current working directory.
 func GenerateFile(c *cli.Context, client api.Client) (err error) {
 	teamID := c.String("team")
 	title := c.String("title")

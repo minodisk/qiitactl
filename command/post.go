@@ -9,6 +9,7 @@ import (
 	"github.com/minodisk/qiitactl/model"
 )
 
+// ShowPost outputs your post fetched from Qiita to stdout.
 func ShowPost(c *cli.Context, client api.Client, w io.Writer) (err error) {
 	id := c.String("id")
 	filename := c.String("filename")
@@ -24,6 +25,7 @@ func ShowPost(c *cli.Context, client api.Client, w io.Writer) (err error) {
 	return
 }
 
+// ShowPosts outputs your posts fetched from Qiita to stdout.
 func ShowPosts(c *cli.Context, client api.Client, w io.Writer) (err error) {
 	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
@@ -74,6 +76,7 @@ func printPost(w io.Writer, post model.Post) (err error) {
 	return
 }
 
+// FetchPost fetches your post from Qiita to current working directory.
 func FetchPost(c *cli.Context, client api.Client) (err error) {
 	id := c.String("id")
 	filename := c.String("filename")
@@ -107,6 +110,7 @@ func getID(id, filename string) (i string, err error) {
 	return
 }
 
+// FetchPosts fetches your posts from Qiita to current working directory.
 func FetchPosts(c *cli.Context, client api.Client) (err error) {
 	posts, err := model.FetchPosts(client, nil)
 	if err != nil {
@@ -135,6 +139,7 @@ func FetchPosts(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
+// CreatePost creates a new post in Qiita with a specified file.
 func CreatePost(c *cli.Context, client api.Client) (err error) {
 	filename := c.String("filename")
 	opts := model.CreationOptions{
@@ -154,6 +159,7 @@ func CreatePost(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
+// UpdatePost updates your post in Qiita with a specified file.
 func UpdatePost(c *cli.Context, client api.Client) (err error) {
 	filename := c.String("filename")
 
@@ -169,6 +175,7 @@ func UpdatePost(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
+// DeletePost deletes your post from Qiita with a specified file.
 func DeletePost(c *cli.Context, client api.Client) (err error) {
 	filename := c.String("filename")
 
