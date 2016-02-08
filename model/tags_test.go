@@ -144,7 +144,7 @@ func TestTagsUnmrshalYAMLWithATagNoVersion(t *testing.T) {
 		t.Fatalf("wrong length: expected %d, but actual %d", 1, len(tags))
 	}
 	if tags[0].Name != "Go" {
-		t.Errorf("wrong name: expected %d, but actual %d", "Go", tags[0].Name)
+		t.Errorf("wrong name: expected %s, but actual %d", "Go", tags[0].Name)
 	}
 	if len(tags[0].Versions) != 0 {
 		t.Fatalf("wrong length: expected %d, but actual %d", 0, len(tags[0].Versions))
@@ -164,7 +164,7 @@ func TestTagsUnmarshalYAMLWithATagAVersion(t *testing.T) {
 		t.Fatalf("wrong length: expected %d, but actual %d", 1, len(tags))
 	}
 	if tags[0].Name != "Go" {
-		t.Errorf("wrong name: expected %d, but actual %d", "Go", tags[0].Name)
+		t.Errorf("wrong name: expected %s, but actual %d", "Go", tags[0].Name)
 	}
 	if len(tags[0].Versions) != 1 {
 		t.Fatalf("wrong length: expected %d, but actual %d", 1, len(tags[0].Versions))
@@ -188,7 +188,7 @@ func TestTagsUnmarshalYAMLWithATagVersions(t *testing.T) {
 		t.Fatalf("wrong length: expected %d, but actual %d", 1, len(tags))
 	}
 	if tags[0].Name != "Go" {
-		t.Errorf("wrong name: expected %d, but actual %d", "Go", tags[0].Name)
+		t.Errorf("wrong name: expected %s, but actual %d", "Go", tags[0].Name)
 	}
 	if len(tags[0].Versions) != 2 {
 		t.Fatalf("wrong length: expected %d, but actual %d", 2, len(tags[0].Versions))
@@ -217,7 +217,7 @@ func TestTagsUnmarshalYAMLWithTagsVersions(t *testing.T) {
 		t.Fatalf("wrong length: expected %d, but actual %d", 2, len(tags))
 	}
 	if tags[0].Name != "Go" {
-		t.Errorf("wrong name: expected %d, but actual %d", "Go", tags[0].Name)
+		t.Errorf("wrong name: expected %s, but actual %d", "Go", tags[0].Name)
 	}
 	if len(tags[0].Versions) != 2 {
 		t.Fatalf("wrong length: expected %d, but actual %d", 2, len(tags[0].Versions))
@@ -229,7 +229,7 @@ func TestTagsUnmarshalYAMLWithTagsVersions(t *testing.T) {
 		t.Errorf("wrong version: expected %s, but actual %s", "1.6.0", tags[0].Versions[0])
 	}
 	if tags[1].Name != "Ruby" {
-		t.Errorf("wrong name: expected %d, but actual %d", "Go", tags[1].Name)
+		t.Errorf("wrong name: expected %s, but actual %d", "Go", tags[1].Name)
 	}
 	if len(tags[1].Versions) != 1 {
 		t.Fatalf("wrong length: expected %d, but actual %d", 1, len(tags[1].Versions))

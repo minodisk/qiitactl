@@ -10,6 +10,11 @@ import (
 
 func TestMetaEncode(t *testing.T) {
 	at := model.Time{time.Date(2011, 2, 3, 4, 5, 6, 0, time.UTC)}
+	tags := model.Tags{
+		model.Tag{
+			Name: "Go",
+		},
+	}
 	meta := model.Meta{
 		ID:        "4bd431809afb1bb99e4f",
 		URL:       "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f",
@@ -17,11 +22,7 @@ func TestMetaEncode(t *testing.T) {
 		UpdatedAt: at,
 		Private:   true,
 		Coediting: true,
-		Tags: model.Tags{
-			model.Tag{
-				Name: "Go",
-			},
-		},
+		Tags:      tags,
 		Team: &model.Team{
 			Active: true,
 			ID:     "increments",
