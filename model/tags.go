@@ -32,7 +32,7 @@ func (tags *Tags) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 	for _, t := range ts {
 		switch t := t.(type) {
 		default:
-			err = fmt.Errorf("unexpected type in tag: %s", t)
+			err = fmt.Errorf("unexpected type in tag: %v", t)
 			return
 		case string:
 			tag := Tag{

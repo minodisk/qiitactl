@@ -151,6 +151,15 @@ func TestTagsUnmrshalYAMLWithATagNoVersion(t *testing.T) {
 	}
 }
 
+func TestTagsUnmrshalYAMLWithAInvalidTagNoVersion(t *testing.T) {
+	var tags model.Tags
+	err := yaml.Unmarshal([]byte(`- 100
+`), &tags)
+	if err == nil {
+		t.Fatalf("invalid tag should occur error")
+	}
+}
+
 func TestTagsUnmarshalYAMLWithATagAVersion(t *testing.T) {
 	var tags model.Tags
 	err := yaml.Unmarshal([]byte(`- Go:
