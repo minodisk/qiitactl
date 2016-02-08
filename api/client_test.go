@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -23,6 +24,7 @@ var (
 
 func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/api/v2/echo", func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if auth != "Bearer XXXXXXXXXXXX" {
@@ -80,6 +82,16 @@ func TestMain(m *testing.M) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(b)
+	})
+
+	mux.HandleFunc("/api/v2/errors/response", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(500)
+		b, _ := json.Marshal(api.ResponseError{"internal_server_error", "Internal Server Error"})
+		w.Write(b)
+	})
+
+	mux.HandleFunc("/api/v2/errors/status", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(500)
 	})
 
 	server = httptest.NewServer(mux)
@@ -169,7 +181,7 @@ func TestClientProcessWithWrongToken(t *testing.T) {
 	}
 }
 
-func TestClientProcessWithWrongURL(t *testing.T) {
+func TestClientProcessWithResponseError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -185,7 +197,30 @@ func TestClientProcessWithWrongURL(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	_, _, err = client.Options("", "/wrong/url", nil)
+	_, _, err = client.Options("", "/errors/response", nil)
+	_, ok := err.(api.ResponseError)
+	if !ok {
+		t.Fatal("response error should occur")
+	}
+}
+
+func TestClientProcessWithStatusError(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, _, err = client.Options("", "/errors/status", nil)
 	_, ok := err.(api.StatusError)
 	if !ok {
 		t.Fatal("status error should occur")
@@ -204,6 +239,7 @@ func TestClientPost(t *testing.T) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
+	client.DebugMode(true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,7 +275,7 @@ func TestClientGet(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Get("", "/echo", nil)
+	body, _, err := client.Get("", "/echo", &url.Values{})
 	if err != nil {
 		t.Fatal(err)
 	}

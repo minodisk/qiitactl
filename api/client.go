@@ -58,9 +58,9 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
-// SetDebugMode sets debugMode to Client.
+// DebugMode sets debugMode to Client.
 // When debugMode is true, qiitactl outputs the logs (e.g., HTTP request and response).
-func (c *Client) SetDebugMode(debugMode bool) {
+func (c *Client) DebugMode(debugMode bool) {
 	c.debugMode = debugMode
 }
 
