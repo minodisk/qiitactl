@@ -19,14 +19,1493 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-var (
-	serverMine *httptest.Server
-	serverTeam *httptest.Server
-	client     api.Client
-)
-
 func TestMain(m *testing.M) {
+	code := m.Run()
+	// Clean up trashes
+	testutil.CleanUp()
+	os.Exit(code)
+}
+
+func TestFetchPostWithID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
 	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team: null
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestFetchPostWithWrongID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "404 Not Found"
+	if actual != expected {
+		t.Fatalf("error should occur when fetches post with wrong ID: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestFetchPostWithFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team: null
+-->
+# Example old title
+## Example old body`), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team: null
+-->
+# Example title
+## Example body`
+	if actual != expected {
+		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestFetchPostWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when fetches post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestShowPostWithID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+` {
+		t.Errorf("written text is wrong: %s", buf.Bytes())
+	}
+}
+
+func TestShowPostWithWrongID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "404 Not Found"
+	if actual != expected {
+		t.Fatalf("error should occur when show post with wrong ID: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestShowPostWithFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team: null
+-->
+# Example old title
+## Example old body`), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+` {
+		t.Errorf("written text is wrong: %s", buf.Bytes())
+	}
+}
+
+func TestShowPostWithWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when shows post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestShowPosts(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleAuthenticatedUserItems(mux)
+	handleTeams(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	mux = http.NewServeMux()
+	handleAuthenticatedUserItemsWithTeam(mux)
+	serverTeam := httptest.NewServer(mux)
+	defer serverTeam.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		case "increments":
+			url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "show", "posts"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	if string(buf.Bytes()) != `Posts in Qiita:
+4bd431809afb1bb99e4f 2000/01/01 Example title
+Posts in Qiita:Team (Increments Inc.):
+4bd431809afb1bb99e4t 2015/09/25 Example title in team
+` {
+		t.Errorf("written text is wrong: %s", buf.Bytes())
+	}
+}
+
+func TestShowPostsErrors(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	func() {
+		mux := http.NewServeMux()
+		// handleAuthenticatedUserItems(mux)
+		handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		testutil.ShouldExistFile(t, 0)
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "show", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+
+	func() {
+		mux := http.NewServeMux()
+		handleAuthenticatedUserItems(mux)
+		// handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		testutil.ShouldExistFile(t, 0)
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "show", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+
+	func() {
+		mux := http.NewServeMux()
+		handleAuthenticatedUserItems(mux)
+		handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		// handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		testutil.ShouldExistFile(t, 0)
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "show", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+}
+
+func TestFetchPosts(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleAuthenticatedUserItems(mux)
+	handleTeams(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	mux = http.NewServeMux()
+	handleAuthenticatedUserItemsWithTeam(mux)
+	serverTeam := httptest.NewServer(mux)
+	defer serverTeam.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		case "increments":
+			url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "fetch", "posts"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 2)
+
+	func() {
+		b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(b)
+		expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team: null
+-->
+# Example title
+## Example body`
+		if actual != expected {
+			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+
+	func() {
+		b, err := ioutil.ReadFile("increments/2015/09/25-example-title-in-team.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(b)
+		expected := `<!--
+id: 4bd431809afb1bb99e4t
+url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
+created_at: 2015-09-25T09:00:00+09:00
+updated_at: 2015-09-25T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+team:
+  active: true
+  id: increments
+  name: Increments Inc.
+-->
+# Example title in team
+## Example body in team`
+		if actual != expected {
+			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+}
+
+func TestFetchPostsErrors(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	func() {
+		mux := http.NewServeMux()
+		// handleAuthenticatedUserItems(mux)
+		handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "fetch", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+
+	func() {
+		mux := http.NewServeMux()
+		handleAuthenticatedUserItems(mux)
+		// handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "fetch", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+
+	func() {
+		mux := http.NewServeMux()
+		handleAuthenticatedUserItems(mux)
+		handleTeams(mux)
+		serverMine := httptest.NewServer(mux)
+		defer serverMine.Close()
+		mux = http.NewServeMux()
+		// handleAuthenticatedUserItemsWithTeam(mux)
+		serverTeam := httptest.NewServer(mux)
+		defer serverTeam.Close()
+		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+		if err != nil {
+			log.Fatal(err)
+		}
+		client, err := api.NewClient(func(subDomain, path string) (url string) {
+			switch subDomain {
+			case "":
+				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+			case "increments":
+				url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
+			default:
+				log.Fatalf("wrong sub domain \"%s\"", subDomain)
+			}
+			return
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+		errBuf := bytes.NewBuffer([]byte{})
+		app := cli.GenerateApp(client, buf, errBuf)
+		err = app.Run([]string{"qiitactl", "fetch", "posts"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		e := errBuf.Bytes()
+		if len(e) == 0 {
+			t.Fatal("error should occur")
+		}
+	}()
+}
+
+func TestCreatePost(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItems(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: ""
+url: ""
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2016-02-01T21:51:42+09:00
+updated_at: 2016-02-01T21:51:42+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`
+	if actual != expected {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestCreatePostErrorWithNoFile(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItems(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) == 0 {
+		t.Fatalf("error should occur")
+	}
+}
+
+func TestCreatePostErrorWithNoServer(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	// handleItems(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: ""
+url: ""
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) == 0 {
+		t.Fatal("error should occur")
+	}
+
+	testutil.ShouldExistFile(t, 1)
+}
+
+func TestUpdatePost(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2016-02-01T21:51:42+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`
+	if actual != expected {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestUpdatePostWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when updates post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestUpdatePostWithNoServer(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	// handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) == 0 {
+		t.Fatal("error should occur")
+	}
+
+	testutil.ShouldExistFile(t, 1)
+}
+
+func TestDeletePost(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) != 0 {
+		t.Fatal(string(e))
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := string(b)
+	expected := `<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`
+	if actual != expected {
+		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+	}
+}
+
+func TestFetchDeleteWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when deletes post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
+func TestDeletePostErrorWithNoServer(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	// handleItem(mux)
+	serverMine := httptest.NewServer(mux)
+	defer serverMine.Close()
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		switch subDomain {
+		case "":
+			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
+		default:
+			log.Fatalf("wrong sub domain \"%s\"", subDomain)
+		}
+		return
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	err = os.MkdirAll("mine/2000/01", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+id: 4bd431809afb1bb99e4f
+url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
+created_at: 2000-01-01T09:00:00+09:00
+updated_at: 2000-01-01T09:00:00+09:00
+private: false
+coediting: false
+tags:
+- Ruby:
+  - 0.0.1
+- NewTag:
+  - "1.0"
+team: null
+-->
+# Example edited title
+## Example edited body`), 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, os.Stdout, errBuf)
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	if len(e) == 0 {
+		t.Fatal("error should occur")
+	}
+
+	testutil.ShouldExistFile(t, 1)
+}
+
+func handleAuthenticatedUserItems(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -80,6 +1559,9 @@ func TestMain(m *testing.M) {
 			w.WriteHeader(405)
 		}
 	})
+}
+
+func handleTeams(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v2/teams", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -94,7 +1576,9 @@ func TestMain(m *testing.M) {
 			w.WriteHeader(405)
 		}
 	})
+}
 
+func handleItems(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v2/items", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
@@ -153,7 +1637,9 @@ func TestMain(m *testing.M) {
 			w.WriteHeader(405)
 		}
 	})
+}
 
+func handleItem(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -265,11 +1751,9 @@ func TestMain(m *testing.M) {
 			w.WriteHeader(405)
 		}
 	})
+}
 
-	serverMine = httptest.NewServer(mux)
-	defer serverMine.Close()
-
-	mux = http.NewServeMux()
+func handleAuthenticatedUserItemsWithTeam(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
 		var body string
 		if r.URL.Query().Get("page") == "1" {
@@ -318,822 +1802,4 @@ func TestMain(m *testing.M) {
 		w.Header().Set("Total-Count", fmt.Sprint(1))
 		w.Write([]byte(body))
 	})
-	serverTeam = httptest.NewServer(mux)
-	defer serverTeam.Close()
-
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client, err = api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		case "increments":
-			url = fmt.Sprintf("%s%s%s", serverTeam.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	code := m.Run()
-
-	// Clean up trashes
-	testutil.CleanUp()
-
-	os.Exit(code)
 }
-
-func TestFetchPostWithID(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	actual := string(b)
-	expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team: null
--->
-# Example title
-## Example body`
-	if actual != expected {
-		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-	}
-}
-
-func TestFetchPostWithWrongID(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "404 Not Found"
-	if actual != expected {
-		t.Fatalf("error should occur when fetches post with wrong ID: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-func TestFetchPostWithFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	err := os.MkdirAll("mine/2000/01", 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team: null
--->
-# Example old title
-## Example old body`), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	actual := string(b)
-	expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team: null
--->
-# Example title
-## Example body`
-	if actual != expected {
-		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-	}
-}
-
-func TestFetchPostWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when fetches post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-func TestShowPostWithID(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 0)
-
-	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
-` {
-		t.Errorf("written text is wrong: %s", buf.Bytes())
-	}
-}
-
-func TestShowPostWithWrongID(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "404 Not Found"
-	if actual != expected {
-		t.Fatalf("error should occur when show post with wrong ID: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-func TestShowPostWithFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	err := os.MkdirAll("mine/2000/01", 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team: null
--->
-# Example old title
-## Example old body`), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
-` {
-		t.Errorf("written text is wrong: %s", buf.Bytes())
-	}
-}
-
-func TestShowPostWithWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when shows post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-func TestShowPosts(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "posts"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 0)
-
-	if string(buf.Bytes()) != `Posts in Qiita:
-4bd431809afb1bb99e4f 2000/01/01 Example title
-Posts in Qiita:Team (Increments Inc.):
-4bd431809afb1bb99e4t 2015/09/25 Example title in team
-` {
-		t.Errorf("written text is wrong: %s", buf.Bytes())
-	}
-}
-
-func TestFetchPosts(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "posts"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 2)
-
-	func() {
-		b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-		if err != nil {
-			t.Fatal(err)
-		}
-		actual := string(b)
-		expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team: null
--->
-# Example title
-## Example body`
-		if actual != expected {
-			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-		}
-	}()
-
-	func() {
-		b, err := ioutil.ReadFile("increments/2015/09/25-example-title-in-team.md")
-		if err != nil {
-			t.Fatal(err)
-		}
-		actual := string(b)
-		expected := `<!--
-id: 4bd431809afb1bb99e4t
-url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
-created_at: 2015-09-25T09:00:00+09:00
-updated_at: 2015-09-25T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-team:
-  active: true
-  id: increments
-  name: Increments Inc.
--->
-# Example title in team
-## Example body in team`
-		if actual != expected {
-			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-		}
-	}()
-}
-
-func TestCreatePost(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	err := os.MkdirAll("mine/2000/01", 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: ""
-url: ""
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`), 0664)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual := string(b)
-	expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2016-02-01T21:51:42+09:00
-updated_at: 2016-02-01T21:51:42+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`
-	if actual != expected {
-		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
-	}
-}
-
-func TestUpdatePost(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	err := os.MkdirAll("mine/2000/01", 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`), 0664)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual := string(b)
-	expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2016-02-01T21:51:42+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`
-	if actual != expected {
-		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
-	}
-}
-
-func TestUpdatePostWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when updates post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-func TestDeletePost(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	err := os.MkdirAll("mine/2000/01", 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`), 0664)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) != 0 {
-		t.Fatal(string(e))
-	}
-
-	testutil.ShouldExistFile(t, 1)
-
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual := string(b)
-	expected := `<!--
-id: 4bd431809afb1bb99e4f
-url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-created_at: 2000-01-01T09:00:00+09:00
-updated_at: 2000-01-01T09:00:00+09:00
-private: false
-coediting: false
-tags:
-- Ruby:
-  - 0.0.1
-- NewTag:
-  - "1.0"
-team: null
--->
-# Example edited title
-## Example edited body`
-	if actual != expected {
-		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
-	}
-}
-
-func TestFetchDeleteWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when deletes post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
-// func TestTracingPostFileWithPostID(t *testing.T) {
-// 	defer cleanUp()
-//
-// 	err := os.MkdirAll("mine/1990/07", 0755)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = ioutil.WriteFile("mine/1990/07/03-example-old-title.md", []byte(`<!--
-// id: 4bd431809afb1bb99e4f
-// url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-// created_at: 1990-07-03T09:00:00+09:00
-// updated_at: 1990-07-03T09:00:00+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.0
-// -->
-// # Example old title
-// ## Example old body`), 0664)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	err = command.FetchPost(client, "4bd431809afb1bb99e4f", "")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	b, err := ioutil.ReadFile("mine/1990/07/03-example-old-title.md")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	actual := string(b)
-// 	expected := `<!--
-// id: 4bd431809afb1bb99e4f
-// url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-// created_at: 2000-01-01T09:00:00+09:00
-// updated_at: 2000-01-01T09:00:00+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.1
-// -->
-// # Example title
-// ## Example body`
-// 	if actual != expected {
-// 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-// 	}
-// }
-//
-// func TestTracingPostFilesWithPostIDs(t *testing.T) {
-// 	defer cleanUp()
-//
-// 	err := os.MkdirAll("mine/1990/07", 0755)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = ioutil.WriteFile("mine/1990/07/03-example-old-title.md", []byte(`<!--
-// id: 4bd431809afb1bb99e4f
-// url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-// created_at: 1990-07-03T09:00:00+09:00
-// updated_at: 1990-07-03T09:00:00+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.0
-// -->
-// # Example old title
-// ## Example old body`), 0664)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	err = os.MkdirAll("increments/1993/12", 0755)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = ioutil.WriteFile("increments/1993/12/30-example-old-title-in-team.md", []byte(`<!--
-// id: 4bd431809afb1bb99e4t
-// url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
-// created_at: 1993-12-30:22:11:31+09:00
-// updated_at: 1993-12-30:22:11:31+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.1
-// -->
-// # Example old title in team
-// ## Example old body in team`), 0664)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	err = command.FetchPosts(client)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	b, err := ioutil.ReadFile("mine/1990/07/03-example-old-title.md")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	actual := string(b)
-// 	expected := `<!--
-// id: 4bd431809afb1bb99e4f
-// url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
-// created_at: 2000-01-01T09:00:00+09:00
-// updated_at: 2000-01-01T09:00:00+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.1
-// -->
-// # Example title
-// ## Example body`
-// 	if actual != expected {
-// 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-// 	}
-//
-// 	b, err = ioutil.ReadFile("increments/1993/12/30-example-old-title-in-team.md")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	actual = string(b)
-// 	expected = `<!--
-// id: 4bd431809afb1bb99e4t
-// url: https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t
-// created_at: 2015-09-25T09:00:00+09:00
-// updated_at: 2015-09-25T09:00:00+09:00
-// private: false
-// coediting: false
-// tags:
-// - Ruby:
-//   - 0.0.1
-// -->
-// # Example title in team
-// ## Example body in team`
-// 	if actual != expected {
-// 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
-// 	}
-// }

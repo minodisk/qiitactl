@@ -2,12 +2,14 @@ package command_test
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 	"time"
 
+	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/cli"
 	"github.com/minodisk/qiitactl/model"
 	"github.com/minodisk/qiitactl/testutil"
@@ -17,8 +19,17 @@ func TestGenerateFileInMine(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
+	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,8 +52,17 @@ func TestGenerateFileInTeam(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title", "-T", "increments"})
+	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title", "-T", "increments"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,8 +85,17 @@ func TestGenerateUniqueFile(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err := app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
+	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
 	if err != nil {
 		t.Fatal(err)
 	}
