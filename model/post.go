@@ -58,8 +58,30 @@ type CreationPost struct {
 	CreationOptions
 }
 
-func (post Post) Validate() (err error) {
+func (post Post) Validate() (err InvalidError) {
+	err = make(InvalidError)
+	if post.Title == "" {
+		err["title"] = InvalidStatus{
+			Name:     "title",
+			Required: true,
+		}
+	}
+	if post.Body == "" {
+		err["body"] = InvalidStatus{
+			Name:     "body",
+			Required: true,
+		}
+	}
 	if post.Team == nil {
+		if post.Tags == nil {
+			err["tags"] = InvalidStatus{
+				Name:     "tags",
+				Required: true,
+			}
+		}
+	}
+	if err.none() {
+		err = nil
 	}
 	return
 }
@@ -306,5 +328,51 @@ type PathNotFoundError struct{}
 
 func (err PathNotFoundError) Error() (msg string) {
 	msg = "path not found"
+	return
+}
+
+type InvalidError map[string]InvalidStatus
+
+func (err InvalidError) Error() (msg string) {
+	msgs := []string{}
+	len := 0
+	for _, status := range err {
+		len++
+		msgs = append(msgs, status.String())
+	}
+	var firstMessage string
+	switch len {
+	case 0:
+		firstMessage = "Valid"
+	case 1:
+		firstMessage = "A field is invalid:"
+	default:
+		firstMessage = "Some fields are invalid:"
+	}
+	msgs = append([]string{firstMessage}, msgs...)
+	msg = strings.Join(msgs, "\n")
+	return
+}
+
+func (err InvalidError) none() (valid bool) {
+	for range err {
+		return false
+	}
+	return true
+}
+
+type InvalidStatus struct {
+	Name     string
+	Required bool
+}
+
+func (s InvalidStatus) String() (msg string) {
+	msgs := []string{
+		fmt.Sprintf("- %s", s.Name),
+	}
+	if s.Required {
+		msgs = append(msgs, fmt.Sprintf("  - shouldn't be empty"))
+	}
+	msg = strings.Join(msgs, "\n")
 	return
 }

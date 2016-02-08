@@ -983,17 +983,202 @@ Paragraph
 	}
 }
 
-func TestPostValidate(t *testing.T) {
-	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
-	post.Body = "Example Body"
-	post.Tags = model.Tags{
-		model.Tag{
-			Name: "Go",
-		},
-	}
-	if err := post.Validate(); err != nil {
-		t.Error("should be valid")
-	}
+func TestPostValidateWithoutTeam(t *testing.T) {
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Body = "Example Body"
+		post.Tags = model.Tags{
+			model.Tag{
+				Name: "Go",
+			},
+		}
+		err := post.Validate()
+		if err != nil {
+			t.Error("should be valid")
+		}
+	}()
+
+	func() {
+		post := model.NewPost("", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Body = "Example Body"
+		post.Tags = model.Tags{
+			model.Tag{
+				Name: "Go",
+			},
+		}
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "title":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Tags = model.Tags{
+			model.Tag{
+				Name: "Go",
+			},
+		}
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "body":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Body = "Example Body"
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "tags":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+
+	func() {
+		post := model.NewPost("", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "title":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			case "body":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			case "tags":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+}
+
+func TestPostValidateWithTeam(t *testing.T) {
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Body = "Example Body"
+		post.Team = &model.Team{
+			Active: true,
+			ID:     "increments",
+			Name:   "Increments Inc.",
+		}
+		err := post.Validate()
+		if err != nil {
+			t.Error("should be valid")
+		}
+	}()
+
+	func() {
+		post := model.NewPost("", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Body = "Example Body"
+		post.Team = &model.Team{
+			Active: true,
+			ID:     "increments",
+			Name:   "Increments Inc.",
+		}
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "title":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Team = &model.Team{
+			Active: true,
+			ID:     "increments",
+			Name:   "Increments Inc.",
+		}
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "body":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
+
+	func() {
+		post := model.NewPost("", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+		post.Team = &model.Team{
+			Active: true,
+			ID:     "increments",
+			Name:   "Increments Inc.",
+		}
+		err := post.Validate()
+		if err == nil {
+			t.Error("should be invalid")
+		}
+		for name, status := range err {
+			switch name {
+			case "title":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			case "body":
+				if !status.Required {
+					t.Errorf("%s should be required", name)
+				}
+			default:
+				t.Errorf("%s should be valid: %s", name, status)
+			}
+		}
+	}()
 }
 
 func TestEmptyIDError(t *testing.T) {
@@ -1001,4 +1186,28 @@ func TestEmptyIDError(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), "empty ID") {
 		t.Errorf("wrong error: %s", err.Error())
 	}
+}
+
+func TestInvalidError(t *testing.T) {
+	func() {
+		err := model.InvalidError{}
+		if err.Error() != "Valid" {
+			t.Errorf("wrong message: %s", err)
+		}
+	}()
+
+	func() {
+		err := model.InvalidError{}
+		err["foo"] = model.InvalidStatus{
+			Name:     "foo",
+			Required: true,
+		}
+		actual := err.Error()
+		expected := `A field is invalid:
+- foo
+  - shouldn't be empty`
+		if actual != expected {
+			t.Errorf("wrong message:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
 }
