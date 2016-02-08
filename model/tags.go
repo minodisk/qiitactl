@@ -2,8 +2,10 @@ package model
 
 import "fmt"
 
+// Tags is slice of Tag.
 type Tags []Tag
 
+// MarshalYAML encodes Tags to YAML encoded string.
 func (tags Tags) MarshalYAML() (data interface{}, err error) {
 	arr := make([]interface{}, len(tags))
 	for i, tag := range tags {
@@ -19,6 +21,7 @@ func (tags Tags) MarshalYAML() (data interface{}, err error) {
 	return
 }
 
+// UnmarshalYAML decodes YAML encoded string to Tag struct.
 func (tags *Tags) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 	var ts []interface{}
 	err = unmarshal(&ts)
