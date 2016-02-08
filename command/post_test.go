@@ -392,6 +392,29 @@ team: null
 	}
 }
 
+func TestFetchPostWithWrongID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "404 Not Found"
+	if actual != expected {
+		t.Fatalf("error should occur when fetches post with wrong ID: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
 func TestFetchPostWithFilename(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -459,6 +482,29 @@ team: null
 	}
 }
 
+func TestFetchPostWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when fetches post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
 func TestShowPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -483,6 +529,29 @@ func TestShowPostWithID(t *testing.T) {
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
+}
+
+func TestShowPostWithWrongID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "404 Not Found"
+	if actual != expected {
+		t.Fatalf("error should occur when show post with wrong ID: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestShowPostWithFilename(t *testing.T) {
@@ -533,6 +602,29 @@ team: null
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
+}
+
+func TestShowPostWithWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when shows post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 func TestShowPosts(t *testing.T) {
@@ -781,6 +873,29 @@ team: null
 	}
 }
 
+func TestUpdatePostWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when updates post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
 func TestDeletePost(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -851,6 +966,29 @@ team: null
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
+}
+
+func TestFetchDeleteWithWrongFilename(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+	app := cli.GenerateApp(client, buf, errBuf)
+	err := app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := errBuf.Bytes()
+	actual := string(e)
+	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	if actual != expected {
+		t.Fatalf("error should occur when deletes post with wrong filename: %s", actual)
+	}
+
+	testutil.ShouldExistFile(t, 0)
 }
 
 // func TestTracingPostFileWithPostID(t *testing.T) {
