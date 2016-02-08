@@ -24,6 +24,8 @@ const (
 -->
 # {{.Title}}
 {{.Body}}`
+
+	// DirMine is the directory of saving posts in Qiita. (Not for posts in Qiita:Team)
 	DirMine = "mine"
 )
 
@@ -38,6 +40,7 @@ var (
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
 
+// Post is a post in Qiita.
 type Post struct {
 	Meta
 	User         User   `json:"user"`
@@ -47,16 +50,19 @@ type Post struct {
 	Path         string `json:"-"`
 }
 
+// CreationOptions is options for creating a post.
 type CreationOptions struct {
 	Tweet bool `json:"tweet"`
 	Gist  bool `json:"gist"`
 }
 
+// CreationPost is sent to Qiita server when creating post.
 type CreationPost struct {
 	Post
 	CreationOptions
 }
 
+// Validate validates fields in Post.
 func (post Post) Validate() (err InvalidError) {
 	err = make(InvalidError)
 	if post.Title == "" {
@@ -85,6 +91,7 @@ func (post Post) Validate() (err InvalidError) {
 	return
 }
 
+// NewPost create a Post.
 func NewPost(title string, createdAt *Time, team *Team) (post Post) {
 	if createdAt == nil {
 		createdAt = &Time{Time: time.Now()}
@@ -96,6 +103,7 @@ func NewPost(title string, createdAt *Time, team *Team) (post Post) {
 	return
 }
 
+// NewPostWithFile loads local file and create a Post from the content of the file.
 func NewPostWithFile(path string) (post Post, err error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -109,6 +117,7 @@ func NewPostWithFile(path string) (post Post, err error) {
 	return
 }
 
+// Create creates a new post in Qiita.
 func (post *Post) Create(client api.Client, opts CreationOptions) (err error) {
 	subDomain := ""
 	if post.Team != nil {
@@ -131,6 +140,7 @@ func (post *Post) Create(client api.Client, opts CreationOptions) (err error) {
 	return
 }
 
+// FetchPost fetches a post from Qiita.
 func FetchPost(client api.Client, team *Team, id string) (post Post, err error) {
 	subDomain := ""
 	if team != nil {
@@ -148,6 +158,7 @@ func FetchPost(client api.Client, team *Team, id string) (post Post, err error) 
 	return
 }
 
+// Update updates a post in Qiita.
 func (post *Post) Update(client api.Client) (err error) {
 	if post.ID == "" {
 		err = EmptyIDError{}
@@ -169,6 +180,7 @@ func (post *Post) Update(client api.Client) (err error) {
 	return
 }
 
+// Delete deletes a post in Qiita.
 func (post *Post) Delete(client api.Client) (err error) {
 	if post.ID == "" {
 		err = EmptyIDError{}
@@ -190,12 +202,13 @@ func (post *Post) Delete(client api.Client) (err error) {
 	return
 }
 
+// Save saves a post as a markdown file in local.
 func (post *Post) Save(paths map[string]string) (err error) {
 	if paths == nil {
 		paths = pathsInLocal()
 	}
 
-	err = post.FillPath(paths)
+	err = post.fillPath(paths)
 	if err != nil {
 		return
 	}
@@ -220,7 +233,7 @@ func (post *Post) Save(paths map[string]string) (err error) {
 	return
 }
 
-func (post *Post) FillPath(paths map[string]string) (err error) {
+func (post *Post) fillPath(paths map[string]string) (err error) {
 	for id, path := range paths {
 		if id == post.ID {
 			post.Path = path
@@ -333,11 +346,13 @@ func (post Post) createPath() (path string) {
 	return
 }
 
+// Encode encodes Post from bytes.
 func (post Post) Encode(w io.Writer) (err error) {
 	err = tmpl.Execute(w, post)
 	return
 }
 
+// Decode decodes Post from bytes.
 func (post *Post) Decode(b []byte) (err error) {
 	matched := rPostDecoder.FindSubmatch(b)
 	if len(matched) != 4 {
@@ -354,6 +369,7 @@ func (post *Post) Decode(b []byte) (err error) {
 	return
 }
 
+// EmptyIDError occurs when operate a post without ID.
 type EmptyIDError struct{}
 
 func (err EmptyIDError) Error() (msg string) {
@@ -361,13 +377,14 @@ func (err EmptyIDError) Error() (msg string) {
 	return
 }
 
-type PathNotFoundError struct{}
+// type PathNotFoundError struct{}
+//
+// func (err PathNotFoundError) Error() (msg string) {
+// 	msg = "path not found"
+// 	return
+// }
 
-func (err PathNotFoundError) Error() (msg string) {
-	msg = "path not found"
-	return
-}
-
+// InvalidError occurs when some fields are wrong.
 type InvalidError map[string]InvalidStatus
 
 func (err InvalidError) Error() (msg string) {
@@ -398,6 +415,7 @@ func (err InvalidError) none() (valid bool) {
 	return true
 }
 
+// InvalidStatus suggests what is wrong.
 type InvalidStatus struct {
 	Name     string
 	Required bool
