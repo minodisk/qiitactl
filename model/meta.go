@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,7 +21,7 @@ type Meta struct {
 func (meta Meta) Encode() (out string) {
 	o, err := yaml.Marshal(meta)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	out = string(bytes.TrimSpace(o))
 	return
