@@ -86,7 +86,7 @@ func FetchPost(c *cli.Context, client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = post.Save()
+	err = post.Save(nil)
 	return
 }
 
@@ -150,7 +150,7 @@ func CreatePost(c *cli.Context, client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = post.Save()
+	err = post.Save(nil)
 	return
 }
 
@@ -165,7 +165,7 @@ func UpdatePost(c *cli.Context, client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = post.Save()
+	err = post.Save(nil)
 	return
 }
 
@@ -180,7 +180,7 @@ func DeletePost(c *cli.Context, client api.Client) (err error) {
 	if err != nil {
 		return
 	}
-	err = post.Save()
+	err = post.Save(nil)
 	return
 }
 

@@ -53,8 +53,9 @@ func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 }
 
 func (posts Posts) Save() (err error) {
+	paths := pathsInLocal()
 	for _, post := range posts {
-		err = post.Save()
+		err = post.Save(paths)
 		if err != nil {
 			return
 		}
