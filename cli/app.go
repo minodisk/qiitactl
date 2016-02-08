@@ -10,6 +10,7 @@ import (
 	"github.com/minodisk/qiitactl/info"
 )
 
+// GenerateApp generates an application of command line interface.
 func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (app *cli.App) {
 	app = cli.NewApp()
 	app.Writer = outWriter
@@ -174,7 +175,7 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 
 func partialize(cmdFunc func(*cli.Context, api.Client) error, client api.Client, errWriter io.Writer) func(ctx *cli.Context) {
 	return func(ctx *cli.Context) {
-		client.SetDebug(ctx.GlobalBool("debug"))
+		client.SetDebugMode(ctx.GlobalBool("debug"))
 		err := cmdFunc(ctx, client)
 		if err != nil {
 			printError(ctx, errWriter, err)
@@ -184,7 +185,7 @@ func partialize(cmdFunc func(*cli.Context, api.Client) error, client api.Client,
 
 func partializeWithWriter(cmdFunc func(*cli.Context, api.Client, io.Writer) error, client api.Client, outWriter io.Writer, errWriter io.Writer) func(ctx *cli.Context) {
 	return func(ctx *cli.Context) {
-		client.SetDebug(ctx.GlobalBool("debug"))
+		client.SetDebugMode(ctx.GlobalBool("debug"))
 		err := cmdFunc(ctx, client, outWriter)
 		if err != nil {
 			printError(ctx, errWriter, err)
