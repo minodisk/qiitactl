@@ -20,13 +20,15 @@ const (
 	baseHost       = "qiita.com"
 )
 
+// Client is HTTP client accessing to the Qiita API v2.
 type Client struct {
 	Token      string
 	BuildURL   func(string, string) string
 	httpClient *http.Client
-	debug      bool
+	debugMode  bool
 }
 
+// BuildURL builds URL of Qiita API v2.
 func BuildURL(subDomain, path string) (url string) {
 	var host string
 	if subDomain == "" {
@@ -38,6 +40,8 @@ func BuildURL(subDomain, path string) (url string) {
 	return
 }
 
+// NewClient makes a Client.
+// Client will access to URL made by buildURL.
 func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	if buildURL == nil {
 		c.BuildURL = BuildURL
@@ -54,11 +58,13 @@ func NewClient(buildURL func(string, string) string) (c Client, err error) {
 	return
 }
 
-func (c *Client) SetDebug(debug bool) {
-	c.debug = debug
+// SetDebugMode sets debugMode to Client.
+// When debugMode is true, qiitactl outputs the logs (e.g., HTTP request and response).
+func (c *Client) SetDebugMode(debugMode bool) {
+	c.debugMode = debugMode
 }
 
-func (c Client) Process(method string, subDomain string, path string, data interface{}) (respBody []byte, respHeader http.Header, err error) {
+func (c Client) process(method string, subDomain string, path string, data interface{}) (respBody []byte, respHeader http.Header, err error) {
 	url := c.BuildURL(subDomain, path)
 
 	var reqBody io.Reader
@@ -79,7 +85,7 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 		req.Header.Add("Content-Type", "application/json")
 	}
 
-	if c.debug {
+	if c.debugMode {
 		blueBold := color.New(color.FgBlue).SprintFunc()
 		blue := color.New(color.FgBlue).SprintFunc()
 		magenta := color.New(color.FgCyan).SprintFunc()
@@ -96,7 +102,7 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 
 	defer resp.Body.Close()
 	respBody, err = ioutil.ReadAll(resp.Body)
-	if c.debug {
+	if c.debugMode {
 		blue := color.New(color.FgBlue).SprintFunc()
 		magenta := color.New(color.FgCyan).SprintFunc()
 		white := color.New(color.FgWhite).SprintFunc()
@@ -127,8 +133,6 @@ func (c Client) Process(method string, subDomain string, path string, data inter
 		}
 		return
 	}
-
-	return
 }
 
 func stringifyHeader(header http.Header) string {
@@ -152,29 +156,45 @@ func stringifyBody(data interface{}) string {
 	return string(str)
 }
 
-func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
-	body, header, err = c.Process("POST", subDomain, path, data)
+// Options send OPTIONS request with data body
+// to the URL built with subDomain and path.
+func (c Client) Options(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
+	body, header, err = c.process("OPTIONS", subDomain, path, data)
 	return
 }
 
+// Post send POST request with data body
+// to the URL built with subDomain and path.
+func (c Client) Post(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
+	body, header, err = c.process("POST", subDomain, path, data)
+	return
+}
+
+// Get send GET request
+// to the URL built with subDomain and path.
 func (c Client) Get(subDomain string, path string, v *url.Values) (body []byte, header http.Header, err error) {
 	if v != nil {
 		path = fmt.Sprintf("%s?%s", path, v.Encode())
 	}
-	body, header, err = c.Process("GET", subDomain, path, nil)
+	body, header, err = c.process("GET", subDomain, path, nil)
 	return
 }
 
+// Patch send PATCH request with data body
+// to the URL built with subDomain and path.
 func (c Client) Patch(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
-	body, header, err = c.Process("PATCH", subDomain, path, data)
+	body, header, err = c.process("PATCH", subDomain, path, data)
 	return
 }
 
+// Delete send DELETE request with data body
+// to the URL built with subDomain and path.
 func (c Client) Delete(subDomain string, path string, data interface{}) (body []byte, header http.Header, err error) {
-	body, header, err = c.Process("DELETE", subDomain, path, data)
+	body, header, err = c.process("DELETE", subDomain, path, data)
 	return
 }
 
+// EmptyTokenError occurs when request is sent without token.
 type EmptyTokenError struct{}
 
 func (err EmptyTokenError) Error() (msg string) {
@@ -182,6 +202,7 @@ func (err EmptyTokenError) Error() (msg string) {
 	return
 }
 
+// WrongTokenError occurs when the sent token is invalid.
 type WrongTokenError struct{}
 
 func (err WrongTokenError) Error() (msg string) {
@@ -189,6 +210,8 @@ func (err WrongTokenError) Error() (msg string) {
 	return
 }
 
+// ResponseError occurs when the response status is failed
+// and the body is JSON.
 type ResponseError struct {
 	Type    string `json:"type"`
 	Message string `json:"message"`
@@ -199,6 +222,8 @@ func (err ResponseError) Error() (msg string) {
 	return
 }
 
+// StatusError occurs when the response status is failed
+// and the body isn't JSON.
 type StatusError struct {
 	Code    int
 	Message string

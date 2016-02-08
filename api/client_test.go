@@ -136,7 +136,7 @@ func TestClientProcess(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	body, _, err := client.Process("OPTIONS", "", "/echo", nil)
+	body, _, err := client.Options("", "/echo", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -162,7 +162,7 @@ func TestClientProcessWithWrongToken(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	_, _, err = client.Process("OPTIONS", "", "/echo", nil)
+	_, _, err = client.Options("", "/echo", nil)
 	_, ok := err.(api.WrongTokenError)
 	if !ok {
 		t.Fatal("wrong token error should occur")
@@ -185,7 +185,7 @@ func TestClientProcessWithWrongURL(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	_, _, err = client.Process("GET", "", "/wrong/url", nil)
+	_, _, err = client.Options("", "/wrong/url", nil)
 	_, ok := err.(api.StatusError)
 	if !ok {
 		t.Fatal("status error should occur")
