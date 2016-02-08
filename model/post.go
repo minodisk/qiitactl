@@ -3,7 +3,6 @@ package model
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -191,8 +190,12 @@ func (post *Post) Delete(client api.Client) (err error) {
 	return
 }
 
-func (post *Post) Save() (err error) {
-	err = post.FillPath()
+func (post *Post) Save(paths map[string]string) (err error) {
+	if paths == nil {
+		paths = pathsInLocal()
+	}
+
+	err = post.FillPath(paths)
 	if err != nil {
 		return
 	}
@@ -217,54 +220,88 @@ func (post *Post) Save() (err error) {
 	return
 }
 
-func (post *Post) FillPath() (err error) {
+func (post *Post) FillPath(paths map[string]string) (err error) {
+	for id, path := range paths {
+		if id == post.ID {
+			post.Path = path
+			return
+		}
+	}
+
 	if post.Path != "" {
 		return
 	}
 
-	if post.ID != "" {
-		path, err := post.findPath()
-		if err == nil {
-			post.Path = path
-			return err
-		}
-	}
+	// if post.ID != "" {
+	// 	path, err := post.findPath()
+	// 	if err == nil {
+	// 		post.Path = path
+	// 		return err
+	// 	}
+	// }
 
 	post.Path = post.createPath()
 	return
 }
 
-func (post Post) findPath() (path string, err error) {
-	found := errors.New("found")
-	err = filepath.Walk(".", func(p string, info os.FileInfo, e error) (err error) {
+func pathsInLocal() (paths map[string]string) {
+	paths = make(map[string]string)
+	filepath.Walk(".", func(p string, i os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
 		}
-		if info.IsDir() {
+		if i.IsDir() {
 			return
 		}
 		if filepath.Ext(p) != ".md" {
 			return
 		}
 
-		postInLocal, err := NewPostWithFile(p)
+		post, err := NewPostWithFile(p)
 		if err != nil {
-			err = nil
+			return nil
+		}
+		if post.ID == "" {
 			return
 		}
-		if postInLocal.ID == post.ID {
-			path = p
-			return found
-		}
+		paths[post.ID] = p
 		return
 	})
-	if err != found {
-		err = PathNotFoundError{}
-		return
-	}
-	return path, nil
+	return
 }
+
+// func (post Post) findPath() (path string, err error) {
+// 	found := errors.New("found")
+// 	err = filepath.Walk(".", func(p string, info os.FileInfo, e error) (err error) {
+// 		if e != nil {
+// 			err = e
+// 			return
+// 		}
+// 		if info.IsDir() {
+// 			return
+// 		}
+// 		if filepath.Ext(p) != ".md" {
+// 			return
+// 		}
+//
+// 		postInLocal, err := NewPostWithFile(p)
+// 		if err != nil {
+// 			err = nil
+// 			return
+// 		}
+// 		if postInLocal.ID == post.ID {
+// 			path = p
+// 			return found
+// 		}
+// 		return
+// 	})
+// 	if err != found {
+// 		err = PathNotFoundError{}
+// 		return
+// 	}
+// 	return path, nil
+// }
 
 func (post Post) createPath() (path string) {
 	var dirname string

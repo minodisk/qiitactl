@@ -17,6 +17,6 @@ func GenerateFile(c *cli.Context, client api.Client) (err error) {
 		}
 	}
 	post := model.NewPost(title, nil, team)
-	err = post.Save()
+	err = post.Save(nil)
 	return
 }

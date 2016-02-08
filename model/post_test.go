@@ -719,7 +719,7 @@ func TestPostSave(t *testing.T) {
 
 	post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
 	post.ID = "abcdefghijklmnopqrst"
-	err := post.Save()
+	err := post.Save(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -752,7 +752,7 @@ team: null
 	post.Title = "Example Edited Title"
 	post.CreatedAt = model.Time{time.Date(2015, 12, 28, 13, 2, 37, 0, time.UTC)}
 	post.UpdatedAt = post.CreatedAt
-	err = post.Save()
+	err = post.Save(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
