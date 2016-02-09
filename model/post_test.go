@@ -614,8 +614,8 @@ func TestFetchPost(t *testing.T) {
 	if post.User.Description != "Hello, world." {
 		t.Errorf("wrong Description: %s", post.User.Description)
 	}
-	if post.User.FacebookId != "yaotti" {
-		t.Errorf("wrong FacebookId: %s", post.User.FacebookId)
+	if post.User.FacebookID != "yaotti" {
+		t.Errorf("wrong FacebookId: %s", post.User.FacebookID)
 	}
 	if post.User.FolloweesCount != 100 {
 		t.Errorf("wrong FolloweesCount: %s", post.User.FolloweesCount)
@@ -626,14 +626,14 @@ func TestFetchPost(t *testing.T) {
 	if post.User.GithubLoginName != "yaotti" {
 		t.Errorf("wrong GithubLoginName: %s", post.User.GithubLoginName)
 	}
-	if post.User.Id != "yaotti" {
-		t.Errorf("wrong Id: %s", post.User.Id)
+	if post.User.ID != "yaotti" {
+		t.Errorf("wrong Id: %s", post.User.ID)
 	}
 	if post.User.ItemsCount != 300 {
 		t.Errorf("wrong ItemsCount: %d", post.User.ItemsCount)
 	}
-	if post.User.LinkedinId != "yaotti" {
-		t.Errorf("wrong LinkedinId: %s", post.User.LinkedinId)
+	if post.User.LinkedinID != "yaotti" {
+		t.Errorf("wrong LinkedinId: %s", post.User.LinkedinID)
 	}
 	if post.User.Location != "Tokyo, Japan" {
 		t.Errorf("wrong Location: %s", post.User.Location)
@@ -644,17 +644,17 @@ func TestFetchPost(t *testing.T) {
 	if post.User.Organization != "Increments Inc" {
 		t.Errorf("wrong Organization: %s", post.User.Organization)
 	}
-	if post.User.PermanentId != 1 {
-		t.Errorf("wrong PermanentId: %d", post.User.PermanentId)
+	if post.User.PermanentID != 1 {
+		t.Errorf("wrong PermanentId: %d", post.User.PermanentID)
 	}
-	if post.User.ProfileImageUrl != "https://si0.twimg.com/profile_images/2309761038/1ijg13pfs0dg84sk2y0h_normal.jpeg" {
-		t.Errorf("wrong ProfileImageUrl: %s", post.User.ProfileImageUrl)
+	if post.User.ProfileImageURL != "https://si0.twimg.com/profile_images/2309761038/1ijg13pfs0dg84sk2y0h_normal.jpeg" {
+		t.Errorf("wrong ProfileImageUrl: %s", post.User.ProfileImageURL)
 	}
 	if post.User.TwitterScreenName != "yaotti" {
 		t.Errorf("wrong TwitterScreenName: %s", post.User.TwitterScreenName)
 	}
-	if post.User.WebsiteUrl != "http://yaotti.hatenablog.com" {
-		t.Errorf("wrong WebsiteUrl: %s", post.User.WebsiteUrl)
+	if post.User.WebsiteURL != "http://yaotti.hatenablog.com" {
+		t.Errorf("wrong WebsiteUrl: %s", post.User.WebsiteURL)
 	}
 	if len(post.Tags) != 1 {
 		t.Fatalf("wrong Tags length: %d", len(post.Tags))

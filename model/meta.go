@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Meta is meta data of post.
 type Meta struct {
 	ID        string `json:"id" yaml:"id"`                 // 投稿の一意なID
 	URL       string `json:"url" yaml:"url"`               // 投稿のURL
@@ -18,6 +19,7 @@ type Meta struct {
 	Team      *Team  `json:"-"`                            // チーム
 }
 
+// Encode marshals meta as YAML.
 func (meta Meta) Encode() (out string) {
 	o, err := yaml.Marshal(meta)
 	if err != nil {
@@ -27,6 +29,7 @@ func (meta Meta) Encode() (out string) {
 	return
 }
 
+// Decode unmarshals encoded meta.
 func (meta *Meta) Decode(s string) (err error) {
 	return yaml.Unmarshal([]byte(s), meta)
 }

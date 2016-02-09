@@ -12,8 +12,10 @@ const (
 	perPage = 100
 )
 
+// Posts is a collection of post.
 type Posts []Post
 
+// FetchPosts fetches posts from Qiita and Qiita:Team.
 func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 	subDomain := ""
 	if team != nil {
@@ -52,6 +54,7 @@ func FetchPosts(client api.Client, team *Team) (posts Posts, err error) {
 	return
 }
 
+// Save saves posts into current working directory as markdown files.
 func (posts Posts) Save() (err error) {
 	paths := pathsInLocal()
 	for _, post := range posts {
