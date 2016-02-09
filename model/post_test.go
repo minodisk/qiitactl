@@ -1327,6 +1327,252 @@ team: null
 	}()
 }
 
+func TestPostSaveWithTeam(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, &model.Team{Active: true, ID: "increments", Name: "Increments Inc."})
+	post.ID = "abcdefghijklmnopqrst"
+	err := post.Save(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	func() {
+		a, err := ioutil.ReadFile("increments/2015/11/28-example-title.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(a)
+		expected := `<!--
+id: abcdefghijklmnopqrst
+url: ""
+created_at: 2015-11-28T22:02:37+09:00
+updated_at: 2015-11-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+team:
+  active: true
+  id: increments
+  name: Increments Inc.
+-->
+# Example Title
+`
+		if actual != expected {
+			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+
+	post.Title = "Example Edited Title"
+	post.CreatedAt = model.Time{time.Date(2015, 12, 28, 13, 2, 37, 0, time.UTC)}
+	post.UpdatedAt = post.CreatedAt
+	err = post.Save(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	func() {
+		_, err := os.Stat("increments/2015/12/28-example-edited-title.md")
+		if err == nil {
+			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28-example-edited-title.md")
+		}
+	}()
+
+	func() {
+		a, err := ioutil.ReadFile("increments/2015/11/28-example-title.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(a)
+		expected := `<!--
+id: abcdefghijklmnopqrst
+url: ""
+created_at: 2015-12-28T22:02:37+09:00
+updated_at: 2015-12-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+team:
+  active: true
+  id: increments
+  name: Increments Inc.
+-->
+# Example Edited Title
+`
+		if actual != expected {
+			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+}
+
+func TestPostSaveWithPath(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+	post.ID = "abcdefghijklmnopqrst"
+	post.Path = "foo/bar.md"
+	err := post.Save(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 1)
+
+	func() {
+		a, err := ioutil.ReadFile("foo/bar.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(a)
+		expected := `<!--
+id: abcdefghijklmnopqrst
+url: ""
+created_at: 2015-11-28T22:02:37+09:00
+updated_at: 2015-11-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+team: null
+-->
+# Example Title
+`
+		if actual != expected {
+			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+}
+
+func TestPostSaveWithInvalidMarkdown(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.MkdirAll("foo", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("foo/wrong-format.md", []byte{}, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("foo/no-id.md", []byte(`<!--
+id: ""
+url: ""
+created_at: 2015-11-28T22:02:37+09:00
+updated_at: 2015-11-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+team: null
+-->
+# Example Title
+`), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 2)
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+		post.ID = "abcdefghijklmnopqrst"
+		post.Path = "foo/bar.md"
+		err := post.Save(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	testutil.ShouldExistFile(t, 3)
+
+	func() {
+		a, err := ioutil.ReadFile("foo/bar.md")
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := string(a)
+		expected := `<!--
+id: abcdefghijklmnopqrst
+url: ""
+created_at: 2015-11-28T22:02:37+09:00
+updated_at: 2015-11-28T22:02:37+09:00
+private: false
+coediting: false
+tags: []
+team: null
+-->
+# Example Title
+`
+		if actual != expected {
+			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
+		}
+	}()
+}
+
+func TestPostSaveDuplicationWithID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+		post.ID = "abcdefghijklmnopqrst"
+		err := post.Save(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+		post.ID = "abcdefghijklmnopqrst"
+		err := post.Save(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	testutil.ShouldExistFile(t, 1)
+}
+
+func TestPostSaveDuplicationWithoutID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	testutil.ShouldExistFile(t, 0)
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+		err := post.Save(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	func() {
+		post := model.NewPost("Example Title", &model.Time{time.Date(2015, 11, 28, 13, 2, 37, 0, time.UTC)}, nil)
+		err := post.Save(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	testutil.ShouldExistFile(t, 2)
+}
+
 func TestPostEncodeWithNewPost(t *testing.T) {
 	post := model.NewPost("Example title", &model.Time{time.Date(2016, 2, 2, 6, 30, 46, 0, time.UTC)}, nil)
 	post.ID = "4bd431809afb1bb99e4f"

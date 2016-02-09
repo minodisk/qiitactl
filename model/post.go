@@ -282,23 +282,23 @@ func (post Post) createPath() (path string) {
 	}
 	dirname = filepath.Join(dirname, post.CreatedAt.Format("2006/01"))
 
-	filename := fmt.Sprintf("%s-%s", post.CreatedAt.Format("02"), post.Title)
-	filename = rInvalidFilename.ReplaceAllString(filename, "-")
-	filename = strings.ToLower(filename)
-	filename = rHyphens.ReplaceAllString(filename, "-")
-	filename = strings.TrimRight(filename, "-")
+	basename := fmt.Sprintf("%s-%s", post.CreatedAt.Format("02"), post.Title)
+	basename = rInvalidFilename.ReplaceAllString(basename, "-")
+	basename = strings.ToLower(basename)
+	basename = rHyphens.ReplaceAllString(basename, "-")
+	basename = strings.TrimRight(basename, "-")
 
 	for {
-		path = filepath.Join(dirname, fmt.Sprintf("%s.md", filename))
+		path = filepath.Join(dirname, fmt.Sprintf("%s.md", basename))
 		_, err := os.Stat(path)
-		// no error means: a file exists at the path
-		// error occurs means: no file exists at the path
+		// without error: file exists at the path
+		// with error: file doesn't exist at the path
 		if err != nil {
-			// no file at the path,
-			// so possible to create file with the path
+			// file doesn't exist at the path
+			// so possible to create a file
 			break
 		}
-		filename += "-"
+		basename += "-"
 	}
 	return
 }

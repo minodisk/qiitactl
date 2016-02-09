@@ -45,6 +45,7 @@ func CleanUp() {
 	os.Unsetenv("QIITA_ACCESS_TOKEN")
 	os.RemoveAll("mine")
 	os.RemoveAll("increments")
+	os.RemoveAll("foo")
 }
 
 func ResponseError(w http.ResponseWriter, statusCode int, err error) {
@@ -65,12 +66,31 @@ func ResponseAPIError(w http.ResponseWriter, statusCode int, err api.ResponseErr
 	w.Write(b)
 }
 
-func ShouldExistFile(t *testing.T, num int) {
-	matches, err := filepath.Glob("*/*/*/*.md")
+func ShouldExistFile(t *testing.T, num int) (paths []string) {
+	paths, err := findMarkdownFiles()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(matches) != num {
-		t.Fatalf("file should exist %d file, but actual %s", num, matches)
+	if len(paths) != num {
+		t.Fatalf("file should exist %d file, but actual %s", num, paths)
 	}
+	return
+}
+
+func findMarkdownFiles() (pathes []string, err error) {
+	err = filepath.Walk(".", func(p string, i os.FileInfo, e error) (err error) {
+		if e != nil {
+			err = e
+			return
+		}
+		if i.IsDir() {
+			return
+		}
+		if filepath.Ext(p) != ".md" {
+			return
+		}
+		pathes = append(pathes, p)
+		return
+	})
+	return
 }
