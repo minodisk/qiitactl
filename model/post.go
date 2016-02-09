@@ -245,14 +245,6 @@ func (post *Post) fillPath(paths map[string]string) (err error) {
 		return
 	}
 
-	// if post.ID != "" {
-	// 	path, err := post.findPath()
-	// 	if err == nil {
-	// 		post.Path = path
-	// 		return err
-	// 	}
-	// }
-
 	post.Path = post.createPath()
 	return
 }
@@ -283,38 +275,6 @@ func pathsInLocal() (paths map[string]string) {
 	})
 	return
 }
-
-// func (post Post) findPath() (path string, err error) {
-// 	found := errors.New("found")
-// 	err = filepath.Walk(".", func(p string, info os.FileInfo, e error) (err error) {
-// 		if e != nil {
-// 			err = e
-// 			return
-// 		}
-// 		if info.IsDir() {
-// 			return
-// 		}
-// 		if filepath.Ext(p) != ".md" {
-// 			return
-// 		}
-//
-// 		postInLocal, err := NewPostWithFile(p)
-// 		if err != nil {
-// 			err = nil
-// 			return
-// 		}
-// 		if postInLocal.ID == post.ID {
-// 			path = p
-// 			return found
-// 		}
-// 		return
-// 	})
-// 	if err != found {
-// 		err = PathNotFoundError{}
-// 		return
-// 	}
-// 	return path, nil
-// }
 
 func (post Post) createPath() (path string) {
 	var dirname string
