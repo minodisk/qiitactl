@@ -203,15 +203,12 @@ func (post *Post) Delete(client api.Client) (err error) {
 }
 
 // Save saves a post as a markdown file in local.
-func (post *Post) Save(paths map[string]string) (err error) {
-	if paths == nil {
-		paths = pathsInLocal()
+func (post *Post) Save(cachedPaths map[string]string) (err error) {
+	if cachedPaths == nil {
+		cachedPaths = pathsInLocal()
 	}
 
-	err = post.fillPath(paths)
-	if err != nil {
-		return
-	}
+	post.fillPath(cachedPaths)
 
 	dir := filepath.Dir(post.Path)
 	err = os.MkdirAll(dir, 0755)
@@ -233,7 +230,7 @@ func (post *Post) Save(paths map[string]string) (err error) {
 	return
 }
 
-func (post *Post) fillPath(paths map[string]string) (err error) {
+func (post *Post) fillPath(paths map[string]string) {
 	for id, path := range paths {
 		if id == post.ID {
 			post.Path = path
@@ -336,13 +333,6 @@ func (err EmptyIDError) Error() (msg string) {
 	msg = "empty ID"
 	return
 }
-
-// type PathNotFoundError struct{}
-//
-// func (err PathNotFoundError) Error() (msg string) {
-// 	msg = "path not found"
-// 	return
-// }
 
 // InvalidError occurs when some fields are wrong.
 type InvalidError map[string]InvalidStatus
