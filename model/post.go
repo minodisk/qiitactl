@@ -36,7 +36,7 @@ var (
 		template.Must(t.Parse(postTemplate))
 		return
 	}()
-	rInvalidFilename = regexp.MustCompile(`[^a-zA-Z0-9\-]+`)
+	rInvalidBasename = regexp.MustCompile(`[\\\/?:*"<>|]+`)
 	rHyphens         = regexp.MustCompile(`\-{2,}`)
 )
 
@@ -280,13 +280,10 @@ func (post Post) createPath() (path string) {
 	} else {
 		dirname = post.Team.ID
 	}
-	dirname = filepath.Join(dirname, post.CreatedAt.Format("2006/01"))
+	dirname = filepath.Join(dirname, post.CreatedAt.Format("2006/01/02"))
 
-	basename := fmt.Sprintf("%s-%s", post.CreatedAt.Format("02"), post.Title)
-	basename = rInvalidFilename.ReplaceAllString(basename, "-")
-	basename = strings.ToLower(basename)
+	basename := rInvalidBasename.ReplaceAllString(post.Title, "-")
 	basename = rHyphens.ReplaceAllString(basename, "-")
-	basename = strings.TrimRight(basename, "-")
 
 	for {
 		path = filepath.Join(dirname, fmt.Sprintf("%s.md", basename))
