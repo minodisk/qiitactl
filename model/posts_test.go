@@ -17,7 +17,7 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestFetchPostsTotalCount(t *testing.T) {
+func TestFetchPostsWithTotalCount(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -90,6 +90,47 @@ func TestFetchPostsTotalCount(t *testing.T) {
 
 	if len(posts) != 1422 {
 		t.Errorf("wrong posts length: %d", len(posts))
+	}
+}
+
+func TestFetchPostsWithWrongTotalCount(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			w.WriteHeader(405)
+			b, _ := json.Marshal(api.ResponseError{"method_not_allowed", "Method Not Allowed"})
+			w.Write(b)
+			return
+		}
+
+		var posts []model.Post
+		b, _ := json.Marshal(posts)
+		w.Header().Set("Total-Count", "dummy")
+		w.Write(b)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = model.FetchPosts(client, nil)
+	if err == nil {
+		t.Fatal("error should occur")
 	}
 }
 
