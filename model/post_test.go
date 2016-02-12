@@ -1264,7 +1264,7 @@ func TestPostSave(t *testing.T) {
 	testutil.ShouldExistFile(t, 1)
 
 	func() {
-		a, err := ioutil.ReadFile("mine/2015/11/28-example-title.md")
+		a, err := ioutil.ReadFile("mine/2015/11/28/Example Title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1297,14 +1297,14 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	func() {
-		_, err := os.Stat("mine/2015/12/28-example-edited-title.md")
+		_, err := os.Stat("mine/2015/12/28/Example Edited Title.md")
 		if err == nil {
-			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28-example-edited-title.md")
+			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28/Example Edited Title.md")
 		}
 	}()
 
 	func() {
-		a, err := ioutil.ReadFile("mine/2015/11/28-example-title.md")
+		a, err := ioutil.ReadFile("mine/2015/11/28/Example Title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1343,7 +1343,7 @@ func TestPostSaveWithTeam(t *testing.T) {
 	testutil.ShouldExistFile(t, 1)
 
 	func() {
-		a, err := ioutil.ReadFile("increments/2015/11/28-example-title.md")
+		a, err := ioutil.ReadFile("increments/2015/11/28/Example Title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1379,14 +1379,14 @@ team:
 	testutil.ShouldExistFile(t, 1)
 
 	func() {
-		_, err := os.Stat("increments/2015/12/28-example-edited-title.md")
+		_, err := os.Stat("increments/2015/12/28/Example Edited Title.md")
 		if err == nil {
-			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28-example-edited-title.md")
+			t.Errorf("filename based on edited post shouldn't exist: %s", "mine/2015/12/28/Example Edited Title.md")
 		}
 	}()
 
 	func() {
-		a, err := ioutil.ReadFile("increments/2015/11/28-example-title.md")
+		a, err := ioutil.ReadFile("increments/2015/11/28/Example Title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
