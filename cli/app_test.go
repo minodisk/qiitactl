@@ -144,7 +144,7 @@ func TestFetchPostWithID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}

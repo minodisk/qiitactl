@@ -399,7 +399,7 @@ func TestPostsSave(t *testing.T) {
 	}
 
 	func() {
-		a, err := ioutil.ReadFile("mine/2015/11/28-example-title-0.md")
+		a, err := ioutil.ReadFile("mine/2015/11/28/Example Title 0.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -422,7 +422,7 @@ team: null
 	}()
 
 	func() {
-		a, err := ioutil.ReadFile("mine/2016/02/01-example-title-1.md")
+		a, err := ioutil.ReadFile("mine/2016/02/01/Example Title 1.md")
 		if err != nil {
 			t.Fatal(err)
 		}

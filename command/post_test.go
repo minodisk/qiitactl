@@ -66,7 +66,7 @@ func TestFetchPostWithID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ tags:
   - 0.0.1
 team: null
 -->
-# Example title
+# Example Title
 ## Example body`
 	if actual != expected {
 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -161,11 +161,11 @@ func TestFetchPostWithFilename(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -187,7 +187,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,7 +198,7 @@ team: null
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +215,7 @@ tags:
   - 0.0.1
 team: null
 -->
-# Example title
+# Example Title
 ## Example body`
 	if actual != expected {
 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -252,13 +252,13 @@ func TestFetchPostWithWrongFilename(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
 	if actual != expected {
 		t.Fatalf("error should occur when fetches post with wrong filename: %s", actual)
 	}
@@ -307,7 +307,7 @@ func TestShowPostWithID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example Title
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
@@ -384,11 +384,11 @@ func TestShowPostWithFilename(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -411,7 +411,7 @@ team: null
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -422,7 +422,7 @@ team: null
 
 	testutil.ShouldExistFile(t, 1)
 
-	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example title
+	if string(buf.Bytes()) != `4bd431809afb1bb99e4f 2000/01/01 Example Title
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
@@ -458,13 +458,13 @@ func TestShowPostWithWithWrongFilename(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
 	if actual != expected {
 		t.Fatalf("error should occur when shows post with wrong filename: %s", actual)
 	}
@@ -521,9 +521,9 @@ func TestShowPosts(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 
 	if string(buf.Bytes()) != `Posts in Qiita:
-4bd431809afb1bb99e4f 2000/01/01 Example title
+4bd431809afb1bb99e4f 2000/01/01 Example Title
 Posts in Qiita:Team (Increments Inc.):
-4bd431809afb1bb99e4t 2015/09/25 Example title in team
+4bd431809afb1bb99e4t 2015/09/25 Example Title in team
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
@@ -714,7 +714,7 @@ func TestFetchPosts(t *testing.T) {
 	testutil.ShouldExistFile(t, 2)
 
 	func() {
-		b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+		b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -731,7 +731,7 @@ tags:
   - 0.0.1
 team: null
 -->
-# Example title
+# Example Title
 ## Example body`
 		if actual != expected {
 			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -739,7 +739,7 @@ team: null
 	}()
 
 	func() {
-		b, err := ioutil.ReadFile("increments/2015/09/25-example-title-in-team.md")
+		b, err := ioutil.ReadFile("increments/2015/09/25/Example Title in team.md")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -759,7 +759,7 @@ team:
   id: increments
   name: Increments Inc.
 -->
-# Example title in team
+# Example Title in team
 ## Example body in team`
 		if actual != expected {
 			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -925,11 +925,11 @@ func TestCreatePost(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: ""
 url: ""
 created_at: 2000-01-01T09:00:00+09:00
@@ -943,8 +943,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -953,7 +953,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -964,7 +964,7 @@ team: null
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -984,8 +984,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`
+# Example Edited Title
+## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
@@ -1020,7 +1020,7 @@ func TestCreatePostErrorWithNoFile(t *testing.T) {
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1057,11 +1057,11 @@ func TestCreatePostErrorWithNoServer(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: ""
 url: ""
 created_at: 2000-01-01T09:00:00+09:00
@@ -1075,8 +1075,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1085,7 +1085,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1124,11 +1124,11 @@ func TestUpdatePost(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -1142,8 +1142,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1152,7 +1152,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1163,7 +1163,7 @@ team: null
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1183,8 +1183,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`
+# Example Edited Title
+## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
@@ -1220,13 +1220,13 @@ func TestUpdatePostWithWrongFilename(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
 	if actual != expected {
 		t.Fatalf("error should occur when updates post with wrong filename: %s", actual)
 	}
@@ -1261,11 +1261,11 @@ func TestUpdatePostWithNoServer(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -1279,8 +1279,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1289,7 +1289,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1328,11 +1328,11 @@ func TestDeletePost(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -1346,8 +1346,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1356,7 +1356,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1367,7 +1367,7 @@ team: null
 
 	testutil.ShouldExistFile(t, 1)
 
-	b, err := ioutil.ReadFile("mine/2000/01/01-example-title.md")
+	b, err := ioutil.ReadFile("mine/2000/01/01/Example Title.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1387,8 +1387,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`
+# Example Edited Title
+## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
 	}
@@ -1424,13 +1424,13 @@ func TestFetchDeleteWithWrongFilename(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "open mine/2000/01/01-example-title.md: no such file or directory"
+	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
 	if actual != expected {
 		t.Fatalf("error should occur when deletes post with wrong filename: %s", actual)
 	}
@@ -1465,11 +1465,11 @@ func TestDeletePostErrorWithNoServer(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	err = os.MkdirAll("mine/2000/01", 0755)
+	err = os.MkdirAll("mine/2000/01/01", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile("mine/2000/01/01-example-title.md", []byte(`<!--
+	err = ioutil.WriteFile("mine/2000/01/01/Example Title.md", []byte(`<!--
 id: 4bd431809afb1bb99e4f
 url: https://qiita.com/yaotti/items/4bd431809afb1bb99e4f
 created_at: 2000-01-01T09:00:00+09:00
@@ -1483,8 +1483,8 @@ tags:
   - "1.0"
 team: null
 -->
-# Example edited title
-## Example edited body`), 0664)
+# Example Edited Title
+## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1493,7 +1493,7 @@ team: null
 
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01-example-title.md"})
+	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1527,7 +1527,7 @@ func handleAuthenticatedUserItems(mux *http.ServeMux) {
 							]
 						}
 					],
-					"title": "Example title",
+					"title": "Example Title",
 					"updated_at": "2000-01-01T00:00:00+00:00",
 					"url": "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f",
 					"user": {
@@ -1658,7 +1658,7 @@ func handleItem(mux *http.ServeMux) {
 							]
 						}
 					],
-					"title": "Example title",
+					"title": "Example Title",
 					"updated_at": "2000-01-01T00:00:00+00:00",
 					"url": "https://qiita.com/yaotti/items/4bd431809afb1bb99e4f",
 					"user": {
@@ -1773,7 +1773,7 @@ func handleAuthenticatedUserItemsWithTeam(mux *http.ServeMux) {
 							]
 						}
 					],
-					"title": "Example title in team",
+					"title": "Example Title in team",
 					"updated_at": "2015-09-25T00:00:00+00:00",
 					"url": "https://increments.qiita.com/yaotti/items/4bd431809afb1bb99e4t",
 					"user": {
