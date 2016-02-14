@@ -311,7 +311,7 @@ func TestFetchPosts(t *testing.T) {
 	}
 }
 
-func TestFetchPosts_ResponseError(t *testing.T) {
+func TestFetchPostsResponseError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -350,7 +350,7 @@ func TestFetchPosts_ResponseError(t *testing.T) {
 	}
 }
 
-func TestFetchPosts_StatusError(t *testing.T) {
+func TestFetchPostsStatusError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
