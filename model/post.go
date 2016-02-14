@@ -216,7 +216,7 @@ func (post *Post) Save(cachedPaths map[string]string) (err error) {
 		return
 	}
 
-	fmt.Printf("Make file: %s\n", post.Path)
+	// fmt.Printf("Make file: %s\n", post.Path)
 
 	f, err := os.Create(post.Path)
 	defer f.Close()

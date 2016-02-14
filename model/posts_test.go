@@ -444,3 +444,20 @@ team: null
 		}
 	}()
 }
+
+func BenchmarkPostsSave(b *testing.B) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	var posts model.Posts
+	for i := 0; i < b.N; i++ {
+		posts = append(posts, model.NewPost(fmt.Sprintf("Example Title %d", i), nil, nil))
+	}
+
+	b.ResetTimer()
+
+	err := posts.Save()
+	if err != nil {
+		b.Fatal(err)
+	}
+}
