@@ -350,7 +350,7 @@ func TestFetchPostsResponseError(t *testing.T) {
 	}
 }
 
-func TestFetchPostsStatusError(t *testing.T) {
+func TestFetchPostsWithResponseStatusError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -382,6 +382,37 @@ func TestFetchPostsStatusError(t *testing.T) {
 	_, ok := err.(api.StatusError)
 	if !ok {
 		t.Fatalf("wrong type error: %s", reflect.TypeOf(err))
+	}
+}
+
+func TestFetchPostsWitWrongResponseBody(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/authenticated_user/items", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Non JSON format")
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = model.FetchPosts(client, nil)
+	if err == nil {
+		t.Fatal("error should occur")
 	}
 }
 
