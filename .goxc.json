@@ -1,11 +1,10 @@
 {
 	"ArtifactsDest": "build",
 	"Tasks": [
-		"default",
-		"publish-github"
+		"default"
 	],
 	"BuildConstraints": "linux darwin windows",
-	"PackageVersion": "0.0.1",
+	"PackageVersion": "0.0.0",
 	"TaskSettings": {
 		"publish-github": {
 			"owner": "minodisk",
