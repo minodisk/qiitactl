@@ -121,17 +121,6 @@ func TestBuildURL(t *testing.T) {
 	}()
 }
 
-func TestNewClientWithEmptyToken(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	_, err := api.NewClient(nil)
-	_, ok := err.(api.EmptyTokenError)
-	if !ok {
-		t.Fatal("empty token error should occur")
-	}
-}
-
 func TestClientProcess(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -140,13 +129,10 @@ func TestClientProcess(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	body, _, err := client.Options("", "/echo", nil)
 	if err != nil {
@@ -158,6 +144,22 @@ func TestClientProcess(t *testing.T) {
 	}
 }
 
+func TestClientProcessWithEmptyToken(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	client := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+
+	_, _, err := client.Options("", "/echo", nil)
+	_, ok := err.(api.EmptyTokenError)
+	if !ok {
+		t.Fatal("empty token error should occur")
+	}
+}
+
 func TestClientProcessWithWrongToken(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -166,13 +168,10 @@ func TestClientProcessWithWrongToken(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	_, _, err = client.Options("", "/echo", nil)
 	_, ok := err.(api.WrongTokenError)
@@ -189,13 +188,10 @@ func TestClientProcessWithResponseError(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	_, _, err = client.Options("", "/errors/response", nil)
 	_, ok := err.(api.ResponseError)
@@ -212,13 +208,10 @@ func TestClientProcessWithStatusError(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	_, _, err = client.Options("", "/errors/status", nil)
 	_, ok := err.(api.StatusError)
@@ -235,14 +228,11 @@ func TestClientPost(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
 	client.DebugMode(true)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	body, _, err := client.Post("", "/echo", "data")
 	if err != nil {
@@ -267,13 +257,10 @@ func TestClientGet(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	body, _, err := client.Get("", "/echo", &url.Values{})
 	if err != nil {
@@ -293,13 +280,10 @@ func TestClientPatch(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	body, _, err := client.Patch("", "/echo", nil)
 	if err != nil {
@@ -319,13 +303,10 @@ func TestClientDelete(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	body, _, err := client.Delete("", "/echo", nil)
 	if err != nil {

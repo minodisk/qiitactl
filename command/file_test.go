@@ -20,10 +20,7 @@ func TestGenerateFileInMine(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	client := api.NewClient(nil)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -50,10 +47,7 @@ func TestGenerateFileInTeam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	client := api.NewClient(nil)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -80,10 +74,7 @@ func TestGenerateUniqueFile(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	client := api.NewClient(nil)
 
 	testutil.ShouldExistFile(t, 0)
 

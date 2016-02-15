@@ -38,7 +38,7 @@ func TestFetchPostWithID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -47,9 +47,6 @@ func TestFetchPostWithID(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -102,7 +99,7 @@ func TestFetchPostWithWrongID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -111,9 +108,6 @@ func TestFetchPostWithWrongID(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -146,7 +140,7 @@ func TestFetchPostWithFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -155,9 +149,6 @@ func TestFetchPostWithFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -234,7 +225,7 @@ func TestFetchPostWithWrongFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -243,9 +234,6 @@ func TestFetchPostWithWrongFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -278,7 +266,7 @@ func TestShowPostWithID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -287,9 +275,6 @@ func TestShowPostWithID(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -325,7 +310,7 @@ func TestShowPostWithWrongID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -334,9 +319,6 @@ func TestShowPostWithWrongID(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -369,7 +351,7 @@ func TestShowPostWithFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -378,9 +360,6 @@ func TestShowPostWithFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -440,7 +419,7 @@ func TestShowPostWithWithWrongFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -449,9 +428,6 @@ func TestShowPostWithWithWrongFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -489,7 +465,7 @@ func TestShowPosts(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -500,9 +476,6 @@ func TestShowPosts(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -547,7 +520,7 @@ func TestShowPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -558,9 +531,6 @@ func TestShowPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		testutil.ShouldExistFile(t, 0)
 
@@ -591,7 +561,7 @@ func TestShowPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -602,9 +572,6 @@ func TestShowPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		testutil.ShouldExistFile(t, 0)
 
@@ -635,7 +602,7 @@ func TestShowPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -646,9 +613,6 @@ func TestShowPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		testutil.ShouldExistFile(t, 0)
 
@@ -683,7 +647,7 @@ func TestFetchPosts(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -694,9 +658,6 @@ func TestFetchPosts(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -785,7 +746,7 @@ func TestFetchPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -796,9 +757,6 @@ func TestFetchPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
@@ -827,7 +785,7 @@ func TestFetchPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -838,9 +796,6 @@ func TestFetchPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
@@ -869,7 +824,7 @@ func TestFetchPostsErrors(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		client, err := api.NewClient(func(subDomain, path string) (url string) {
+		client := api.NewClient(func(subDomain, path string) (url string) {
 			switch subDomain {
 			case "":
 				url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -880,9 +835,6 @@ func TestFetchPostsErrors(t *testing.T) {
 			}
 			return
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
@@ -910,7 +862,7 @@ func TestCreatePost(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -919,9 +871,6 @@ func TestCreatePost(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1003,7 +952,7 @@ func TestCreatePostErrorWithNoFile(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1012,9 +961,6 @@ func TestCreatePostErrorWithNoFile(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1042,7 +988,7 @@ func TestCreatePostErrorWithNoServer(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1051,9 +997,6 @@ func TestCreatePostErrorWithNoServer(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1109,7 +1052,7 @@ func TestUpdatePost(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1118,9 +1061,6 @@ func TestUpdatePost(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1202,7 +1142,7 @@ func TestUpdatePostWithWrongFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1211,9 +1151,6 @@ func TestUpdatePostWithWrongFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1246,7 +1183,7 @@ func TestUpdatePostWithNoServer(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1255,9 +1192,6 @@ func TestUpdatePostWithNoServer(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1313,7 +1247,7 @@ func TestDeletePost(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1322,9 +1256,6 @@ func TestDeletePost(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1406,7 +1337,7 @@ func TestFetchDeleteWithWrongFilename(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1415,9 +1346,6 @@ func TestFetchDeleteWithWrongFilename(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1450,7 +1378,7 @@ func TestDeletePostErrorWithNoServer(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
@@ -1459,9 +1387,6 @@ func TestDeletePostErrorWithNoServer(t *testing.T) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 

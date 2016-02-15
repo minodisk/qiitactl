@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -11,13 +10,7 @@ import (
 
 func main() {
 	godotenv.Load()
-
-	client, err := api.NewClient(nil)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	client := api.NewClient(nil)
 	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
 	app.Run(os.Args)
 }

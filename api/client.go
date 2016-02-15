@@ -22,7 +22,6 @@ const (
 
 // Client is HTTP client accessing to the Qiita API v2.
 type Client struct {
-	Token      string
 	BuildURL   func(string, string) string
 	httpClient *http.Client
 	debugMode  bool
@@ -42,18 +41,13 @@ func BuildURL(subDomain, path string) (url string) {
 
 // NewClient makes a Client.
 // Client will access to URL made by buildURL.
-func NewClient(buildURL func(string, string) string) (c Client, err error) {
+func NewClient(buildURL func(string, string) string) (c Client) {
 	if buildURL == nil {
 		c.BuildURL = BuildURL
 	} else {
 		c.BuildURL = buildURL
 	}
 
-	c.Token = os.Getenv(envAccessToken)
-	if c.Token == "" {
-		err = EmptyTokenError{}
-		return
-	}
 	c.httpClient = &http.Client{}
 	return
 }
@@ -65,6 +59,12 @@ func (c *Client) DebugMode(debugMode bool) {
 }
 
 func (c Client) process(method string, subDomain string, path string, data interface{}) (respBody []byte, respHeader http.Header, err error) {
+	token := os.Getenv(envAccessToken)
+	if token == "" {
+		err = EmptyTokenError{}
+		return
+	}
+
 	url := c.BuildURL(subDomain, path)
 
 	var reqBody io.Reader
@@ -80,7 +80,7 @@ func (c Client) process(method string, subDomain string, path string, data inter
 		return
 	}
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	if data != nil {
 		req.Header.Add("Content-Type", "application/json")
 	}

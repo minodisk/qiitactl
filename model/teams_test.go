@@ -34,13 +34,10 @@ func TestTeams_FetchTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	teams, err := model.FetchTeams(client)
 	if err != nil {
@@ -69,13 +66,10 @@ func TestTeams_FetchTeamsError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchTeams(client)
 	if err == nil {

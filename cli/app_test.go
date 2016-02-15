@@ -71,11 +71,7 @@ func TestMain(m *testing.M) {
 	server = httptest.NewServer(mux)
 	defer server.Close()
 
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client, err = api.NewClient(func(subDomain, path string) (url string) {
+	client = api.NewClient(func(subDomain, path string) (url string) {
 		switch subDomain {
 		case "":
 			url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
@@ -84,9 +80,6 @@ func TestMain(m *testing.M) {
 		}
 		return
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	code := m.Run()
 	os.Exit(code)
@@ -131,9 +124,14 @@ func TestFetchPostWithID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -174,10 +172,15 @@ func TestFetchPostWithWrongID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,10 +200,15 @@ func TestShowPostWithID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
+	err = app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,10 +231,15 @@ func TestShowPostWithWrongID(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
 	app := cli.GenerateApp(client, buf, errBuf)
-	err := app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
+	err = app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	if err != nil {
 		t.Fatal(err)
 	}

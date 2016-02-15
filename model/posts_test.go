@@ -70,13 +70,10 @@ func TestFetchPostsWithTotalCount(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	team := model.Team{
 		Active: true,
@@ -120,13 +117,10 @@ func TestFetchPostsWithWrongTotalCount(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchPosts(client, nil)
 	if err == nil {
@@ -202,13 +196,10 @@ func TestFetchPosts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	team := model.Team{
 		Active: true,
@@ -332,13 +323,10 @@ func TestFetchPostsResponseError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchPosts(client, nil)
 	if err == nil {
@@ -367,13 +355,10 @@ func TestFetchPostsWithResponseStatusError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchPosts(client, nil)
 	if err == nil {
@@ -402,13 +387,10 @@ func TestFetchPostsWitWrongResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchPosts(client, nil)
 	if err == nil {

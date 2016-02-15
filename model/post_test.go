@@ -222,13 +222,10 @@ func TestPostCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -279,13 +276,10 @@ func TestPostCreateWithWrongResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	post := model.NewPost("Example Title", nil, nil)
 	err = post.Create(client, model.CreationOptions{})
@@ -357,7 +351,7 @@ func TestPostCreateInTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		if subDomain != "increments" {
 			t.Fatalf("wrong sub domain: %s", subDomain)
 			return
@@ -365,9 +359,6 @@ func TestPostCreateInTeam(t *testing.T) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -414,13 +405,10 @@ func TestPostCreateWithNoServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -496,13 +484,10 @@ func TestPostCreateWithTweetAndGist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -596,13 +581,10 @@ func TestFetchPost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -725,13 +707,10 @@ func TestFetchPostWithResponseError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -764,13 +743,10 @@ func TestFetchPostWithResponseStatusError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -803,13 +779,10 @@ func TestFetchPostWithWrongResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	_, err = model.FetchPost(client, nil, "4bd431809afb1bb99e4f")
 	if err == nil {
@@ -874,13 +847,10 @@ func TestPostUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -969,7 +939,7 @@ func TestPostUpdateInTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		if subDomain != "increments" {
 			t.Fatalf("wrong sub domain: %s", subDomain)
 			return
@@ -977,9 +947,6 @@ func TestPostUpdateInTeam(t *testing.T) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1019,10 +986,7 @@ func TestPostUpdateWithEmptyID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := api.NewClient(nil)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1049,13 +1013,10 @@ func TestPostUpdateWithNoServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	post := model.NewPost("Example Title", nil, nil)
 	post.ID = "abcdefghijklmnopqrst"
@@ -1082,13 +1043,10 @@ func TestPostUpdateWithWrongResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	post := model.NewPost("Example Title", nil, nil)
 	post.ID = "abcdefghijklmnopqrst"
@@ -1154,13 +1112,10 @@ func TestPostDelete(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1244,7 +1199,7 @@ func TestPostDeleteInTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		if subDomain != "increments" {
 			t.Fatalf("wrong sub domain: %s", subDomain)
 			return
@@ -1252,9 +1207,6 @@ func TestPostDeleteInTeam(t *testing.T) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1295,13 +1247,10 @@ func TestPostDeleteWithNoServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1323,10 +1272,7 @@ func TestPostDeleteWithEmptyID(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := api.NewClient(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := api.NewClient(nil)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1357,13 +1303,10 @@ func TestPostDeleteWithWrongResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := api.NewClient(func(subDomain, path string) (url string) {
+	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	post := model.NewPost("Example Title", nil, nil)
 	post.ID = "abcdefghijklmnopqrst"
