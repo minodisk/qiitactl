@@ -1,12 +1,10 @@
 # qiitactl [![Circle CI](https://img.shields.io/circleci/project/minodisk/qiitactl.svg?style=flat-square)](https://circleci.com/gh/minodisk/qiitactl) [![Coverage Status](https://img.shields.io/coveralls/minodisk/qiitactl.svg?style=flat-square)](https://coveralls.io/github/minodisk/qiitactl?branch=master)
 
-Command line interface to manage the posts in Qitta.
+Command line interface to manage your posts in Qitta.
 
 ## Description
 
-`qiitactl` makes it possible to CRUD posts of Qiita in your terminal.
-
-`qiitactl` fetches posts from Qiita and write it as markdown file to current working directory. Editing the file in any editor you like, then `qiitactl update post -f path/to/file.md`, the post in Qiita will be updated. You can also generate a new file for post, create a new post and delete a post with this tool.
+`qiitactl` can fetch your posts from Qiita and write them as markdown files to your local. After you edit the file in the editor you like, `qiitactl update post -f path/to/file.md`. Then, the post will be updated in Qiita. You can also generate a new file for post, create a new post from the file and delete a post with this tool.
 
 ## Usage
 
@@ -35,7 +33,7 @@ vim path/to/file.md
 qiitactl create post -f path/to/file.md
 ```
 
-### Others
+### And more:
 
 ```bash
 qiitactl help
