@@ -262,6 +262,38 @@ func TestPostCreate(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 }
 
+func TestPostCreateWithWrongResponseBody(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/items", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Non JSON format")
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	post := model.NewPost("Example Title", nil, nil)
+	err = post.Create(client, model.CreationOptions{})
+	if err == nil {
+		t.Fatal("error should occur")
+	}
+}
+
 func TestPostCreateInTeam(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -672,7 +704,7 @@ func TestFetchPost(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 }
 
-func TestFetchPost_ResponseError(t *testing.T) {
+func TestFetchPostWithResponseError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -715,7 +747,7 @@ func TestFetchPost_ResponseError(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 }
 
-func TestFetchPost_StatusError(t *testing.T) {
+func TestFetchPostWithResponseStatusError(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
@@ -752,6 +784,37 @@ func TestFetchPost_StatusError(t *testing.T) {
 	}
 
 	testutil.ShouldExistFile(t, 0)
+}
+
+func TestFetchPostWithWrongResponseBody(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/items/4bd431809afb1bb99e4f", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Non JSON format")
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = model.FetchPost(client, nil, "4bd431809afb1bb99e4f")
+	if err == nil {
+		t.Fatal("error should occur")
+	}
 }
 
 func TestPostUpdate(t *testing.T) {
@@ -948,6 +1011,31 @@ func TestPostUpdateInTeam(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 }
 
+func TestPostUpdateWithEmptyID(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := api.NewClient(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testutil.ShouldExistFile(t, 0)
+
+	post := model.NewPost("Example Title", nil, nil)
+	err = post.Update(client)
+	err, ok := err.(model.EmptyIDError)
+	if !ok {
+		t.Fatal("empty ID error should occur")
+	}
+
+	testutil.ShouldExistFile(t, 0)
+}
+
 func TestPostUpdateWithNoServer(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -969,41 +1057,45 @@ func TestPostUpdateWithNoServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testutil.ShouldExistFile(t, 0)
-
-	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
+	post := model.NewPost("Example Title", nil, nil)
 	post.ID = "abcdefghijklmnopqrst"
 	err = post.Update(client)
 	if err == nil {
 		t.Fatal("error should occur")
 	}
-
-	testutil.ShouldExistFile(t, 0)
 }
 
-func TestPostUpdateWithEmptyID(t *testing.T) {
+func TestPostUpdateWithWrongResponseBody(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/items/abcdefghijklmnopqrst", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Non JSON format")
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
 	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client, err := api.NewClient(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testutil.ShouldExistFile(t, 0)
-
-	post := model.NewPost("Example Title", &model.Time{time.Date(2000, 1, 1, 9, 0, 0, 0, time.UTC)}, nil)
-	err = post.Update(client)
-	err, ok := err.(model.EmptyIDError)
-	if !ok {
-		t.Fatal("empty ID error should occur")
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	testutil.ShouldExistFile(t, 0)
+	post := model.NewPost("Example Title", nil, nil)
+	post.ID = "abcdefghijklmnopqrst"
+	err = post.Update(client)
+	if err == nil {
+		t.Fatal("error should occur")
+	}
 }
 
 func TestPostDelete(t *testing.T) {
@@ -1246,6 +1338,39 @@ func TestPostDeleteWithEmptyID(t *testing.T) {
 	}
 
 	testutil.ShouldExistFile(t, 0)
+}
+
+func TestPostDeleteWithWrongResponseBody(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v2/items/abcdefghijklmnopqrst", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Non JSON format")
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client, err := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	post := model.NewPost("Example Title", nil, nil)
+	post.ID = "abcdefghijklmnopqrst"
+	err = post.Delete(client)
+	if err == nil {
+		t.Fatal("error should occur")
+	}
 }
 
 func TestPostSave(t *testing.T) {
