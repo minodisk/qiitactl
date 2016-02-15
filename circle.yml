@@ -13,7 +13,7 @@ test:
   post:
     - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
-test:
+deployment:
   release:
     branch: release
     commands:
