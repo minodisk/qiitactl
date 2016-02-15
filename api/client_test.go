@@ -121,6 +121,13 @@ func TestBuildURL(t *testing.T) {
 	}()
 }
 
+func TestNewClient(t *testing.T) {
+	c := api.NewClient(nil)
+	if c.BuildURL == nil {
+		t.Error("BuildURL should be filled with default function")
+	}
+}
+
 func TestClientProcess(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
