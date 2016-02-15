@@ -272,6 +272,30 @@ func TestClientGet(t *testing.T) {
 	}
 }
 
+func TestClientGetWithDebugMode(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := api.NewClient(func(subDomain, path string) (url string) {
+		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
+		return
+	})
+	client.DebugMode(true)
+
+	body, _, err := client.Get("", "/echo", &url.Values{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(body) != fmt.Sprintf("%s /api/v2%s is accepted", "GET", "/echo") {
+		t.Errorf("wrong body: %s", body)
+	}
+}
+
 func TestClientPatch(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
