@@ -1,0 +1,13 @@
+class Qiitactl < Formula
+  desc "Command line interface to manage the posts in Qitta."
+  homepage "https://github.com/minodisk/qiitactl"
+  url "{{.Asset.BrowserDownloadURL}}"
+  version "{{.TagName}}"
+  sha256 "{{.Sha256}}"
+
+  depends_on :arch => :intel
+
+  def install
+    bin.install 'qiitactl'
+  end
+end

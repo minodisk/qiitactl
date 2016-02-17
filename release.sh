@@ -19,3 +19,12 @@ fi
 
 goxc -wlc compile package publish-github -apikey=$GITHUB_TOKEN
 goxc
+
+git config --global user.emal "daisuke.mino@gmail.com"
+git config --global user.name "minodisk"
+
+git clone https://minodisk:$GITHUB_TOKEN@github.com/minodisk/homebrew-qiitactl.git
+go run .brew/generate.go
+cd homebrew-qiitactl
+git commit -m "Update formula" qiitactl.rb
+git push
