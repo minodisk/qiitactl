@@ -17,5 +17,5 @@ if [ "$has_version" == "true" ]; then
   exit 1
 fi
 
-goxc -wlc publish-github -apikey=$GITHUB_TOKEN
+goxc -wlc compile package publish-github -apikey=$GITHUB_TOKEN
 goxc
