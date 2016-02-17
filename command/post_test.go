@@ -82,6 +82,7 @@ team: null
 -->
 
 # Example Title
+
 ## Example body`
 	if actual != expected {
 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -171,6 +172,7 @@ team: null
 -->
 
 # Example old title
+
 ## Example old body`), 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -210,6 +212,7 @@ team: null
 -->
 
 # Example Title
+
 ## Example body`
 	if actual != expected {
 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -384,6 +387,7 @@ team: null
 -->
 
 # Example old title
+
 ## Example old body`), 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -698,6 +702,7 @@ team: null
 -->
 
 # Example Title
+
 ## Example body`
 		if actual != expected {
 			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -727,6 +732,7 @@ team:
 -->
 
 # Example Title in team
+
 ## Example body in team`
 		if actual != expected {
 			t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
@@ -900,6 +906,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
@@ -942,6 +949,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1028,6 +1036,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
@@ -1093,6 +1102,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
@@ -1135,6 +1145,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1226,6 +1237,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
@@ -1291,6 +1303,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)
@@ -1333,6 +1346,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`
 	if actual != expected {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1424,6 +1438,7 @@ team: null
 -->
 
 # Example Edited Title
+
 ## Example Edited Body`), 0664)
 	if err != nil {
 		t.Fatal(err)

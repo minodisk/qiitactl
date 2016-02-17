@@ -24,6 +24,7 @@ const (
 -->
 
 # {{.Title}}
+
 {{.Body}}`
 
 	// DirMine is the directory of saving posts in Qiita. (Not for posts in Qiita:Team)

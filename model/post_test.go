@@ -56,6 +56,7 @@ team: null
 -->
 
 # Main title
+
 ## Sub title
 Paragraph
 `), 0644)
@@ -1351,6 +1352,7 @@ team: null
 -->
 
 # Example Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1392,6 +1394,7 @@ team: null
 -->
 
 # Example Edited Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1435,6 +1438,7 @@ team:
 -->
 
 # Example Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1479,6 +1483,7 @@ team:
 -->
 
 # Example Edited Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1520,6 +1525,7 @@ team: null
 -->
 
 # Example Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1551,6 +1557,7 @@ team: null
 -->
 
 # Example Title
+
 `), 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -1591,6 +1598,7 @@ team: null
 -->
 
 # Example Title
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1672,6 +1680,7 @@ team: null
 -->
 
 # Example title
+
 `
 	if expected != actual {
 		t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -1702,6 +1711,7 @@ team: null
 -->
 
 # Main title
+
 ## Sub title
 Paragraph
 `))
@@ -1733,6 +1743,7 @@ team: null
 -->
 
 # Main title
+
 ## Sub title
 Paragraph
 `))
@@ -1765,6 +1776,7 @@ team: null
 
 ## Sub title
 # Main title
+
 Paragraph
 `))
 	if err == nil {
@@ -1795,6 +1807,7 @@ team: null
 -->
 
 # Main title
+
 ## Sub title
 Paragraph
 `))

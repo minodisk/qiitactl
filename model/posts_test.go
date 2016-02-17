@@ -429,6 +429,7 @@ team: null
 -->
 
 # Example Title 0
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))
@@ -453,6 +454,7 @@ team: null
 -->
 
 # Example Title 1
+
 `
 		if actual != expected {
 			t.Errorf("wrong content:\n%s", testutil.Diff(expected, actual))

@@ -33,7 +33,7 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 				{
 					Name:   "file",
 					Usage:  "Generate a new markdown file for a new post",
-					Action: partialize(command.GenerateFile, client, errWriter),
+					Action: partializeWithWriter(command.GenerateFile, client, outWriter, errWriter),
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:  "title, t",
@@ -167,7 +167,7 @@ func GenerateApp(client api.Client, outWriter io.Writer, errWriter io.Writer) (a
 		},
 	}
 	app.CommandNotFound = func(c *cli.Context, command string) {
-		fmt.Fprintf(errWriter, "%s: '%s' is not a %s command. See '%s --help'.", c.App.Name, command, c.App.Name, c.App.Name)
+		fmt.Fprintf(errWriter, "%s: '%s' is not a %s command. See '%s --help'.\n", c.App.Name, command, c.App.Name, c.App.Name)
 		// os.Exit(2)
 	}
 	return
@@ -179,6 +179,7 @@ func partialize(cmdFunc func(*cli.Context, api.Client) error, client api.Client,
 		err := cmdFunc(ctx, client)
 		if err != nil {
 			printError(ctx, errWriter, err)
+			// os.Exit(2)
 		}
 	}
 }
@@ -189,14 +190,11 @@ func partializeWithWriter(cmdFunc func(*cli.Context, api.Client, io.Writer) erro
 		err := cmdFunc(ctx, client, outWriter)
 		if err != nil {
 			printError(ctx, errWriter, err)
+			// os.Exit(2)
 		}
 	}
 }
 
 func printError(ctx *cli.Context, w io.Writer, err error) {
-	// if ctx.GlobalBool("debug") {
-	// 	panic(err)
-	// } else {
 	fmt.Fprint(w, err)
-	// }
 }

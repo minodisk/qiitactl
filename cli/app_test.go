@@ -110,7 +110,7 @@ func TestNewAppUndefinedCommand(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if string(errBuf.Bytes()) != "qiitactl: 'nop' is not a qiitactl command. See 'qiitactl --help'." {
+	if string(errBuf.Bytes()) != "qiitactl: 'nop' is not a qiitactl command. See 'qiitactl --help'.\n" {
 		t.Fatalf("wrong error: %s", errBuf.Bytes())
 	}
 	if len(outBuf.Bytes()) != 0 {
@@ -161,6 +161,7 @@ team: null
 -->
 
 # Example title
+
 ## Example body`
 	if actual != expected {
 		t.Errorf("wrong body:\n%s", testutil.Diff(expected, actual))
