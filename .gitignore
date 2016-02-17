@@ -27,3 +27,4 @@ qiitactl
 .env
 .goxc.local.json
 build
+homebrew-qiitactl
