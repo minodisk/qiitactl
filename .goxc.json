@@ -1,7 +1,8 @@
 {
 	"ArtifactsDest": "build",
 	"Tasks": [
-		"default"
+    "compile",
+    "package"
 	],
 	"BuildConstraints": "linux darwin windows",
 	"PackageVersion": "0.1.0",
