@@ -37,10 +37,11 @@ type DarwinAMD64 struct {
 
 func main() {
 	res, err := http.Get("https://api.github.com/repos/minodisk/qiitactl/releases/latest")
-	defer res.Body.Close()
 	if err != nil {
+		fmt.Sprintf("api error: %s", err)
 		log.Fatal(err)
 	}
+	defer res.Body.Close()
 	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +82,7 @@ func findDarwinAMD64(release Release) (darwin DarwinAMD64, err error) {
 			darwin.Asset = asset
 			resp, err := http.Get(asset.BrowserDownloadURL)
 			if err != nil {
+				fmt.Sprintf("download error: %s", err)
 				return darwin, err
 			}
 			defer resp.Body.Close()
