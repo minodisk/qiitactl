@@ -1,19 +1,20 @@
-## 0.1.0 (2016-01-29)
+## v0.1.0
 
 Initial release
 
 ### Added
 
-- Add Fundamental features
+- Add support for managing posts in Qiita and Qiita:Team
+- Add support for generating file in local
 
 ### Deprecated
 
-- Nothing
+Nothing
 
 ### Removed
 
-- Nothing
+Nothing
 
 ### Fixed
 
-- Nothing
+Nothing

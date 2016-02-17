@@ -9,7 +9,8 @@
 	"TaskSettings": {
 		"publish-github": {
 			"owner": "minodisk",
-			"repository": "qiitactl"
+			"repository": "qiitactl",
+      "body": "[Changes](https://github.com/minodisk/qiitactl/blob/master/CHANGELOG.md)"
 		}
 	},
 	"ConfigVersion": "0.9"
