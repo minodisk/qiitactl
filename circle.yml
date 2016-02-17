@@ -17,4 +17,4 @@ deployment:
   release:
     branch: release
     commands:
-      - release.sh
+      - ./release.sh
