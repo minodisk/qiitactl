@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/minodisk/qiitactl/info"
 )
 
 const (
@@ -79,7 +78,7 @@ func (c Client) process(method string, subDomain string, path string, data inter
 	if err != nil {
 		return
 	}
-	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
+	// req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	if data != nil {
 		req.Header.Add("Content-Type", "application/json")

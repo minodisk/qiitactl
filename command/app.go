@@ -49,7 +49,9 @@ func New(client api.Client, out io.Writer, err io.Writer) (c Command) {
 	c.Out = out
 	c.Error = err
 
-	c.Application = kingpin.New("qiitactl", "A command-line chat application.")
+	c.Application = kingpin.New("qiitactl", "Command line interface to manage the posts in Qitta.")
+	c.Application.Version("0.1.1")
+	c.Application.Author("minodisk")
 	c.GlobalOptions = GlobalOptions{
 		Debug: c.Application.Flag("debug", "Enable debug mode.").Bool(),
 	}
