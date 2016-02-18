@@ -5,12 +5,12 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/minodisk/qiitactl/api"
-	"github.com/minodisk/qiitactl/cli"
+	"github.com/minodisk/qiitactl/command"
 )
 
 func main() {
 	godotenv.Load()
 	client := api.NewClient(nil)
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	app.Run(os.Args)
+	cmd := command.New(client, os.Stdout, os.Stderr)
+	cmd.Run(os.Args)
 }

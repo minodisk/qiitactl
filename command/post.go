@@ -3,21 +3,26 @@ package command
 import (
 	"fmt"
 	"io"
+	"os"
 
-	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/model"
 )
 
+type ShowPostRunner struct {
+	ID   *string
+	File **os.File
+}
+
 // ShowPost outputs your post fetched from Qiita to stdout.
-func ShowPost(c *cli.Context, client api.Client, w io.Writer) (err error) {
-	id := c.String("id")
-	filename := c.String("filename")
-	id, err = getID(id, filename)
+func (r ShowPostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	// id := c.String("id")
+	// filename := c.String("filename")
+	id, err := getID(*r.ID, *r.File)
 	if err != nil {
 		return
 	}
-	post, err := model.FetchPost(client, nil, id)
+	post, err := model.FetchPost(c, nil, id)
 	if err != nil {
 		return
 	}
@@ -25,9 +30,11 @@ func ShowPost(c *cli.Context, client api.Client, w io.Writer) (err error) {
 	return
 }
 
+type ShowPostsRunner struct{}
+
 // ShowPosts outputs your posts fetched from Qiita to stdout.
-func ShowPosts(c *cli.Context, client api.Client, w io.Writer) (err error) {
-	posts, err := model.FetchPosts(client, nil)
+func (r ShowPostsRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	posts, err := model.FetchPosts(c, nil)
 	if err != nil {
 		return
 	}
@@ -36,12 +43,12 @@ func ShowPosts(c *cli.Context, client api.Client, w io.Writer) (err error) {
 		return
 	}
 
-	teams, err := model.FetchTeams(client)
+	teams, err := model.FetchTeams(c)
 	if err != nil {
 		return
 	}
 	for _, team := range teams {
-		posts, err = model.FetchPosts(client, &team)
+		posts, err = model.FetchPosts(c, &team)
 		if err != nil {
 			return
 		}
@@ -76,16 +83,18 @@ func printPost(w io.Writer, post model.Post) (err error) {
 	return
 }
 
-// FetchPost fetches your post from Qiita to current working directory.
-func FetchPost(c *cli.Context, client api.Client) (err error) {
-	id := c.String("id")
-	filename := c.String("filename")
+type FetchPostRunner struct {
+	ID   *string
+	File **os.File
+}
 
-	id, err = getID(id, filename)
+// FetchPost fetches your post from Qiita to current working directory.
+func (r FetchPostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	id, err := getID(*r.ID, *r.File)
 	if err != nil {
 		return
 	}
-	post, err := model.FetchPost(client, nil, id)
+	post, err := model.FetchPost(c, nil, id)
 	if err != nil {
 		return
 	}
@@ -93,26 +102,29 @@ func FetchPost(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
-func getID(id, filename string) (i string, err error) {
+func getID(id string, file *os.File) (i string, err error) {
 	if id != "" {
 		i = id
 		return
 	}
-	if filename == "" {
-		err = fmt.Errorf("fetch post: id or filename is required")
-		return
+	if file != nil {
+		post, err := model.NewPostWithOSFile(file)
+		if err != nil {
+			return "", err
+		}
+		i = post.ID
+		return i, nil
 	}
-	post, err := model.NewPostWithFile(filename)
-	if err != nil {
-		return
-	}
-	i = post.ID
+
+	err = fmt.Errorf("fetch post: id or filename is required")
 	return
 }
 
+type FetchPostsRunner struct{}
+
 // FetchPosts fetches your posts from Qiita to current working directory.
-func FetchPosts(c *cli.Context, client api.Client) (err error) {
-	posts, err := model.FetchPosts(client, nil)
+func (r FetchPostsRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	posts, err := model.FetchPosts(c, nil)
 	if err != nil {
 		return
 	}
@@ -121,13 +133,13 @@ func FetchPosts(c *cli.Context, client api.Client) (err error) {
 		return
 	}
 
-	teams, err := model.FetchTeams(client)
+	teams, err := model.FetchTeams(c)
 	if err != nil {
 		return
 	}
 	for _, team := range teams {
 		var posts model.Posts
-		posts, err = model.FetchPosts(client, &team)
+		posts, err = model.FetchPosts(c, &team)
 		if err != nil {
 			return
 		}
@@ -139,35 +151,46 @@ func FetchPosts(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
+type CreatePostRunner struct {
+	File  **os.File
+	Tweet *bool
+	Gist  *bool
+}
+
 // CreatePost creates a new post in Qiita with a specified file.
-func CreatePost(c *cli.Context, client api.Client) (err error) {
-	filename := c.String("filename")
+func (r CreatePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
 	opts := model.CreationOptions{
-		Tweet: c.Bool("tweet"),
-		Gist:  c.Bool("gist"),
+		Tweet: *r.Tweet,
+		Gist:  *r.Gist,
 	}
 
-	post, err := model.NewPostWithFile(filename)
+	// post, err := model.NewPostWithFile(filename)
+	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
 	}
-	err = post.Create(client, opts)
+	err = post.Create(c, opts)
 	if err != nil {
 		return
 	}
 	err = post.Save(nil)
 	return
+}
+
+type UpdatePostRunner struct {
+	File **os.File
 }
 
 // UpdatePost updates your post in Qiita with a specified file.
-func UpdatePost(c *cli.Context, client api.Client) (err error) {
-	filename := c.String("filename")
+func (r UpdatePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	// filename := c.String("filename")
 
-	post, err := model.NewPostWithFile(filename)
+	// post, err := model.NewPostWithFile(filename)
+	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
 	}
-	err = post.Update(client)
+	err = post.Update(c)
 	if err != nil {
 		return
 	}
@@ -175,15 +198,20 @@ func UpdatePost(c *cli.Context, client api.Client) (err error) {
 	return
 }
 
-// DeletePost deletes your post from Qiita with a specified file.
-func DeletePost(c *cli.Context, client api.Client) (err error) {
-	filename := c.String("filename")
+type DeletePostRunner struct {
+	File **os.File
+}
 
-	post, err := model.NewPostWithFile(filename)
+// DeletePost deletes your post from Qiita with a specified file.
+func (r DeletePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
+	// filename := c.String("filename")
+
+	// post, err := model.NewPostWithFile(filename)
+	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
 	}
-	err = post.Delete(client)
+	err = post.Delete(c)
 	if err != nil {
 		return
 	}

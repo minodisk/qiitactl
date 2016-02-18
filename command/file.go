@@ -4,27 +4,31 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/codegangsta/cli"
 	"github.com/minodisk/qiitactl/api"
 	"github.com/minodisk/qiitactl/model"
 )
 
-// GenerateFile generates markdown file at current working directory.
-func GenerateFile(c *cli.Context, client api.Client, w io.Writer) (err error) {
-	teamID := c.String("team")
-	title := c.String("title")
+type GenerateFileRunner struct {
+	Title *string
+	Team  *string
+}
 
+// GenerateFile generates markdown file at current working directory.
+func (r GenerateFileRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
 	var team *model.Team
-	if teamID != "" {
+	if *r.Team != "" {
 		team = &model.Team{
-			ID: teamID,
+			ID: *r.Team,
 		}
 	}
-	post := model.NewPost(title, nil, team)
+
+	post := model.NewPost(*r.Title, nil, team)
 	err = post.Save(nil)
 	if err != nil {
 		return
 	}
+
 	_, err = fmt.Fprintf(w, "%s\n", post.Path)
+
 	return
 }
