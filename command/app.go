@@ -105,7 +105,11 @@ func New(client api.Client, out io.Writer, err io.Writer) (c Command) {
 func (c Command) Run(args []string) {
 	var err error
 
-	switch kingpin.MustParse(c.Application.Parse(args[1:])) {
+	cmd, err := c.Application.Parse(args[1:])
+	fmt.Println(*c.GlobalOptions.Debug)
+	c.Client.DebugMode(*c.GlobalOptions.Debug)
+
+	switch kingpin.MustParse(cmd, err) {
 	case c.GenerateFile.FullCommand():
 		err = c.GenerateFileRunner.Run(c.Client, c.GlobalOptions, c.Out)
 	case c.CreatePost.FullCommand():
