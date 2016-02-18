@@ -106,7 +106,6 @@ func (c Command) Run(args []string) {
 	var err error
 
 	cmd, err := c.Application.Parse(args[1:])
-	fmt.Println(*c.GlobalOptions.Debug)
 	c.Client.DebugMode(*c.GlobalOptions.Debug)
 
 	switch kingpin.MustParse(cmd, err) {
