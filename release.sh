@@ -17,7 +17,7 @@ if [ "$has_version" == "true" ]; then
   exit 1
 fi
 
-goxc -wlc compile package publish-github -apikey=$GITHUB_TOKEN
+goxc -wc compile package publish-github -apikey=$GITHUB_TOKEN
 goxc
 
 git config --global user.email "daisuke.mino@gmail.com"
