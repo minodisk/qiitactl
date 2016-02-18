@@ -5,7 +5,7 @@
     "package"
 	],
 	"BuildConstraints": "linux darwin windows",
-	"PackageVersion": "0.1.0",
+	"PackageVersion": "0.1.1",
 	"TaskSettings": {
 		"publish-github": {
 			"owner": "minodisk",
