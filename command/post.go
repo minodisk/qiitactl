@@ -16,8 +16,6 @@ type ShowPostRunner struct {
 
 // ShowPost outputs your post fetched from Qiita to stdout.
 func (r ShowPostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
-	// id := c.String("id")
-	// filename := c.String("filename")
 	id, err := getID(*r.ID, *r.File)
 	if err != nil {
 		return
@@ -164,7 +162,6 @@ func (r CreatePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err e
 		Gist:  *r.Gist,
 	}
 
-	// post, err := model.NewPostWithFile(filename)
 	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
@@ -183,9 +180,6 @@ type UpdatePostRunner struct {
 
 // UpdatePost updates your post in Qiita with a specified file.
 func (r UpdatePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
-	// filename := c.String("filename")
-
-	// post, err := model.NewPostWithFile(filename)
 	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
@@ -204,9 +198,6 @@ type DeletePostRunner struct {
 
 // DeletePost deletes your post from Qiita with a specified file.
 func (r DeletePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
-	// filename := c.String("filename")
-
-	// post, err := model.NewPostWithFile(filename)
 	post, err := model.NewPostWithOSFile(*r.File)
 	if err != nil {
 		return
@@ -218,39 +209,3 @@ func (r DeletePostRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err e
 	err = post.Save(nil)
 	return
 }
-
-// func PostsDiff(commit1, commit2 string) (err error) {
-// 	fmt.Printf("Post diff between %s and %s\n", commit1, commit2)
-//
-// 	err = exec.Command("git", "config", "--local", "core.quotepath", "false").Run()
-// 	if err != nil {
-// 		return
-// 	}
-//
-// 	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", commit1, commit2)
-//
-// 	wd, err := os.Getwd()
-// 	if err != nil {
-// 		return
-// 	}
-//
-// 	filenames, err := cmd.Output()
-// 	for _, filename := range strings.Split(string(filenames), "\n") {
-// 		if filename == "" {
-// 			continue
-// 		}
-// 		filename = filepath.Join(wd, strings.Trim(filename, "\""))
-// 		fmt.Println(filename)
-//
-// 		b, err := ioutil.ReadFile(filename)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		_, err = model.NewPost(string(b))
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-//
-// 	return
-// }
