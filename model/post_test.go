@@ -1314,8 +1314,9 @@ func TestPostDeleteWithWrongResponseBody(t *testing.T) {
 	post := model.NewPost("Example Title", nil, nil)
 	post.ID = "abcdefghijklmnopqrst"
 	err = post.Delete(client)
-	if err == nil {
-		t.Fatal("error should occur")
+	// Don't parse response body from DELETE method
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

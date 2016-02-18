@@ -14,14 +14,13 @@ import (
 	"time"
 
 	"github.com/minodisk/qiitactl/api"
-	"github.com/minodisk/qiitactl/cli"
+	"github.com/minodisk/qiitactl/command"
 	"github.com/minodisk/qiitactl/model"
 	"github.com/minodisk/qiitactl/testutil"
 )
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-	// Clean up trashes
 	testutil.CleanUp()
 	os.Exit(code)
 }
@@ -51,11 +50,8 @@ func TestFetchPostWithID(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -115,14 +111,11 @@ func TestFetchPostWithWrongID(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, buf, errBuf)
+	app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "404 Not Found"
+	expected := "404 Not Found\n"
 	if actual != expected {
 		t.Fatalf("error should occur when fetches post with wrong ID: %s", actual)
 	}
@@ -181,11 +174,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -219,47 +209,6 @@ team: null
 	}
 }
 
-func TestFetchPostWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	mux := http.NewServeMux()
-	handleItem(mux)
-	serverMine := httptest.NewServer(mux)
-	defer serverMine.Close()
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when fetches post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
 func TestShowPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -286,11 +235,8 @@ func TestShowPostWithID(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, buf, errBuf)
+	app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -330,14 +276,11 @@ func TestShowPostWithWrongID(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, buf, errBuf)
+	app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	e := errBuf.Bytes()
 	actual := string(e)
-	expected := "404 Not Found"
+	expected := "404 Not Found\n"
 	if actual != expected {
 		t.Fatalf("error should occur when show post with wrong ID: %s", actual)
 	}
@@ -397,11 +340,8 @@ team: null
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, buf, errBuf)
+	app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -413,47 +353,6 @@ team: null
 ` {
 		t.Errorf("written text is wrong: %s", buf.Bytes())
 	}
-}
-
-func TestShowPostWithWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	mux := http.NewServeMux()
-	handleItem(mux)
-	serverMine := httptest.NewServer(mux)
-	defer serverMine.Close()
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when shows post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
 }
 
 func TestShowPosts(t *testing.T) {
@@ -489,11 +388,8 @@ func TestShowPosts(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "show", "posts"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, buf, errBuf)
+	app.Run([]string{"qiitactl", "show", "posts"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -516,7 +412,6 @@ func TestShowPostsErrors(t *testing.T) {
 
 	func() {
 		mux := http.NewServeMux()
-		// handleAuthenticatedUserItems(mux)
 		handleTeams(mux)
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
@@ -544,11 +439,8 @@ func TestShowPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "show", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -558,7 +450,6 @@ func TestShowPostsErrors(t *testing.T) {
 	func() {
 		mux := http.NewServeMux()
 		handleAuthenticatedUserItems(mux)
-		// handleTeams(mux)
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
 		mux = http.NewServeMux()
@@ -585,11 +476,8 @@ func TestShowPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "show", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -603,7 +491,6 @@ func TestShowPostsErrors(t *testing.T) {
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
 		mux = http.NewServeMux()
-		// handleAuthenticatedUserItemsWithTeam(mux)
 		serverTeam := httptest.NewServer(mux)
 		defer serverTeam.Close()
 		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
@@ -626,11 +513,8 @@ func TestShowPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "show", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -670,11 +554,8 @@ func TestFetchPosts(t *testing.T) {
 	testutil.ShouldExistFile(t, 0)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "fetch", "posts"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "fetch", "posts"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -746,7 +627,6 @@ func TestFetchPostsErrors(t *testing.T) {
 
 	func() {
 		mux := http.NewServeMux()
-		// handleAuthenticatedUserItems(mux)
 		handleTeams(mux)
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
@@ -772,11 +652,8 @@ func TestFetchPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "fetch", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -786,7 +663,6 @@ func TestFetchPostsErrors(t *testing.T) {
 	func() {
 		mux := http.NewServeMux()
 		handleAuthenticatedUserItems(mux)
-		// handleTeams(mux)
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
 		mux = http.NewServeMux()
@@ -811,11 +687,8 @@ func TestFetchPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "fetch", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -829,7 +702,6 @@ func TestFetchPostsErrors(t *testing.T) {
 		serverMine := httptest.NewServer(mux)
 		defer serverMine.Close()
 		mux = http.NewServeMux()
-		// handleAuthenticatedUserItemsWithTeam(mux)
 		serverTeam := httptest.NewServer(mux)
 		defer serverTeam.Close()
 		err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
@@ -850,11 +722,8 @@ func TestFetchPostsErrors(t *testing.T) {
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := cli.GenerateApp(client, buf, errBuf)
-		err = app.Run([]string{"qiitactl", "fetch", "posts"})
-		if err != nil {
-			t.Fatal(err)
-		}
+		app := command.New(client, buf, errBuf)
+		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
 			t.Fatal("error should occur")
@@ -915,11 +784,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "create", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -956,48 +822,11 @@ team: null
 	}
 }
 
-func TestCreatePostErrorWithNoFile(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	mux := http.NewServeMux()
-	handleItems(mux)
-	serverMine := httptest.NewServer(mux)
-	defer serverMine.Close()
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-
-	testutil.ShouldExistFile(t, 0)
-
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	if len(e) == 0 {
-		t.Fatalf("error should occur")
-	}
-}
-
 func TestCreatePostErrorWithNoServer(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
 	mux := http.NewServeMux()
-	// handleItems(mux)
 	serverMine := httptest.NewServer(mux)
 	defer serverMine.Close()
 	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
@@ -1045,11 +874,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "create", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "create", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {
 		t.Fatal("error should occur")
@@ -1111,11 +937,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "update", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -1152,53 +975,11 @@ team: null
 	}
 }
 
-func TestUpdatePostWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	mux := http.NewServeMux()
-	handleItem(mux)
-	serverMine := httptest.NewServer(mux)
-	defer serverMine.Close()
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when updates post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
 func TestUpdatePostWithNoServer(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
 	mux := http.NewServeMux()
-	// handleItem(mux)
 	serverMine := httptest.NewServer(mux)
 	defer serverMine.Close()
 	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
@@ -1246,11 +1027,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "update", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "update", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {
 		t.Fatal("error should occur")
@@ -1312,11 +1090,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "delete", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
 		t.Fatal(string(e))
@@ -1353,53 +1128,11 @@ team: null
 	}
 }
 
-func TestFetchDeleteWithWrongFilename(t *testing.T) {
-	testutil.CleanUp()
-	defer testutil.CleanUp()
-
-	mux := http.NewServeMux()
-	handleItem(mux)
-	serverMine := httptest.NewServer(mux)
-	defer serverMine.Close()
-	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := api.NewClient(func(subDomain, path string) (url string) {
-		switch subDomain {
-		case "":
-			url = fmt.Sprintf("%s%s%s", serverMine.URL, "/api/v2", path)
-		default:
-			log.Fatalf("wrong sub domain \"%s\"", subDomain)
-		}
-		return
-	})
-
-	testutil.ShouldExistFile(t, 0)
-
-	buf := bytes.NewBuffer([]byte{})
-	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, buf, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := errBuf.Bytes()
-	actual := string(e)
-	expected := "open mine/2000/01/01/Example Title.md: no such file or directory"
-	if actual != expected {
-		t.Fatalf("error should occur when deletes post with wrong filename: %s", actual)
-	}
-
-	testutil.ShouldExistFile(t, 0)
-}
-
 func TestDeletePostErrorWithNoServer(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
 	mux := http.NewServeMux()
-	// handleItem(mux)
 	serverMine := httptest.NewServer(mux)
 	defer serverMine.Close()
 	err := os.Setenv("QIITA_ACCESS_TOKEN", "XXXXXXXXXXXX")
@@ -1447,11 +1180,8 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := cli.GenerateApp(client, os.Stdout, errBuf)
-	err = app.Run([]string{"qiitactl", "delete", "post", "-f", "mine/2000/01/01/Example Title.md"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, errBuf)
+	app.Run([]string{"qiitactl", "delete", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {
 		t.Fatal("error should occur")
