@@ -119,6 +119,19 @@ func NewPostWithFile(path string) (post Post, err error) {
 	return
 }
 
+func NewPostWithOSFile(f *os.File) (post Post, err error) {
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return
+	}
+	err = post.Decode(b)
+	if err != nil {
+		return
+	}
+	post.Path = f.Name()
+	return
+}
+
 // Create creates a new post in Qiita.
 func (post *Post) Create(client api.Client, opts CreationOptions) (err error) {
 	subDomain := ""
@@ -193,14 +206,7 @@ func (post *Post) Delete(client api.Client) (err error) {
 	if post.Team != nil {
 		subDomain = post.Team.ID
 	}
-	body, _, err := client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(body, post)
-	if err != nil {
-		return
-	}
+	_, _, err = client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
 	return
 }
 

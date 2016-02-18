@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/minodisk/qiitactl/api"
-	"github.com/minodisk/qiitactl/cli"
+	"github.com/minodisk/qiitactl/command"
 	"github.com/minodisk/qiitactl/testutil"
 )
 
@@ -24,11 +24,8 @@ func TestGenerateFileInMine(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, os.Stderr)
+	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
 
 	testutil.ShouldExistFile(t, 1)
 
@@ -51,11 +48,8 @@ func TestGenerateFileInTeam(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title", "-T", "increments"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, os.Stderr)
+	app.Run([]string{"qiitactl", "generate", "file", "Example Title", "-t", "increments"})
 
 	testutil.ShouldExistFile(t, 1)
 
@@ -78,15 +72,9 @@ func TestGenerateUniqueFile(t *testing.T) {
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := cli.GenerateApp(client, os.Stdout, os.Stderr)
-	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = app.Run([]string{"qiitactl", "generate", "file", "-t", "Example Title"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := command.New(client, os.Stdout, os.Stderr)
+	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
+	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
 
 	testutil.ShouldExistFile(t, 2)
 
