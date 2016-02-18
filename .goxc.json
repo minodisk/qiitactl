@@ -1,16 +1,16 @@
 {
 	"ArtifactsDest": "build",
 	"Tasks": [
-    "compile",
-    "package"
+		"compile",
+		"package"
 	],
 	"BuildConstraints": "linux darwin windows",
-	"PackageVersion": "0.1.0",
+	"PackageVersion": "0.1.1",
 	"TaskSettings": {
 		"publish-github": {
+			"body": "[Changes](https://github.com/minodisk/qiitactl/blob/master/CHANGELOG.md)",
 			"owner": "minodisk",
-			"repository": "qiitactl",
-      "body": "[Changes](https://github.com/minodisk/qiitactl/blob/master/CHANGELOG.md)"
+			"repository": "qiitactl"
 		}
 	},
 	"ConfigVersion": "0.9"
