@@ -207,13 +207,6 @@ func (post *Post) Delete(client api.Client) (err error) {
 		subDomain = post.Team.ID
 	}
 	_, _, err = client.Delete(subDomain, fmt.Sprintf("/items/%s", post.ID), post)
-	// if err != nil {
-	// 	return
-	// }
-	// err = json.Unmarshal(body, post)
-	// if err != nil {
-	// 	return
-	// }
 	return
 }
 
