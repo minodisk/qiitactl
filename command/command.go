@@ -15,6 +15,7 @@ type Command struct {
 	Error  io.Writer
 
 	Application  *kingpin.Application
+	Serve        *kingpin.CmdClause
 	Generate     *kingpin.CmdClause
 	GenerateFile *kingpin.CmdClause
 	Create       *kingpin.CmdClause
@@ -31,6 +32,7 @@ type Command struct {
 	DeletePost   *kingpin.CmdClause
 
 	GlobalOptions      GlobalOptions
+	ServeRunner        ServeRunner
 	GenerateFileRunner GenerateFileRunner
 	CreatePostRunner   CreatePostRunner
 	ShowPostRunner     ShowPostRunner
@@ -56,6 +58,9 @@ func New(info info.Info, client api.Client, out io.Writer, err io.Writer) (c Com
 	c.GlobalOptions = GlobalOptions{
 		Debug: c.Application.Flag("debug", "Enable debug mode.").Bool(),
 	}
+
+	c.Serve = c.Application.Command("serve", "Serve files as HTML.")
+	c.ServeRunner = ServeRunner{}
 
 	c.Generate = c.Application.Command("generate", "Generate something in your local.")
 	c.GenerateFile = c.Generate.Command("file", "Generate a new markdown file for a new post.")
@@ -112,6 +117,8 @@ func (c Command) Run(args []string) {
 	c.Client.DebugMode(*c.GlobalOptions.Debug)
 
 	switch kingpin.MustParse(cmd, err) {
+	case c.Serve.FullCommand():
+		err = c.ServeRunner.Run(c.Client, c.GlobalOptions, c.Out)
 	case c.GenerateFile.FullCommand():
 		err = c.GenerateFileRunner.Run(c.Client, c.GlobalOptions, c.Out)
 	case c.CreatePost.FullCommand():
