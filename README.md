@@ -28,7 +28,7 @@ qiitactl update post path/to/file.md
 ### Create a new post
 
 ```bash
-qiitactl generate file -t "The title of new post"
+qiitactl generate file "The title of new post"
 vim path/to/file.md
 qiitactl create post path/to/file.md
 ```
