@@ -19,12 +19,6 @@ import (
 	"github.com/minodisk/qiitactl/testutil"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
-	testutil.CleanUp()
-	os.Exit(code)
-}
-
 func TestFetchPostWithID(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -45,12 +39,12 @@ func TestFetchPostWithID(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "fetch", "post", "-i", "4bd431809afb1bb99e4f"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -105,13 +99,13 @@ func TestFetchPostWithWrongID(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, buf, errBuf)
+	app := command.New(inf, client, buf, errBuf)
 	app.Run([]string{"qiitactl", "fetch", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	e := errBuf.Bytes()
 	actual := string(e)
@@ -143,7 +137,7 @@ func TestFetchPostWithFilename(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -174,7 +168,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "fetch", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -229,13 +223,13 @@ func TestShowPostWithID(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, buf, errBuf)
+	app := command.New(inf, client, buf, errBuf)
 	app.Run([]string{"qiitactl", "show", "post", "-i", "4bd431809afb1bb99e4f"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -270,13 +264,13 @@ func TestShowPostWithWrongID(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, buf, errBuf)
+	app := command.New(inf, client, buf, errBuf)
 	app.Run([]string{"qiitactl", "show", "post", "-i", "XXXXXXXXXXXXXXXXXXXX"})
 	e := errBuf.Bytes()
 	actual := string(e)
@@ -308,7 +302,7 @@ func TestShowPostWithFilename(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -340,7 +334,7 @@ team: null
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, buf, errBuf)
+	app := command.New(inf, client, buf, errBuf)
 	app.Run([]string{"qiitactl", "show", "post", "-f", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -382,13 +376,13 @@ func TestShowPosts(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	buf := bytes.NewBuffer([]byte{})
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, buf, errBuf)
+	app := command.New(inf, client, buf, errBuf)
 	app.Run([]string{"qiitactl", "show", "posts"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -433,13 +427,13 @@ func TestShowPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		testutil.ShouldExistFile(t, 0)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -470,13 +464,13 @@ func TestShowPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		testutil.ShouldExistFile(t, 0)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -507,13 +501,13 @@ func TestShowPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		testutil.ShouldExistFile(t, 0)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "show", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -549,12 +543,12 @@ func TestFetchPosts(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "fetch", "posts"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -648,11 +642,11 @@ func TestFetchPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -683,11 +677,11 @@ func TestFetchPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -718,11 +712,11 @@ func TestFetchPostsErrors(t *testing.T) {
 				log.Fatalf("wrong sub domain \"%s\"", subDomain)
 			}
 			return
-		})
+		}, inf)
 
 		buf := bytes.NewBuffer([]byte{})
 		errBuf := bytes.NewBuffer([]byte{})
-		app := command.New(client, buf, errBuf)
+		app := command.New(inf, client, buf, errBuf)
 		app.Run([]string{"qiitactl", "fetch", "posts"})
 		e := errBuf.Bytes()
 		if len(e) == 0 {
@@ -751,7 +745,7 @@ func TestCreatePost(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -784,7 +778,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "create", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -841,7 +835,7 @@ func TestCreatePostErrorWithNoServer(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -874,7 +868,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "create", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {
@@ -904,7 +898,7 @@ func TestUpdatePost(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -937,7 +931,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "update", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -994,7 +988,7 @@ func TestUpdatePostWithNoServer(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1027,7 +1021,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "update", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {
@@ -1057,7 +1051,7 @@ func TestDeletePost(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1090,7 +1084,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "delete", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) != 0 {
@@ -1147,7 +1141,7 @@ func TestDeletePostErrorWithNoServer(t *testing.T) {
 			log.Fatalf("wrong sub domain \"%s\"", subDomain)
 		}
 		return
-	})
+	}, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
@@ -1180,7 +1174,7 @@ team: null
 	testutil.ShouldExistFile(t, 1)
 
 	errBuf := bytes.NewBuffer([]byte{})
-	app := command.New(client, os.Stdout, errBuf)
+	app := command.New(inf, client, os.Stdout, errBuf)
 	app.Run([]string{"qiitactl", "delete", "post", "mine/2000/01/01/Example Title.md"})
 	e := errBuf.Bytes()
 	if len(e) == 0 {

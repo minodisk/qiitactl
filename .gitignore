@@ -28,3 +28,4 @@ qiitactl
 .goxc.local.json
 build
 homebrew-qiitactl
+bindata.go

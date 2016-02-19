@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/minodisk/qiitactl/api"
+	"github.com/minodisk/qiitactl/info"
 )
 
 type Command struct {
@@ -44,12 +45,14 @@ type GlobalOptions struct {
 	Debug *bool
 }
 
-func New(client api.Client, out io.Writer, err io.Writer) (c Command) {
+func New(info info.Info, client api.Client, out io.Writer, err io.Writer) (c Command) {
 	c.Client = client
 	c.Out = out
 	c.Error = err
 
-	c.Application = kingpin.New("qiitactl", "A command-line chat application.")
+	c.Application = kingpin.New("qiitactl", "Command line interface to manage the posts in Qitta.")
+	c.Application.Version(info.Version)
+	c.Application.Author(info.Author)
 	c.GlobalOptions = GlobalOptions{
 		Debug: c.Application.Flag("debug", "Enable debug mode.").Bool(),
 	}

@@ -1,3 +1,23 @@
+## v0.1.2
+
+Update CLI
+
+### Added
+
+- Add version number to `qiitactl --version`
+
+### Deprecated
+
+Nothing
+
+### Removed
+
+Nothing
+
+### Fixed
+
+- Fix description in `qiitactl --help`
+
 ## v0.1.1
 
 Change CLI parser

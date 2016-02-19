@@ -20,11 +20,11 @@ func TestGenerateFileInMine(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := api.NewClient(nil)
+	client := api.NewClient(nil, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := command.New(client, os.Stdout, os.Stderr)
+	app := command.New(inf, client, os.Stdout, os.Stderr)
 	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
 
 	testutil.ShouldExistFile(t, 1)
@@ -44,11 +44,11 @@ func TestGenerateFileInTeam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := api.NewClient(nil)
+	client := api.NewClient(nil, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := command.New(client, os.Stdout, os.Stderr)
+	app := command.New(inf, client, os.Stdout, os.Stderr)
 	app.Run([]string{"qiitactl", "generate", "file", "Example Title", "-t", "increments"})
 
 	testutil.ShouldExistFile(t, 1)
@@ -68,11 +68,11 @@ func TestGenerateUniqueFile(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := api.NewClient(nil)
+	client := api.NewClient(nil, inf)
 
 	testutil.ShouldExistFile(t, 0)
 
-	app := command.New(client, os.Stdout, os.Stderr)
+	app := command.New(inf, client, os.Stdout, os.Stderr)
 	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
 	app.Run([]string{"qiitactl", "generate", "file", "Example Title"})
 
