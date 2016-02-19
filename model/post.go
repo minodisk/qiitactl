@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	rPostDecoder = regexp.MustCompile(`^(?ms:\n*<!--(.*)-->\n{2,}# +(.*?)\n+(.*))$`)
+	rPostDecoder = regexp.MustCompile(`^(?ms:\n*<!--(.*?)-->\n{2,}# +(.*?)\n+(.*))$`)
 	tmpl         = func() (t *template.Template) {
 		t = template.New("postfile")
 		template.Must(t.Parse(postTemplate))

@@ -1733,6 +1733,37 @@ Paragraph
 	}
 }
 
+func TestPostDecodeWithMultiComment(t *testing.T) {
+	testutil.CleanUp()
+	defer testutil.CleanUp()
+
+	var post model.Post
+	err := post.Decode([]byte(`<!--
+id: ""
+url: ""
+created_at: 2016-02-17T13:08:30+09:00
+updated_at: 2016-02-17T13:08:30+09:00
+private: false
+coediting: false
+tags:
+- Qiita
+- Go
+team: null
+-->
+
+# Example Title
+
+<!--
+This is not meta
+-->
+
+# This is not title of this post
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestPostDecodeWithWrongTag(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
@@ -1765,7 +1796,7 @@ Paragraph
 	}
 }
 
-func TestDecodeWithWrongTitle(t *testing.T) {
+func TestPostDecodeWithWrongTitle(t *testing.T) {
 	testutil.CleanUp()
 	defer testutil.CleanUp()
 
