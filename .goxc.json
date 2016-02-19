@@ -5,7 +5,7 @@
 		"package"
 	],
 	"BuildConstraints": "linux darwin windows",
-	"PackageVersion": "0.1.3",
+	"PackageVersion": "0.1.4",
 	"TaskSettings": {
 		"publish-github": {
 			"body": "[Changes](https://github.com/minodisk/qiitactl/blob/master/CHANGELOG.md)",

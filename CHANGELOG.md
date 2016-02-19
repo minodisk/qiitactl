@@ -1,3 +1,10 @@
+## v0.1.4
+
+Fix bug
+
+- Fix bug in multi comment
+  - Parse as meta from the first of comment opener to the last of comment closer.
+
 ## v0.1.3
 
 Remove debug code
