@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -81,7 +80,6 @@ func (c Client) process(method string, subDomain string, path string, data inter
 	if err != nil {
 		return
 	}
-	log.Printf("%v", c.info)
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", c.info.Name, c.info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	if data != nil {
