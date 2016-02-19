@@ -4,7 +4,7 @@ Command line interface to manage your posts in Qitta.
 
 ## Description
 
-`qiitactl` can fetch your posts from Qiita and write them as markdown files to your local. After you edit the file in the editor you like, `qiitactl update post -f path/to/file.md`. Then, the post will be updated in Qiita. You can also generate a new file for post, create a new post from the file and delete a post with this tool.
+`qiitactl` can fetch your posts from Qiita and write them as markdown files to your local. After you edit the file in the editor you like, `qiitactl update post path/to/file.md`. Then, the post will be updated in Qiita. You can also generate a new file for post, create a new post from the file and delete a post with this tool.
 
 ## Usage
 
@@ -22,7 +22,7 @@ qiitactl fetch posts
 ### Update a post
 
 ```bash
-qiitactl update post -f path/to/file.md
+qiitactl update post path/to/file.md
 ```
 
 ### Create a new post
@@ -30,7 +30,7 @@ qiitactl update post -f path/to/file.md
 ```bash
 qiitactl generate file -t "The title of new post"
 vim path/to/file.md
-qiitactl create post -f path/to/file.md
+qiitactl create post path/to/file.md
 ```
 
 ### And more:
@@ -44,7 +44,7 @@ qiitactl help
 To install, use `go get`:
 
 ```bash
-go get -d github.com/minodisk/qiitactl
+go get github.com/minodisk/qiitactl
 ```
 
 ## Contribution
