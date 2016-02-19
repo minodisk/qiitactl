@@ -12,8 +12,11 @@ import (
 func main() {
 	godotenv.Load()
 	g := MustAsset(".goxc.json")
-	_ = info.New(g)
-	client := api.NewClient(nil)
-	cmd := command.New(client, os.Stdout, os.Stderr)
+	info, err := info.New(g)
+	if err != nil {
+		panic("fail to load bindata")
+	}
+	client := api.NewClient(nil, info)
+	cmd := command.New(info, client, os.Stdout, os.Stderr)
 	cmd.Run(os.Args)
 }

@@ -18,7 +18,6 @@ if [ "$has_version" == "true" ]; then
 fi
 
 goxc -wc compile package publish-github -apikey=$GITHUB_TOKEN
-cat .goxc.json
 goxc
 
 git config --global user.email "daisuke.mino@gmail.com"

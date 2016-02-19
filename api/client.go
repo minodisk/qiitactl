@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/minodisk/qiitactl/info"
 )
 
 const (
@@ -22,6 +24,7 @@ const (
 // Client is HTTP client accessing to the Qiita API v2.
 type Client struct {
 	BuildURL   func(string, string) string
+	info       info.Info
 	httpClient *http.Client
 	debugMode  bool
 }
@@ -40,13 +43,13 @@ func BuildURL(subDomain, path string) (url string) {
 
 // NewClient makes a Client.
 // Client will access to URL made by buildURL.
-func NewClient(buildURL func(string, string) string) (c Client) {
+func NewClient(buildURL func(string, string) string, info info.Info) (c Client) {
 	if buildURL == nil {
 		c.BuildURL = BuildURL
 	} else {
 		c.BuildURL = buildURL
 	}
-
+	c.info = info
 	c.httpClient = &http.Client{}
 	return
 }
@@ -78,7 +81,8 @@ func (c Client) process(method string, subDomain string, path string, data inter
 	if err != nil {
 		return
 	}
-	// req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", info.Name, info.Version))
+	log.Printf("%v", c.info)
+	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", c.info.Name, c.info.Version))
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	if data != nil {
 		req.Header.Add("Content-Type", "application/json")

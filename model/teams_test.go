@@ -37,7 +37,7 @@ func TestTeams_FetchTeams(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	teams, err := model.FetchTeams(client)
 	if err != nil {
@@ -69,7 +69,7 @@ func TestTeams_FetchTeamsError(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	_, err = model.FetchTeams(client)
 	if err == nil {

@@ -14,17 +14,25 @@ import (
 	"testing"
 
 	"github.com/minodisk/qiitactl/api"
+	"github.com/minodisk/qiitactl/info"
 	"github.com/minodisk/qiitactl/testutil"
 )
 
 var (
 	server     *httptest.Server
 	rUserAgent = regexp.MustCompile(`qiitactl/\d+\.\d+\.\d+`)
+	inf        = info.Info{
+		Version: "0.0.0",
+		TaskSettings: info.TaskSettings{
+			GitHub: info.GitHub{
+				Name: "qiitactl",
+			},
+		},
+	}
 )
 
 func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
-
 	mux.HandleFunc("/api/v2/echo", func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if auth != "Bearer XXXXXXXXXXXX" {
@@ -122,7 +130,7 @@ func TestBuildURL(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	c := api.NewClient(nil)
+	c := api.NewClient(nil, inf)
 	if c.BuildURL == nil {
 		t.Error("BuildURL should be filled with default function")
 	}
@@ -139,7 +147,7 @@ func TestClientProcess(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	body, _, err := client.Options("", "/echo", nil)
 	if err != nil {
@@ -158,7 +166,7 @@ func TestClientProcessWithEmptyToken(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	_, _, err := client.Options("", "/echo", nil)
 	_, ok := err.(api.EmptyTokenError)
@@ -178,7 +186,7 @@ func TestClientProcessWithWrongToken(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	_, _, err = client.Options("", "/echo", nil)
 	_, ok := err.(api.WrongTokenError)
@@ -198,7 +206,7 @@ func TestClientProcessWithResponseError(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	_, _, err = client.Options("", "/errors/response", nil)
 	_, ok := err.(api.ResponseError)
@@ -218,7 +226,7 @@ func TestClientProcessWithStatusError(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	_, _, err = client.Options("", "/errors/status", nil)
 	_, ok := err.(api.StatusError)
@@ -238,7 +246,7 @@ func TestClientPost(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 	client.DebugMode(true)
 
 	body, _, err := client.Post("", "/echo", "data")
@@ -267,7 +275,7 @@ func TestClientGet(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	body, _, err := client.Get("", "/echo", &url.Values{})
 	if err != nil {
@@ -290,7 +298,7 @@ func TestClientGetWithDebugMode(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 	client.DebugMode(true)
 
 	body, _, err := client.Get("", "/echo", &url.Values{})
@@ -314,7 +322,7 @@ func TestClientPatch(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	body, _, err := client.Patch("", "/echo", nil)
 	if err != nil {
@@ -337,7 +345,7 @@ func TestClientDelete(t *testing.T) {
 	client := api.NewClient(func(subDomain, path string) (url string) {
 		url = fmt.Sprintf("%s%s%s", server.URL, "/api/v2", path)
 		return
-	})
+	}, inf)
 
 	body, _, err := client.Delete("", "/echo", nil)
 	if err != nil {

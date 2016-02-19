@@ -1,19 +1,25 @@
 package info
 
-import "fmt"
+import "encoding/json"
 
 type Info struct {
-	Name        string
-	Version     string
-	Author      string
-	Description string
+	Version      string `json:"PackageVersion"`
+	TaskSettings `json:"TaskSettings"`
 }
 
-func New(bindata []byte) (info Info) {
-	fmt.Println(bindata)
-	info.Name = "qiitactl"
-	// info.Version =
-	info.Author = "minodisk"
-	info.Description = ""
+type TaskSettings struct {
+	GitHub `json:"publish-github"`
+}
+
+type GitHub struct {
+	Name   string `json:"repository"`
+	Author string `json:"owner"`
+}
+
+func New(bindata []byte) (info Info, err error) {
+	err = json.Unmarshal(bindata, &info)
+	if err != nil {
+		return
+	}
 	return
 }
