@@ -8,7 +8,7 @@ import (
 )
 
 func Start() (err error) {
-	http.Handle("/", http.FileServer(http.Dir("./server/static")))
+	http.Handle("/", http.FileServer(http.Dir("/Users/minodisk/workspace/src/github.com/minodisk/qiitactl/server/static")))
 	http.Handle("/watcher", websocket.Handler(watcher))
 	err = http.ListenAndServe(":9000", nil)
 	if err != nil {

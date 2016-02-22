@@ -4,11 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "./node_modules/browserify/bin/cmd.js src/main.ts -p tsify > bundle.js",
+    "debug": "./node_modules/watchify/bin/cmd.js src/main.ts -p tsify -o bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "browserify": "^13.0.0",
+    "tsify": "^0.13.2"
+  },
+  "dependencies": {
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
     "remark": "^4.1.1",
     "remark-react": "^1.1.0"
   }

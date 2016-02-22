@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "out": "bundle.js"
+  },
+  "files": [
+    "src/main.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
