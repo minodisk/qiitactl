@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "out": "bundle.js"
+    "target": "es5",
+    "jsx": "react"
   },
   "files": [
     "src/main.ts"

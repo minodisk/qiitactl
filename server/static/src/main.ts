@@ -1,10 +1,9 @@
-import View = require('./view')
+import {Socket} from './store/socket'
+import {Markdown} from './view/markdown'
 
 function main() {
-  // var w = new Store.Watcher()
-  // var m = new Markdown()
-  console.log(View)
-  // console.log(w.test())
+  var s = new Socket()
+  var m = new Markdown()
 }
 
 main()

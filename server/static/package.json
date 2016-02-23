@@ -4,19 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/browserify/bin/cmd.js src/main.ts -p tsify > bundle.js",
-    "debug": "./node_modules/watchify/bin/cmd.js src/main.ts -p tsify -o bundle.js",
+    "build": "./node_modules/browserify/bin/cmd.js src/index.tsx -p tsify > bundle.js",
+    "debug": "./node_modules/watchify/bin/cmd.js src/index.tsx -p tsify -o bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "browserify": "^13.0.0",
-    "tsify": "^0.13.2"
+    "tsify": "^0.13.2",
+    "watchify": "^3.7.0"
   },
   "dependencies": {
+    "browserify": "^13.0.0",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
+    "react-redux": "^4.4.0",
+    "redux": "^3.3.1",
     "remark": "^4.1.1",
     "remark-react": "^1.1.0"
   }
