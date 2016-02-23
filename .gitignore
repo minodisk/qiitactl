@@ -30,3 +30,4 @@ build
 homebrew-qiitactl
 bindata.go
 node_modules
+*.log

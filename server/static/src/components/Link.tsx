@@ -2,29 +2,31 @@
 
 import * as React from 'react'
 
-const PropTypes = React.PropTypes
-
-const Link = ({active, children, onClick}) => {
-  if (active) {
-    return <span>{children}</span>
-  }
-  return (
-    <a
-      href="#"
-      onClick={(e) => {
-        e.preventDefault()
-        onClick()
-      }}
-    >
-      {children}
-    </a>
-  )
+interface LinkProps {
+  path: string;
+  active: boolean;
+  actions: any;
 }
 
-Link['propTypes'] = {
-  active: PropTypes.bool,
-  children: PropTypes.node,
-  onClick: PropTypes.func,
+interface LinkState {}
+
+class Link extends React.Component<LinkProps, LinkState> {
+  render() {
+    const {path, active} = this.props
+    if (active) {
+      return <span>{path}</span>
+    }
+    return (
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault()
+        }}
+      >
+        {path}
+      </a>
+    )
+  }
 }
 
 export default Link

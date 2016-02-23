@@ -3,23 +3,25 @@
 import * as React from 'react'
 import Link from './Link'
 
-const PropTypes = React.PropTypes
+interface FileProps {
+  path: string;
+  actions: any;
+}
 
-const File = ({onClick, path}) => (
-  <li
-    onClick={onClick}
-  >
-    <Link
-      active={true}
-      onClick={() => onClick()}
-      children={path}
-    />
-  </li>
-);
+interface FileState {}
 
-File['propTypes'] = {
-  onClick: PropTypes.func.isRequired,
-  path: PropTypes.string.isRequired,
+class File extends React.Component<FileProps, FileState> {
+  render() {
+    const {path, actions} = this.props
+    return (
+      <li>
+        <Link
+          path={path}
+          {...actions}
+        />
+      </li>
+    );
+  }
 }
 
 export default File

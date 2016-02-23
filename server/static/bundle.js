@@ -1,1 +1,1 @@
-console.error("TypeScript error: src/components/File.tsx(12,5): Error TS2605: JSX element type 'Element' is not a constructor function for JSX elements.\n  Property 'render' is missing in type 'Element'.");
+console.error("TypeScript error: src/index.tsx(7,8): Error TS1192: Module '\"src/reducers/rootReducer\"' has no default export.");
