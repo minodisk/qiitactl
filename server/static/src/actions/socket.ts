@@ -1,3 +1,6 @@
+import { Promise } from 'es6-promise';
+console.log(Promise)
+
 export class Socket {
   s = new WebSocket("ws://localhost:9000/socket")
 
@@ -8,19 +11,19 @@ export class Socket {
     this.s.addEventListener('close', this.onClose, false);
   }
 
-  call(method: string, data?: any, callback?: (data?: any) => void) {
-    let req = new Message(method, data);
-    if (callback != null) {
-      let cb = (e: MessageEvent) => {
-        let res = JSON.parse(e.data) as Message
-        if (req.id === res.id) {
-          callback(res.data)
-          this.s.removeEventListener('message', cb, false)
-        }
-      }
-      this.s.addEventListener('message', cb, false)
-    }
-    this.s.send(JSON.stringify(req));
+  call(method: string, data?: any) {
+    // const p = new Promise();
+    // let req = new Message(method, data);
+    // let cb = (e: MessageEvent) => {
+    //   let res = JSON.parse(e.data) as Message
+    //   if (req.id === res.id) {
+    //     this.s.removeEventListener('message', cb, false)
+    //     p.resolve(res)
+    //   }
+    // }
+    // this.s.addEventListener('message', cb, false)
+    // this.s.send(JSON.stringify(req));
+    // return p
   }
 
   onError = (e) => {

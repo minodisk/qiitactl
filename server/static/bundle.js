@@ -57,7 +57,7 @@
 	// const loggerMiddleware = createLogger()
 	var store = redux_1.createStore(rootReducer_1.rootReducer, redux_1.applyMiddleware(thunkMiddleware));
 	store.dispatch(files_1.fetchFiles()).then(function () {
-	    return console.log(store.getState());
+	    return console.log('then:', store.getState());
 	});
 	ReactDOM.render(React.createElement(react_redux_1.Provider, {store: store}, React.createElement(App_1.default, null)), document.getElementById('app'));
 
@@ -37146,7 +37146,7 @@
 	var fetchFiles = function () {
 	    console.log('fetchFiles');
 	    return function (dispatch, getState) {
-	        console.log(getState());
+	        console.log('fetchFiles do', getState());
 	        dispatch(requestFiles());
 	        return es6_promise_1.Promise.resolve();
 	    };
@@ -38132,9 +38132,11 @@
 
 /***/ },
 /* 202 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var es6_promise_1 = __webpack_require__(199);
+	console.log(es6_promise_1.Promise);
 	var Socket = (function () {
 	    function Socket() {
 	        this.s = new WebSocket("ws://localhost:9000/socket");
@@ -38158,20 +38160,19 @@
 	        this.s.addEventListener('message', this.onMessage, false);
 	        this.s.addEventListener('close', this.onClose, false);
 	    }
-	    Socket.prototype.call = function (method, data, callback) {
-	        var _this = this;
-	        var req = new Message(method, data);
-	        if (callback != null) {
-	            var cb_1 = function (e) {
-	                var res = JSON.parse(e.data);
-	                if (req.id === res.id) {
-	                    callback(res.data);
-	                    _this.s.removeEventListener('message', cb_1, false);
-	                }
-	            };
-	            this.s.addEventListener('message', cb_1, false);
-	        }
-	        this.s.send(JSON.stringify(req));
+	    Socket.prototype.call = function (method, data) {
+	        // const p = new Promise();
+	        // let req = new Message(method, data);
+	        // let cb = (e: MessageEvent) => {
+	        //   let res = JSON.parse(e.data) as Message
+	        //   if (req.id === res.id) {
+	        //     this.s.removeEventListener('message', cb, false)
+	        //     p.resolve(res)
+	        //   }
+	        // }
+	        // this.s.addEventListener('message', cb, false)
+	        // this.s.send(JSON.stringify(req));
+	        // return p
 	    };
 	    return Socket;
 	}());

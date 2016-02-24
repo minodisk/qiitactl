@@ -30,7 +30,7 @@ const store: Store = createStore(rootReducer,
 );
 
 store.dispatch(fetchFiles()).then(() =>
-  console.log(store.getState())
+  console.log('then:', store.getState())
 )
 
 ReactDOM.render(

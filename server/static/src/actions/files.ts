@@ -23,7 +23,7 @@ const recieveFiles = createAction<File>(
 const fetchFiles = () => {
   console.log('fetchFiles')
   return (dispatch, getState) => {
-    console.log(getState())
+    console.log('fetchFiles do', getState())
     dispatch(requestFiles())
     return Promise.resolve()
   }
