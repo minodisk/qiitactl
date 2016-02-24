@@ -1,5 +1,5 @@
 export type File = {
-  id?: number;
-  path: string;
-  text: string;
+  id: string;
+  name: string;
+  children: File[];
 };

@@ -52,13 +52,15 @@
 	var thunkMiddleware = __webpack_require__(180);
 	// import { Action } from 'redux-actions';
 	var rootReducer_1 = __webpack_require__(181);
-	var files_1 = __webpack_require__(198);
-	var App_1 = __webpack_require__(203);
+	var socket_1 = __webpack_require__(199);
+	var files_1 = __webpack_require__(203);
+	var App_1 = __webpack_require__(204);
 	// const loggerMiddleware = createLogger()
 	var store = redux_1.createStore(rootReducer_1.rootReducer, redux_1.applyMiddleware(thunkMiddleware));
-	store.dispatch(files_1.fetchFiles()).then(function () {
-	    return console.log('then:', store.getState());
-	});
+	store
+	    .dispatch(socket_1.openSocket())
+	    .then(function () { return store.dispatch(files_1.fetchFiles()); })
+	    .then(function () { return console.log('done:', store.getState()); });
 	ReactDOM.render(React.createElement(react_redux_1.Provider, {store: store}, React.createElement(App_1.default, null)), document.getElementById('app'));
 
 
@@ -21142,8 +21144,10 @@
 	"use strict";
 	var redux_1 = __webpack_require__(159);
 	var todos_1 = __webpack_require__(182);
+	var file_1 = __webpack_require__(222);
 	var rootReducer = redux_1.combineReducers({
-	    todos: todos_1.default
+	    todos: todos_1.default,
+	    file: file_1.default
 	});
 	exports.rootReducer = rootReducer;
 
@@ -37123,41 +37127,118 @@
 	exports.COMPLETE_TODO = 'COMPLETE_TODO';
 	exports.COMPLETE_ALL = 'COMPLETE_ALL';
 	exports.CLEAR_COMPLETED = 'CLEAR_COMPLETED';
+	exports.OPEN_SOCKET = 'OPEN_SOCKET';
+	exports.OPENED_SOCKET = 'OPENED_SOCKET';
 	exports.REQUEST_FILES = 'REQUEST_FILES';
 	exports.RECIEVE_FILES = 'RECIEVE_FILES';
 	exports.START_FILE = 'START_FILE';
 
 
 /***/ },
-/* 198 */
+/* 198 */,
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var redux_actions_1 = __webpack_require__(185);
-	var es6_promise_1 = __webpack_require__(199);
 	var types = __webpack_require__(197);
-	var socket_1 = __webpack_require__(202);
-	var s = new socket_1.Socket();
-	var requestFiles = redux_actions_1.createAction(types.REQUEST_FILES);
-	var recieveFiles = redux_actions_1.createAction(types.RECIEVE_FILES, function () {
-	    console.log('recieveFiles');
-	    return null;
-	});
-	var fetchFiles = function () {
-	    console.log('fetchFiles');
+	var es6_promise_1 = __webpack_require__(200);
+	var Socket = (function () {
+	    function Socket() {
+	        this.onError = function (e) {
+	            // console.log('socket error:', e)
+	        };
+	        this.onOpen = function (e) {
+	            // console.log('socket opened:', e)
+	        };
+	        this.onMessage = function (e) {
+	            // console.log('socket messaged:', e)
+	        };
+	        this.onClose = function (e) {
+	            // console.log('socket closed:', e)
+	        };
+	    }
+	    Socket.prototype.open = function () {
+	        var _this = this;
+	        return new es6_promise_1.Promise(function (resolve, reject) {
+	            _this.s = new WebSocket("ws://localhost:9000/socket");
+	            _this.addEventListener();
+	            var cb = function (e) {
+	                _this.s.removeEventListener('open', cb, false);
+	                resolve();
+	            };
+	            _this.s.addEventListener('open', cb, false);
+	        });
+	    };
+	    Socket.prototype.close = function () {
+	        this.s.close();
+	        this.removeEventListeners();
+	    };
+	    Socket.prototype.addEventListener = function () {
+	        this.removeEventListeners();
+	        this.s.addEventListener('error', this.onError, false);
+	        this.s.addEventListener('open', this.onOpen, false);
+	        this.s.addEventListener('message', this.onMessage, false);
+	        this.s.addEventListener('close', this.onClose, false);
+	    };
+	    Socket.prototype.removeEventListeners = function () {
+	        this.s.removeEventListener('error', this.onError, false);
+	        this.s.removeEventListener('open', this.onOpen, false);
+	        this.s.removeEventListener('message', this.onMessage, false);
+	        this.s.removeEventListener('close', this.onClose, false);
+	    };
+	    Socket.prototype.call = function (method, data) {
+	        var _this = this;
+	        return new es6_promise_1.Promise(function (resolve, reject) {
+	            var req = new Req(method, data);
+	            var cb = function (e) {
+	                var res = JSON.parse(e.data);
+	                if (req.id === res.id) {
+	                    _this.s.removeEventListener('message', cb, false);
+	                    if (res.error != null) {
+	                        reject(res.error);
+	                        return;
+	                    }
+	                    resolve(res.data);
+	                }
+	            };
+	            _this.s.addEventListener('message', cb, false);
+	            // console.log('send', req)
+	            _this.s.send(JSON.stringify(req));
+	        });
+	    };
+	    return Socket;
+	}());
+	exports.Socket = Socket;
+	var Req = (function () {
+	    function Req(method, data) {
+	        this.id = String(Date.now());
+	        this.method = method;
+	        this.data = data;
+	    }
+	    return Req;
+	}());
+	var Res = (function () {
+	    function Res() {
+	    }
+	    return Res;
+	}());
+	exports.openingSocket = redux_actions_1.createAction(types.OPEN_SOCKET);
+	exports.openedSocket = redux_actions_1.createAction(types.OPENED_SOCKET);
+	exports.openSocket = function () {
 	    return function (dispatch, getState) {
-	        console.log('fetchFiles do', getState());
-	        dispatch(requestFiles());
-	        return es6_promise_1.Promise.resolve();
+	        dispatch(exports.openingSocket());
+	        exports.socket = new Socket();
+	        return exports.socket.open()
+	            .then(function () {
+	            dispatch(exports.openedSocket());
+	        });
 	    };
 	};
-	exports.fetchFiles = fetchFiles;
-	var startFile = redux_actions_1.createAction(types.START_FILE, function (file) { return file; });
-	exports.startFile = startFile;
 
 
 /***/ },
-/* 199 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
@@ -37290,7 +37371,7 @@
 	    function lib$es6$promise$asap$$attemptVertx() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(200);
+	        var vertx = __webpack_require__(201);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -38103,7 +38184,7 @@
 	    };
 
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(201)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(202)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -38118,73 +38199,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), (function() { return this; }()), __webpack_require__(184)(module)))
 
 /***/ },
-/* 200 */
+/* 201 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 201 */
+/* 202 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
-
-
-/***/ },
-/* 202 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var es6_promise_1 = __webpack_require__(199);
-	console.log(es6_promise_1.Promise);
-	var Socket = (function () {
-	    function Socket() {
-	        this.s = new WebSocket("ws://localhost:9000/socket");
-	        this.onError = function (e) {
-	            console.log('socket error:', e);
-	        };
-	        this.onOpen = function (e) {
-	            // this.call('GetAllFiles', null, this.onGetAllFiles)
-	        };
-	        // onGetAllFiles = (paths: string[]) => {
-	        //   console.log(paths)
-	        // }
-	        this.onMessage = function (e) {
-	            console.log('socket messaged:', e);
-	        };
-	        this.onClose = function (e) {
-	            console.log('socket closed:', e);
-	        };
-	        this.s.addEventListener('error', this.onError, false);
-	        this.s.addEventListener('open', this.onOpen, false);
-	        this.s.addEventListener('message', this.onMessage, false);
-	        this.s.addEventListener('close', this.onClose, false);
-	    }
-	    Socket.prototype.call = function (method, data) {
-	        // const p = new Promise();
-	        // let req = new Message(method, data);
-	        // let cb = (e: MessageEvent) => {
-	        //   let res = JSON.parse(e.data) as Message
-	        //   if (req.id === res.id) {
-	        //     this.s.removeEventListener('message', cb, false)
-	        //     p.resolve(res)
-	        //   }
-	        // }
-	        // this.s.addEventListener('message', cb, false)
-	        // this.s.send(JSON.stringify(req));
-	        // return p
-	    };
-	    return Socket;
-	}());
-	exports.Socket = Socket;
-	var Message = (function () {
-	    function Message(method, data) {
-	        this.id = String(Date.now());
-	        this.method = method;
-	        this.data = data;
-	    }
-	    return Message;
-	}());
 
 
 /***/ },
@@ -38192,34 +38216,19 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var redux_1 = __webpack_require__(159);
-	var react_redux_1 = __webpack_require__(169);
-	var React = __webpack_require__(1);
-	var Header_1 = __webpack_require__(204);
-	var MainSection_1 = __webpack_require__(207);
-	var TodoActions = __webpack_require__(211);
-	var App = (function (_super) {
-	    __extends(App, _super);
-	    function App() {
-	        _super.apply(this, arguments);
-	    }
-	    App.prototype.render = function () {
-	        var _a = this.props, todos = _a.todos, dispatch = _a.dispatch;
-	        var actions = redux_1.bindActionCreators(TodoActions, dispatch);
-	        return (React.createElement("div", {className: "todoapp"}, React.createElement(Header_1.default, {addTodo: actions.addTodo}), React.createElement(MainSection_1.default, {todos: todos, actions: actions})));
+	var redux_actions_1 = __webpack_require__(185);
+	var types = __webpack_require__(197);
+	var socket_1 = __webpack_require__(199);
+	var requestFile = redux_actions_1.createAction(types.REQUEST_FILES);
+	var recieveFile = redux_actions_1.createAction(types.RECIEVE_FILES, function (file) { return file; });
+	exports.fetchFiles = function () {
+	    return function (dispatch, getState) {
+	        dispatch(requestFile());
+	        return socket_1.socket.call('GetAllFiles', null)
+	            .then(function (file) { return dispatch(recieveFile(file)); });
 	    };
-	    return App;
-	}(React.Component));
-	var mapStateToProps = function (state) { return ({
-	    todos: state.todos
-	}); };
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = react_redux_1.connect(mapStateToProps)(App);
+	};
+	exports.startFile = redux_actions_1.createAction(types.START_FILE, function (file) { return file; });
 
 
 /***/ },
@@ -38232,26 +38241,31 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
+	var redux_1 = __webpack_require__(159);
+	var react_redux_1 = __webpack_require__(169);
 	var React = __webpack_require__(1);
-	var TodoTextInput_1 = __webpack_require__(205);
-	;
-	var Header = (function (_super) {
-	    __extends(Header, _super);
-	    function Header() {
+	var Header_1 = __webpack_require__(205);
+	var MainSection_1 = __webpack_require__(214);
+	var TodoActions = __webpack_require__(218);
+	var style = __webpack_require__(219);
+	var App = (function (_super) {
+	    __extends(App, _super);
+	    function App() {
 	        _super.apply(this, arguments);
 	    }
-	    Header.prototype.handleSave = function (text) {
-	        if (text.length !== 0) {
-	            this.props.addTodo(text);
-	        }
+	    App.prototype.render = function () {
+	        var _a = this.props, todos = _a.todos, file = _a.file, dispatch = _a.dispatch;
+	        var actions = redux_1.bindActionCreators(TodoActions, dispatch);
+	        return (React.createElement("div", {className: style.app}, React.createElement(Header_1.default, {file: file, addTodo: actions.addTodo}), React.createElement(MainSection_1.default, {todos: todos, actions: actions})));
 	    };
-	    Header.prototype.render = function () {
-	        return (React.createElement("header", {className: "header"}, React.createElement("h1", null, "todos"), React.createElement(TodoTextInput_1.default, {newTodo: true, onSave: this.handleSave.bind(this), placeholder: "What needs to be done?"})));
-	    };
-	    return Header;
+	    return App;
 	}(React.Component));
+	var mapStateToProps = function (state) { return ({
+	    todos: state.todos,
+	    file: state.file
+	}); };
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Header;
+	exports.default = react_redux_1.connect(mapStateToProps)(App);
 
 
 /***/ },
@@ -38265,7 +38279,46 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(206);
+	var TodoTextInput_1 = __webpack_require__(206);
+	var File_1 = __webpack_require__(209);
+	var style = __webpack_require__(210);
+	;
+	var Header = (function (_super) {
+	    __extends(Header, _super);
+	    function Header() {
+	        _super.apply(this, arguments);
+	    }
+	    Header.prototype.handleSave = function (text) {
+	        if (text.length !== 0) {
+	            this.props.addTodo(text);
+	        }
+	    };
+	    Header.prototype.render = function () {
+	        var file = this.props.file;
+	        return (React.createElement("header", {className: style.header}, React.createElement("nav", null, React.createElement("h1", null, "files"), (function () {
+	            if (file != null) {
+	                return React.createElement(File_1.default, {file: file});
+	            }
+	        })()), React.createElement(TodoTextInput_1.default, {newTodo: true, onSave: this.handleSave.bind(this), placeholder: "What needs to be done?"})));
+	    };
+	    return Header;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Header;
+
+
+/***/ },
+/* 206 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var classNames = __webpack_require__(207);
 	var TodoTextInput = (function (_super) {
 	    __extends(TodoTextInput, _super);
 	    function TodoTextInput(props, context) {
@@ -38304,7 +38357,7 @@
 
 
 /***/ },
-/* 206 */
+/* 207 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -38358,7 +38411,7 @@
 
 
 /***/ },
-/* 207 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38368,9 +38421,432 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var TodoItem_1 = __webpack_require__(208);
-	var Footer_1 = __webpack_require__(209);
-	var TodoFilters_1 = __webpack_require__(210);
+	var File_1 = __webpack_require__(209);
+	var style = __webpack_require__(210);
+	var Files = (function (_super) {
+	    __extends(Files, _super);
+	    function Files() {
+	        _super.apply(this, arguments);
+	    }
+	    Files.prototype.render = function () {
+	        var _a = this.props, files = _a.files, opened = _a.opened;
+	        if (!opened) {
+	            return React.createElement("div", null, "empty");
+	        }
+	        return (React.createElement("ul", {className: style.files}, files.map(function (file) { return React.createElement(File_1.default, {file: file}); })));
+	    };
+	    return Files;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Files;
+
+
+/***/ },
+/* 209 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var Files_1 = __webpack_require__(208);
+	var Link_1 = __webpack_require__(221);
+	var File = (function (_super) {
+	    __extends(File, _super);
+	    function File(props, context) {
+	        _super.call(this, props, context);
+	        this.state = {
+	            opened: true
+	        };
+	    }
+	    File.prototype.toggleOpen = function () {
+	        var opened = this.state.opened;
+	        this.setState({ opened: !opened });
+	    };
+	    File.prototype.render = function () {
+	        var _this = this;
+	        var file = this.props.file;
+	        if (file.children == null) {
+	            return (React.createElement("li", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }})));
+	        }
+	        return (React.createElement("li", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
+	    };
+	    return File;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = File;
+
+
+/***/ },
+/* 210 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(211);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(213)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 211 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(212)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  padding-left: 10px;\n}\n", ""]);
+
+	// exports
+	exports.locals = {
+		"header": "h8rplDPLVeDLmTndCDi-3",
+		"files": "_3XXpQACdS3nsvEH3aBhKLy"
+	};
+
+/***/ },
+/* 212 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 213 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	var stylesInDom = {},
+		memoize = function(fn) {
+			var memo;
+			return function () {
+				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+				return memo;
+			};
+		},
+		isOldIE = memoize(function() {
+			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+		}),
+		getHeadElement = memoize(function () {
+			return document.head || document.getElementsByTagName("head")[0];
+		}),
+		singletonElement = null,
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
+
+	module.exports = function(list, options) {
+		if(false) {
+			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+		}
+
+		options = options || {};
+		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+		// tags it will allow on a page
+		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+		var styles = listToStyles(list);
+		addStylesToDom(styles, options);
+
+		return function update(newList) {
+			var mayRemove = [];
+			for(var i = 0; i < styles.length; i++) {
+				var item = styles[i];
+				var domStyle = stylesInDom[item.id];
+				domStyle.refs--;
+				mayRemove.push(domStyle);
+			}
+			if(newList) {
+				var newStyles = listToStyles(newList);
+				addStylesToDom(newStyles, options);
+			}
+			for(var i = 0; i < mayRemove.length; i++) {
+				var domStyle = mayRemove[i];
+				if(domStyle.refs === 0) {
+					for(var j = 0; j < domStyle.parts.length; j++)
+						domStyle.parts[j]();
+					delete stylesInDom[domStyle.id];
+				}
+			}
+		};
+	}
+
+	function addStylesToDom(styles, options) {
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			if(domStyle) {
+				domStyle.refs++;
+				for(var j = 0; j < domStyle.parts.length; j++) {
+					domStyle.parts[j](item.parts[j]);
+				}
+				for(; j < item.parts.length; j++) {
+					domStyle.parts.push(addStyle(item.parts[j], options));
+				}
+			} else {
+				var parts = [];
+				for(var j = 0; j < item.parts.length; j++) {
+					parts.push(addStyle(item.parts[j], options));
+				}
+				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+			}
+		}
+	}
+
+	function listToStyles(list) {
+		var styles = [];
+		var newStyles = {};
+		for(var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var id = item[0];
+			var css = item[1];
+			var media = item[2];
+			var sourceMap = item[3];
+			var part = {css: css, media: media, sourceMap: sourceMap};
+			if(!newStyles[id])
+				styles.push(newStyles[id] = {id: id, parts: [part]});
+			else
+				newStyles[id].parts.push(part);
+		}
+		return styles;
+	}
+
+	function insertStyleElement(options, styleElement) {
+		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
+		styleElement.type = "text/css";
+		insertStyleElement(options, styleElement);
+		return styleElement;
+	}
+
+	function createLinkElement(options) {
+		var linkElement = document.createElement("link");
+		linkElement.rel = "stylesheet";
+		insertStyleElement(options, linkElement);
+		return linkElement;
+	}
+
+	function addStyle(obj, options) {
+		var styleElement, update, remove;
+
+		if (options.singleton) {
+			var styleIndex = singletonCounter++;
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
+			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+		} else if(obj.sourceMap &&
+			typeof URL === "function" &&
+			typeof URL.createObjectURL === "function" &&
+			typeof URL.revokeObjectURL === "function" &&
+			typeof Blob === "function" &&
+			typeof btoa === "function") {
+			styleElement = createLinkElement(options);
+			update = updateLink.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+				if(styleElement.href)
+					URL.revokeObjectURL(styleElement.href);
+			};
+		} else {
+			styleElement = createStyleElement(options);
+			update = applyToTag.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+			};
+		}
+
+		update(obj);
+
+		return function updateStyle(newObj) {
+			if(newObj) {
+				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+					return;
+				update(obj = newObj);
+			} else {
+				remove();
+			}
+		};
+	}
+
+	var replaceText = (function () {
+		var textStore = [];
+
+		return function (index, replacement) {
+			textStore[index] = replacement;
+			return textStore.filter(Boolean).join('\n');
+		};
+	})();
+
+	function applyToSingletonTag(styleElement, index, remove, obj) {
+		var css = remove ? "" : obj.css;
+
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = replaceText(index, css);
+		} else {
+			var cssNode = document.createTextNode(css);
+			var childNodes = styleElement.childNodes;
+			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+			if (childNodes.length) {
+				styleElement.insertBefore(cssNode, childNodes[index]);
+			} else {
+				styleElement.appendChild(cssNode);
+			}
+		}
+	}
+
+	function applyToTag(styleElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+		var sourceMap = obj.sourceMap;
+
+		if(media) {
+			styleElement.setAttribute("media", media)
+		}
+
+		if(styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+			while(styleElement.firstChild) {
+				styleElement.removeChild(styleElement.firstChild);
+			}
+			styleElement.appendChild(document.createTextNode(css));
+		}
+	}
+
+	function updateLink(linkElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+		var sourceMap = obj.sourceMap;
+
+		if(sourceMap) {
+			// http://stackoverflow.com/a/26603875
+			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+		}
+
+		var blob = new Blob([css], { type: "text/css" });
+
+		var oldSrc = linkElement.href;
+
+		linkElement.href = URL.createObjectURL(blob);
+
+		if(oldSrc)
+			URL.revokeObjectURL(oldSrc);
+	}
+
+
+/***/ },
+/* 214 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var TodoItem_1 = __webpack_require__(215);
+	var Footer_1 = __webpack_require__(216);
+	var TodoFilters_1 = __webpack_require__(217);
 	var TODO_FILTERS = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = function () { return true; },
 	    _a[TodoFilters_1.SHOW_ACTIVE] = function (todo) { return !todo.completed; },
@@ -38427,7 +38903,7 @@
 
 
 /***/ },
-/* 208 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38437,8 +38913,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(206);
-	var TodoTextInput_1 = __webpack_require__(205);
+	var classNames = __webpack_require__(207);
+	var TodoTextInput_1 = __webpack_require__(206);
 	;
 	var TodoItem = (function (_super) {
 	    __extends(TodoItem, _super);
@@ -38482,7 +38958,7 @@
 
 
 /***/ },
-/* 209 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38492,8 +38968,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(206);
-	var TodoFilters_1 = __webpack_require__(210);
+	var classNames = __webpack_require__(207);
+	var TodoFilters_1 = __webpack_require__(217);
 	var FILTER_TITLES = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = 'All',
 	    _a[TodoFilters_1.SHOW_ACTIVE] = 'Active',
@@ -38535,7 +39011,7 @@
 
 
 /***/ },
-/* 210 */
+/* 217 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -38545,7 +39021,7 @@
 
 
 /***/ },
-/* 211 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38564,6 +39040,100 @@
 	exports.completeAll = completeAll;
 	var clearCompleted = redux_actions_1.createAction(types.CLEAR_COMPLETED, function () { });
 	exports.clearCompleted = clearCompleted;
+
+
+/***/ },
+/* 219 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(220);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(213)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./app.styl", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./app.styl");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 220 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(212)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "html,\nbody {\n  margin: 0;\n  padding: 0;\n}\nbody {\n  font-size: 14px;\n}\n._1XwTGklUWSGtdsfgYjXa7B {\n  display: -webkit-box;\n  width: 100%;\n}\n", ""]);
+
+	// exports
+	exports.locals = {
+		"app": "_1XwTGklUWSGtdsfgYjXa7B"
+	};
+
+/***/ },
+/* 221 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var Link = (function (_super) {
+	    __extends(Link, _super);
+	    function Link() {
+	        _super.apply(this, arguments);
+	    }
+	    Link.prototype.render = function () {
+	        var _a = this.props, active = _a.active, children = _a.children, onClick = _a.onClick;
+	        if (!active) {
+	            return (React.createElement("span", null, children));
+	        }
+	        return (React.createElement("a", {href: "#", onClick: function (e) {
+	            e.preventDefault();
+	            onClick(e);
+	        }}, children));
+	    };
+	    return Link;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Link;
+
+
+/***/ },
+/* 222 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var redux_actions_1 = __webpack_require__(185);
+	var ActionTypes_1 = __webpack_require__(197);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = redux_actions_1.handleActions((_a = {},
+	    _a[ActionTypes_1.REQUEST_FILES] = function (state, action) {
+	        return state;
+	    },
+	    _a[ActionTypes_1.RECIEVE_FILES] = function (state, action) {
+	        return action.payload;
+	    },
+	    _a
+	), {});
+	var _a;
 
 
 /***/ }

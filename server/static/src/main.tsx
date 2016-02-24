@@ -18,6 +18,7 @@ import createLogger from 'redux-logger'
 // import { Action } from 'redux-actions';
 
 import { rootReducer } from './reducers/rootReducer';
+import { openSocket  } from './actions/socket'
 import { fetchFiles } from './actions/files'
 import App from './containers/App';
 
@@ -29,9 +30,10 @@ const store: Store = createStore(rootReducer,
   )
 );
 
-store.dispatch(fetchFiles()).then(() =>
-  console.log('then:', store.getState())
-)
+store
+  .dispatch(openSocket())
+  .then(() => store.dispatch(fetchFiles()))
+  .then(() => console.log('done:', store.getState()))
 
 ReactDOM.render(
   <Provider store={store}>

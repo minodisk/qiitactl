@@ -13,10 +13,13 @@
   "license": "ISC",
   "devDependencies": {
     "browserify": "^13.0.0",
+    "css-loader": "^0.23.1",
+    "stylus-loader": "^1.5.1",
     "ts-loader": "^0.8.1",
     "tsify": "^0.13.2",
     "watchify": "^3.7.0",
-    "webpack": "^1.12.14"
+    "webpack": "^1.12.14",
+    "webpack-livereload-plugin": "^0.5.3"
   },
   "dependencies": {
     "browserify": "^13.0.0",
@@ -31,6 +34,7 @@
     "redux-logger": "^2.6.0",
     "redux-thunk": "^1.0.3",
     "remark": "^4.1.1",
-    "remark-react": "^1.1.0"
+    "remark-react": "^1.1.0",
+    "style-loader": "^0.13.0"
   }
 }

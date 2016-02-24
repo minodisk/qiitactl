@@ -4,37 +4,27 @@ import { Promise } from 'es6-promise';
 
 import { File } from '../models/files';
 import * as types from '../constants/ActionTypes';
-import { Socket } from './socket'
+import { socket } from './socket'
 
-const s = new Socket()
 
-const requestFiles = createAction<void>(
+const requestFile = createAction<void>(
   types.REQUEST_FILES
 )
 
-const recieveFiles = createAction<File>(
+const recieveFile = createAction<File>(
   types.RECIEVE_FILES,
-  () => {
-    console.log('recieveFiles')
-    return null
-  }
-);
-
-const fetchFiles = () => {
-  console.log('fetchFiles')
-  return (dispatch, getState) => {
-    console.log('fetchFiles do', getState())
-    dispatch(requestFiles())
-    return Promise.resolve()
-  }
-}
-
-const startFile = createAction<File>(
-  types.START_FILE,
   (file: File) => file
 );
 
-export {
-  fetchFiles,
-  startFile
+export const fetchFiles = () => {
+  return (dispatch, getState) => {
+    dispatch(requestFile())
+    return socket.call('GetAllFiles', null)
+      .then(file => dispatch(recieveFile(file)))
+  }
 }
+
+export const startFile = createAction<File>(
+  types.START_FILE,
+  (file: File) => file
+);

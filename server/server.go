@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
@@ -59,11 +61,18 @@ func socket(ws *websocket.Conn) {
 			}
 			websocket.JSON.Send(ws, NewReqRes(req, paths))
 		}
+		time.Sleep(time.Second)
 	}
 }
 
-func findMarkdownFiles() (pathes []string, err error) {
-	err = filepath.Walk(".", func(p string, i os.FileInfo, e error) (err error) {
+type Element struct {
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	Children []*Element `json:"children"`
+}
+
+func findMarkdownFiles() (root Element, err error) {
+	err = filepath.Walk(".", func(path string, i os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
@@ -71,10 +80,37 @@ func findMarkdownFiles() (pathes []string, err error) {
 		if i.IsDir() {
 			return
 		}
-		if filepath.Ext(p) != ".md" {
+		if filepath.Ext(path) != ".md" {
 			return
 		}
-		pathes = append(pathes, p)
+
+		parent := &root
+
+		dir, file := filepath.Split(path)
+		dir = strings.TrimLeft(dir, "/")
+		dir = strings.TrimRight(dir, "/")
+		if dir != "" {
+			dirs := strings.Split(dir, "/")
+			for _, name := range dirs {
+				found := false
+				for _, c := range parent.Children {
+					if c.Name == name {
+						parent = c
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					e := &Element{Name: name}
+					parent.Children = append(parent.Children, e)
+					parent = e
+				}
+			}
+		}
+
+		parent.Children = append(parent.Children, &Element{Name: file})
+
 		return
 	})
 	return
