@@ -29,16 +29,14 @@ export default class File extends React.Component<FileProps, FileState> {
     const {file} = this.props
     if (file.children == null) {
       return (
-        <li>
-          <Link
-            active={true}
-            children={file.name}
-            onClick={() => console.log('start')} />
-        </li>
+        <Link
+          active={true}
+          children={file.name}
+          onClick={() => console.log('start')} />
       )
     }
     return (
-      <li>
+      <div>
         <Link
           active={true}
           children={file.name}
@@ -46,7 +44,7 @@ export default class File extends React.Component<FileProps, FileState> {
         <Files
           files={file.children}
           opened={this.state.opened} />
-      </li>
+      </div>
     )
   }
 }

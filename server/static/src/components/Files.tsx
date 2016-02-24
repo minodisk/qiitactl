@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import File from './File'
 import * as models from '../models/files'
+import * as classnames from 'classnames'
 
 const style = require('../styles/header.styl')
 
@@ -13,13 +14,13 @@ interface FilesProps {
 export default class Files extends React.Component<FilesProps, void> {
   render() {
     const {files, opened} = this.props
-    if (!opened) {
-      return <div>empty</div>
-    }
     return (
-      <ul className={style.files}>
+      <ul className={classnames({
+        [style.files]: true,
+        [style.closed]: !opened
+      })}>
       {
-        files.map((file) => <File file={file} />)
+        files.map((file) => <li><File file={file} /></li>)
       }
       </ul>
     )

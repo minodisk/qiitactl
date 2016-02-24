@@ -21144,7 +21144,7 @@
 	"use strict";
 	var redux_1 = __webpack_require__(159);
 	var todos_1 = __webpack_require__(182);
-	var file_1 = __webpack_require__(222);
+	var file_1 = __webpack_require__(198);
 	var rootReducer = redux_1.combineReducers({
 	    todos: todos_1.default,
 	    file: file_1.default
@@ -37135,7 +37135,26 @@
 
 
 /***/ },
-/* 198 */,
+/* 198 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var redux_actions_1 = __webpack_require__(185);
+	var ActionTypes_1 = __webpack_require__(197);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = redux_actions_1.handleActions((_a = {},
+	    _a[ActionTypes_1.REQUEST_FILES] = function (state, action) {
+	        return state;
+	    },
+	    _a[ActionTypes_1.RECIEVE_FILES] = function (state, action) {
+	        return action.payload;
+	    },
+	    _a
+	), {});
+	var _a;
+
+
+/***/ },
 /* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -37241,7 +37260,7 @@
 /* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -38245,9 +38264,9 @@
 	var react_redux_1 = __webpack_require__(169);
 	var React = __webpack_require__(1);
 	var Header_1 = __webpack_require__(205);
-	var MainSection_1 = __webpack_require__(214);
-	var TodoActions = __webpack_require__(218);
-	var style = __webpack_require__(219);
+	var MainSection_1 = __webpack_require__(215);
+	var TodoActions = __webpack_require__(219);
+	var style = __webpack_require__(220);
 	var App = (function (_super) {
 	    __extends(App, _super);
 	    function App() {
@@ -38280,7 +38299,7 @@
 	};
 	var React = __webpack_require__(1);
 	var TodoTextInput_1 = __webpack_require__(206);
-	var File_1 = __webpack_require__(209);
+	var File_1 = __webpack_require__(208);
 	var style = __webpack_require__(210);
 	;
 	var Header = (function (_super) {
@@ -38421,39 +38440,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var File_1 = __webpack_require__(209);
-	var style = __webpack_require__(210);
-	var Files = (function (_super) {
-	    __extends(Files, _super);
-	    function Files() {
-	        _super.apply(this, arguments);
-	    }
-	    Files.prototype.render = function () {
-	        var _a = this.props, files = _a.files, opened = _a.opened;
-	        if (!opened) {
-	            return React.createElement("div", null, "empty");
-	        }
-	        return (React.createElement("ul", {className: style.files}, files.map(function (file) { return React.createElement(File_1.default, {file: file}); })));
-	    };
-	    return Files;
-	}(React.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Files;
-
-
-/***/ },
-/* 209 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var React = __webpack_require__(1);
-	var Files_1 = __webpack_require__(208);
-	var Link_1 = __webpack_require__(221);
+	var Files_1 = __webpack_require__(209);
+	var Link_1 = __webpack_require__(214);
 	var File = (function (_super) {
 	    __extends(File, _super);
 	    function File(props, context) {
@@ -38470,14 +38458,48 @@
 	        var _this = this;
 	        var file = this.props.file;
 	        if (file.children == null) {
-	            return (React.createElement("li", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }})));
+	            return (React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }}));
 	        }
-	        return (React.createElement("li", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
+	        return (React.createElement("div", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
 	    };
 	    return File;
 	}(React.Component));
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = File;
+
+
+/***/ },
+/* 209 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var File_1 = __webpack_require__(208);
+	var classnames = __webpack_require__(207);
+	var style = __webpack_require__(210);
+	var Files = (function (_super) {
+	    __extends(Files, _super);
+	    function Files() {
+	        _super.apply(this, arguments);
+	    }
+	    Files.prototype.render = function () {
+	        var _a = this.props, files = _a.files, opened = _a.opened;
+	        return (React.createElement("ul", {className: classnames((_b = {},
+	            _b[style.files] = true,
+	            _b[style.closed] = !opened,
+	            _b
+	        ))}, files.map(function (file) { return React.createElement("li", null, React.createElement(File_1.default, {file: file})); })));
+	        var _b;
+	    };
+	    return Files;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Files;
 
 
 /***/ },
@@ -38515,12 +38537,13 @@
 
 
 	// module
-	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  padding-left: 10px;\n}\n", ""]);
+	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  padding-left: 15px;\n}\n._3__TbHfLgY6XY-FGzUZa5n {\n  display: none;\n}\n", ""]);
 
 	// exports
 	exports.locals = {
 		"header": "h8rplDPLVeDLmTndCDi-3",
-		"files": "_3XXpQACdS3nsvEH3aBhKLy"
+		"files": "_3XXpQACdS3nsvEH3aBhKLy",
+		"closed": "_3__TbHfLgY6XY-FGzUZa5n"
 	};
 
 /***/ },
@@ -38844,9 +38867,41 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var TodoItem_1 = __webpack_require__(215);
-	var Footer_1 = __webpack_require__(216);
-	var TodoFilters_1 = __webpack_require__(217);
+	var Link = (function (_super) {
+	    __extends(Link, _super);
+	    function Link() {
+	        _super.apply(this, arguments);
+	    }
+	    Link.prototype.render = function () {
+	        var _a = this.props, active = _a.active, children = _a.children, onClick = _a.onClick;
+	        if (!active) {
+	            return (React.createElement("span", null, children));
+	        }
+	        return (React.createElement("a", {href: "#", onClick: function (e) {
+	            e.preventDefault();
+	            onClick(e);
+	        }}, children));
+	    };
+	    return Link;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Link;
+
+
+/***/ },
+/* 215 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var TodoItem_1 = __webpack_require__(216);
+	var Footer_1 = __webpack_require__(217);
+	var TodoFilters_1 = __webpack_require__(218);
 	var TODO_FILTERS = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = function () { return true; },
 	    _a[TodoFilters_1.SHOW_ACTIVE] = function (todo) { return !todo.completed; },
@@ -38903,7 +38958,7 @@
 
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38958,7 +39013,7 @@
 
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38969,7 +39024,7 @@
 	};
 	var React = __webpack_require__(1);
 	var classNames = __webpack_require__(207);
-	var TodoFilters_1 = __webpack_require__(217);
+	var TodoFilters_1 = __webpack_require__(218);
 	var FILTER_TITLES = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = 'All',
 	    _a[TodoFilters_1.SHOW_ACTIVE] = 'Active',
@@ -39011,7 +39066,7 @@
 
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39021,7 +39076,7 @@
 
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39043,13 +39098,13 @@
 
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(220);
+	var content = __webpack_require__(221);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(213)(content, {});
@@ -39069,7 +39124,7 @@
 	}
 
 /***/ },
-/* 220 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(212)();
@@ -39083,58 +39138,6 @@
 	exports.locals = {
 		"app": "_1XwTGklUWSGtdsfgYjXa7B"
 	};
-
-/***/ },
-/* 221 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var React = __webpack_require__(1);
-	var Link = (function (_super) {
-	    __extends(Link, _super);
-	    function Link() {
-	        _super.apply(this, arguments);
-	    }
-	    Link.prototype.render = function () {
-	        var _a = this.props, active = _a.active, children = _a.children, onClick = _a.onClick;
-	        if (!active) {
-	            return (React.createElement("span", null, children));
-	        }
-	        return (React.createElement("a", {href: "#", onClick: function (e) {
-	            e.preventDefault();
-	            onClick(e);
-	        }}, children));
-	    };
-	    return Link;
-	}(React.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Link;
-
-
-/***/ },
-/* 222 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var redux_actions_1 = __webpack_require__(185);
-	var ActionTypes_1 = __webpack_require__(197);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = redux_actions_1.handleActions((_a = {},
-	    _a[ActionTypes_1.REQUEST_FILES] = function (state, action) {
-	        return state;
-	    },
-	    _a[ActionTypes_1.RECIEVE_FILES] = function (state, action) {
-	        return action.payload;
-	    },
-	    _a
-	), {});
-	var _a;
-
 
 /***/ }
 /******/ ]);
