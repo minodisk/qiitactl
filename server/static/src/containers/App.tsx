@@ -1,33 +1,34 @@
-/// <reference path="../../typings/tsd.d.ts" />
+import { bindActionCreators, Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import * as React from 'react';
 
-import {bindActionCreators, Dispatch} from 'redux'
-import {connect} from 'react-redux'
-import * as React from 'react'
-import FileList from '../components/FileList'
-import * as FilesActions from '../actions/files'
+import Header from '../components/Header';
+import MainSection from '../components/MainSection';
+import * as TodoActions from '../actions/todos';
+import { Todo } from '../models/todos';
 
 interface AppProps {
-  paths: string[];
-  dispatch: Dispatch;
+  todos?: Todo[];
+  dispatch?: Dispatch;
 }
 
 class App extends React.Component<AppProps, void> {
   render() {
-    const {paths, dispatch} = this.props
-    const actions = bindActionCreators(FilesActions, dispatch)
+    const { todos, dispatch } = this.props;
+    const actions = bindActionCreators(TodoActions, dispatch);
     return (
-      <div>
-        <FileList
-          paths={paths}
-          actions={actions}
-        />
+      <div className="todoapp">
+        <Header addTodo={actions.addTodo} />
+        <MainSection
+          todos={todos}
+          actions={actions}/>
       </div>
-    )
+    );
   }
 }
 
 const mapStateToProps = state => ({
-  paths: state.paths
-})
+  todos: state.todos
+});
 
-export default connect(mapStateToProps)(App)
+export default connect(mapStateToProps)(App);

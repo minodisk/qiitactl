@@ -6,22 +6,30 @@
   "scripts": {
     "build": "./node_modules/browserify/bin/cmd.js src/index.tsx -p tsify > bundle.js",
     "debug": "./node_modules/watchify/bin/cmd.js src/index.tsx -p tsify -o bundle.js",
+    "start": "./node_modules/webpack/bin/webpack.js --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "browserify": "^13.0.0",
+    "ts-loader": "^0.8.1",
     "tsify": "^0.13.2",
-    "watchify": "^3.7.0"
+    "watchify": "^3.7.0",
+    "webpack": "^1.12.14"
   },
   "dependencies": {
     "browserify": "^13.0.0",
+    "classnames": "^2.2.3",
+    "es6-promise": "^3.1.2",
+    "lodash": "^4.5.1",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-redux": "^4.4.0",
     "redux": "^3.3.1",
     "redux-actions": "^0.9.1",
+    "redux-logger": "^2.6.0",
+    "redux-thunk": "^1.0.3",
     "remark": "^4.1.1",
     "remark-react": "^1.1.0"
   }
