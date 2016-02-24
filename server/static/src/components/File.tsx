@@ -4,6 +4,8 @@ import Files from './Files'
 import Link from './Link'
 import * as models from '../models/files'
 
+const classes = require('../styles/header.styl')
+
 interface FileProps {
   file: models.File
 }
@@ -29,14 +31,16 @@ export default class File extends React.Component<FileProps, FileState> {
     const {file} = this.props
     if (file.children == null) {
       return (
-        <Link
-          active={true}
-          children={file.name}
-          onClick={() => console.log('start')} />
+        <div className={classes.file}>
+          <Link
+            active={true}
+            children={file.name}
+            onClick={() => console.log('start')} />
+        </div>
       )
     }
     return (
-      <div>
+      <div className={classes.dir}>
         <Link
           active={true}
           children={file.name}

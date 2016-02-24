@@ -3,6 +3,14 @@
     width 200px
     word-break break-all
   .files
+    list-style-type none
     padding-left 15px
   .closed
     display none
+
+  .file
+    &:before
+      content '□'
+  .dir
+    &:before
+      content '▼'

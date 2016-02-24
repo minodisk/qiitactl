@@ -38442,6 +38442,7 @@
 	var React = __webpack_require__(1);
 	var Files_1 = __webpack_require__(209);
 	var Link_1 = __webpack_require__(214);
+	var classes = __webpack_require__(210);
 	var File = (function (_super) {
 	    __extends(File, _super);
 	    function File(props, context) {
@@ -38458,9 +38459,9 @@
 	        var _this = this;
 	        var file = this.props.file;
 	        if (file.children == null) {
-	            return (React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }}));
+	            return (React.createElement("div", {className: classes.file}, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }})));
 	        }
-	        return (React.createElement("div", null, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
+	        return (React.createElement("div", {className: classes.dir}, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
 	    };
 	    return File;
 	}(React.Component));
@@ -38481,7 +38482,7 @@
 	var React = __webpack_require__(1);
 	var File_1 = __webpack_require__(208);
 	var classnames = __webpack_require__(207);
-	var style = __webpack_require__(210);
+	var classes = __webpack_require__(210);
 	var Files = (function (_super) {
 	    __extends(Files, _super);
 	    function Files() {
@@ -38490,8 +38491,8 @@
 	    Files.prototype.render = function () {
 	        var _a = this.props, files = _a.files, opened = _a.opened;
 	        return (React.createElement("ul", {className: classnames((_b = {},
-	            _b[style.files] = true,
-	            _b[style.closed] = !opened,
+	            _b[classes.files] = true,
+	            _b[classes.closed] = !opened,
 	            _b
 	        ))}, files.map(function (file) { return React.createElement("li", null, React.createElement(File_1.default, {file: file})); })));
 	        var _b;
@@ -38537,13 +38538,15 @@
 
 
 	// module
-	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  padding-left: 15px;\n}\n._3__TbHfLgY6XY-FGzUZa5n {\n  display: none;\n}\n", ""]);
+	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  list-style-type: none;\n  padding-left: 15px;\n}\n._3__TbHfLgY6XY-FGzUZa5n {\n  display: none;\n}\n._10PwQgq9AmdjFjsJNSjIRo:before {\n  content: '\\25A1';\n}\n._2PMYQm-qMrv_5b6GmzyQvH:before {\n  content: '\\25BC';\n}\n", ""]);
 
 	// exports
 	exports.locals = {
 		"header": "h8rplDPLVeDLmTndCDi-3",
 		"files": "_3XXpQACdS3nsvEH3aBhKLy",
-		"closed": "_3__TbHfLgY6XY-FGzUZa5n"
+		"closed": "_3__TbHfLgY6XY-FGzUZa5n",
+		"file": "_10PwQgq9AmdjFjsJNSjIRo",
+		"dir": "_2PMYQm-qMrv_5b6GmzyQvH"
 	};
 
 /***/ },
