@@ -1,26 +1,27 @@
 import * as React from 'react';
+import {findDOMNode} from 'react-dom'
 
 import File from './File'
 import * as models from '../models/files'
 import * as classnames from 'classnames'
 
-const classes = require('../styles/header.styl')
+const {filesOpened, filesClosed} = require('../styles/file.scss')
 
 interface FilesProps {
+  indent: number;
   files: models.File[]
-  opened: boolean
+  opened: boolean,
 }
 
 export default class Files extends React.Component<FilesProps, void> {
   render() {
-    const {files, opened} = this.props
+    const {indent, files, opened} = this.props
     return (
-      <ul className={classnames({
-        [classes.files]: true,
-        [classes.closed]: !opened
-      })}>
+      <ul
+        className={opened ? filesOpened : filesClosed}
+        >
       {
-        files.map((file) => <li><File file={file} /></li>)
+        files.map((file, i) => <li key={i}><File indent={indent} file={file} /></li>)
       }
       </ul>
     )

@@ -4,9 +4,10 @@ import Files from './Files'
 import Link from './Link'
 import * as models from '../models/files'
 
-const classes = require('../styles/header.styl')
+const styles = require('../styles/file.scss')
 
 interface FileProps {
+  indent: number;
   file: models.File
 }
 
@@ -28,11 +29,13 @@ export default class File extends React.Component<FileProps, FileState> {
   }
 
   render() {
-    const {file} = this.props
+    const {indent, file} = this.props
     if (file.children == null) {
       return (
-        <div className={classes.file}>
+        <div>
           <Link
+            indent={indent}
+            className={styles.file}
             active={true}
             children={file.name}
             onClick={() => console.log('start')} />
@@ -40,12 +43,15 @@ export default class File extends React.Component<FileProps, FileState> {
       )
     }
     return (
-      <div className={classes.dir}>
+      <div>
         <Link
+          indent={indent}
+          className={this.state.opened ? styles.dirOpened : styles.dirClosed}
           active={true}
           children={file.name}
           onClick={() => this.toggleOpen()} />
         <Files
+          indent={indent + 1}
           files={file.children}
           opened={this.state.opened} />
       </div>

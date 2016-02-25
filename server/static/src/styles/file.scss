@@ -1,0 +1,82 @@
+:local {
+
+  .files {
+    font-size: 12px;
+    list-style-type: none;
+    padding-left: 0;
+  }
+
+  .filesOpened {
+    @extend .files;
+  }
+
+  .filesClosed {
+    @extend .files;
+    display: none;
+  }
+
+  .icon {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    position: relative;
+    top: 2px;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+  }
+
+  .fs {
+    display: block;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    &:before {
+      @extend .icon;
+    }
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+
+  .file {
+    @extend .fs;
+    &:before {
+      content: "insert_drive_file";
+    }
+  }
+
+  .dir {
+    @extend .fs;
+    &:before {
+      content: "folder";
+    }
+  }
+
+  .dirOpened {
+    @extend .dir;
+    &:before {
+      content: "folder_open"
+    }
+  }
+
+  .dirClosed {
+    @extend .dir;
+  }
+
+}

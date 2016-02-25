@@ -50,13 +50,13 @@
 	var redux_1 = __webpack_require__(159);
 	var react_redux_1 = __webpack_require__(169);
 	var thunkMiddleware = __webpack_require__(180);
-	// import { Action } from 'redux-actions';
+	var createLogger = __webpack_require__(229);
 	var rootReducer_1 = __webpack_require__(181);
 	var socket_1 = __webpack_require__(199);
 	var files_1 = __webpack_require__(203);
 	var App_1 = __webpack_require__(204);
-	// const loggerMiddleware = createLogger()
-	var store = redux_1.createStore(rootReducer_1.rootReducer, redux_1.applyMiddleware(thunkMiddleware));
+	var loggerMiddleware = createLogger();
+	var store = redux_1.createStore(rootReducer_1.rootReducer, redux_1.applyMiddleware(thunkMiddleware, loggerMiddleware));
 	store
 	    .dispatch(socket_1.openSocket())
 	    .then(function () { return store.dispatch(files_1.fetchFiles()); })
@@ -38264,9 +38264,9 @@
 	var react_redux_1 = __webpack_require__(169);
 	var React = __webpack_require__(1);
 	var Header_1 = __webpack_require__(205);
-	var MainSection_1 = __webpack_require__(215);
-	var TodoActions = __webpack_require__(219);
-	var style = __webpack_require__(220);
+	var MainSection_1 = __webpack_require__(217);
+	var TodoActions = __webpack_require__(221);
+	var style = __webpack_require__(222);
 	var App = (function (_super) {
 	    __extends(App, _super);
 	    function App() {
@@ -38300,7 +38300,7 @@
 	var React = __webpack_require__(1);
 	var TodoTextInput_1 = __webpack_require__(206);
 	var File_1 = __webpack_require__(208);
-	var style = __webpack_require__(210);
+	var style = __webpack_require__(214);
 	;
 	var Header = (function (_super) {
 	    __extends(Header, _super);
@@ -38316,7 +38316,7 @@
 	        var file = this.props.file;
 	        return (React.createElement("header", {className: style.header}, React.createElement("nav", null, React.createElement("h1", null, "files"), (function () {
 	            if (file != null) {
-	                return React.createElement(File_1.default, {file: file});
+	                return (React.createElement(File_1.default, {indent: 0, file: file}));
 	            }
 	        })()), React.createElement(TodoTextInput_1.default, {newTodo: true, onSave: this.handleSave.bind(this), placeholder: "What needs to be done?"})));
 	    };
@@ -38441,8 +38441,8 @@
 	};
 	var React = __webpack_require__(1);
 	var Files_1 = __webpack_require__(209);
-	var Link_1 = __webpack_require__(214);
-	var classes = __webpack_require__(210);
+	var Link_1 = __webpack_require__(213);
+	var styles = __webpack_require__(210);
 	var File = (function (_super) {
 	    __extends(File, _super);
 	    function File(props, context) {
@@ -38457,11 +38457,11 @@
 	    };
 	    File.prototype.render = function () {
 	        var _this = this;
-	        var file = this.props.file;
+	        var _a = this.props, indent = _a.indent, file = _a.file;
 	        if (file.children == null) {
-	            return (React.createElement("div", {className: classes.file}, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return console.log('start'); }})));
+	            return (React.createElement("div", null, React.createElement(Link_1.default, {indent: indent, className: styles.file, active: true, children: file.name, onClick: function () { return console.log('start'); }})));
 	        }
-	        return (React.createElement("div", {className: classes.dir}, React.createElement(Link_1.default, {active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {files: file.children, opened: this.state.opened})));
+	        return (React.createElement("div", null, React.createElement(Link_1.default, {indent: indent, className: this.state.opened ? styles.dirOpened : styles.dirClosed, active: true, children: file.name, onClick: function () { return _this.toggleOpen(); }}), React.createElement(Files_1.default, {indent: indent + 1, files: file.children, opened: this.state.opened})));
 	    };
 	    return File;
 	}(React.Component));
@@ -38481,21 +38481,15 @@
 	};
 	var React = __webpack_require__(1);
 	var File_1 = __webpack_require__(208);
-	var classnames = __webpack_require__(207);
-	var classes = __webpack_require__(210);
+	var _a = __webpack_require__(210), filesOpened = _a.filesOpened, filesClosed = _a.filesClosed;
 	var Files = (function (_super) {
 	    __extends(Files, _super);
 	    function Files() {
 	        _super.apply(this, arguments);
 	    }
 	    Files.prototype.render = function () {
-	        var _a = this.props, files = _a.files, opened = _a.opened;
-	        return (React.createElement("ul", {className: classnames((_b = {},
-	            _b[classes.files] = true,
-	            _b[classes.closed] = !opened,
-	            _b
-	        ))}, files.map(function (file) { return React.createElement("li", null, React.createElement(File_1.default, {file: file})); })));
-	        var _b;
+	        var _a = this.props, indent = _a.indent, files = _a.files, opened = _a.opened;
+	        return (React.createElement("ul", {className: opened ? filesOpened : filesClosed}, files.map(function (file, i) { return React.createElement("li", {key: i}, React.createElement(File_1.default, {indent: indent, file: file})); })));
 	    };
 	    return Files;
 	}(React.Component));
@@ -38513,14 +38507,14 @@
 	var content = __webpack_require__(211);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(213)(content, {});
+	var update = __webpack_require__(212)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js?sourceMap!./../../node_modules/sass-loader/index.js?sourceMap!./file.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js?sourceMap!./../../node_modules/sass-loader/index.js?sourceMap!./file.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -38533,80 +38527,28 @@
 /* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(212)();
+	exports = module.exports = __webpack_require__(216)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 200px;\n  word-break: break-all;\n}\n._3XXpQACdS3nsvEH3aBhKLy {\n  list-style-type: none;\n  padding-left: 15px;\n}\n._3__TbHfLgY6XY-FGzUZa5n {\n  display: none;\n}\n._10PwQgq9AmdjFjsJNSjIRo:before {\n  content: '\\25A1';\n}\n._2PMYQm-qMrv_5b6GmzyQvH:before {\n  content: '\\25BC';\n}\n", ""]);
+	exports.push([module.id, "._8npOnjgWwwy2oEW3NlkmZ, ._1yKgf5anV4wULZMA6G-Ecs, ._3wOjvdEY1FTqUNU6cYPIZ0 {\n  font-size: 12px;\n  list-style-type: none;\n  padding-left: 0; }\n\n._3wOjvdEY1FTqUNU6cYPIZ0 {\n  display: none; }\n\n._32A8cTPE1anEW9MlSZEJCe, ._3Grs1q6lVMePk6cHSsrEvU:before, ._1tySOrPA3PPvAxgkkZtiJj:before, ._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  display: inline-block;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n  position: relative;\n  top: 2px;\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n  /* Support for IE. */\n  font-feature-settings: 'liga'; }\n\n._3Grs1q6lVMePk6cHSsrEvU, ._1tySOrPA3PPvAxgkkZtiJj, ._3p0tpNf0aub2U6v5u7mjO, .FYiV1jfcl_SEDf4Ael808, ._21kU_e4l27Di2hyA2g0aTp {\n  display: block;\n  color: #333;\n  text-decoration: none;\n  border-bottom: 1px solid #eee; }\n  ._3Grs1q6lVMePk6cHSsrEvU:hover, ._1tySOrPA3PPvAxgkkZtiJj:hover, ._3p0tpNf0aub2U6v5u7mjO:hover, .FYiV1jfcl_SEDf4Ael808:hover, ._21kU_e4l27Di2hyA2g0aTp:hover {\n    background-color: #ddd; }\n\n._1tySOrPA3PPvAxgkkZtiJj:before {\n  content: \"insert_drive_file\"; }\n\n._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before {\n  content: \"folder\"; }\n\n.FYiV1jfcl_SEDf4Ael808:before {\n  content: \"folder_open\"; }\n", "", {"version":3,"sources":["/./src/styles/src/styles/file.scss"],"names":[],"mappings":"AAAA;EAGI,gBAAgB;EAChB,sBAAsB;EACtB,gBAAgB,EACjB;;AANH;EAcI,cAAc,EACf;;AAfH;EAkBI,8BAA8B;EAC9B,oBAAoB;EACpB,mBAAmB;EACnB,sBAAsB;EACtB,qBAAqB;EACrB,uBAAuB;EACvB,kBAAkB;EAClB,oBAAoB;EACpB,eAAe;EAEf,mBAAmB;EACnB,SAAS;EAET,sCAAsC;EACtC,oCAAoC;EACpC,oCAAoC;EACpC,mCAAmC;EAEnC,0BAA0B;EAC1B,mCAAmC;EAEnC,qBAAqB;EACrB,8BAA8B,EAC/B;;AAzCH;EA4CI,eAAe;EACf,YAAY;EACZ,sBAAsB;EACtB,8BAA8B,EAO/B;EAtDH;IAoDM,uBAAuB,EACxB;;AArDL;EA2DM,6BAA6B,EAC9B;;AA5DL;EAkEM,kBAAkB,EACnB;;AAnEL;EAyEM,uBACD,EAAC","file":"file.scss","sourcesContent":[":local {\n\n  .files {\n    font-size: 12px;\n    list-style-type: none;\n    padding-left: 0;\n  }\n\n  .filesOpened {\n    @extend .files;\n  }\n\n  .filesClosed {\n    @extend .files;\n    display: none;\n  }\n\n  .icon {\n    font-family: 'Material Icons';\n    font-weight: normal;\n    font-style: normal;\n    display: inline-block;\n    text-transform: none;\n    letter-spacing: normal;\n    word-wrap: normal;\n    white-space: nowrap;\n    direction: ltr;\n\n    position: relative;\n    top: 2px;\n\n    /* Support for all WebKit browsers. */\n    -webkit-font-smoothing: antialiased;\n    /* Support for Safari and Chrome. */\n    text-rendering: optimizeLegibility;\n\n    /* Support for Firefox. */\n    -moz-osx-font-smoothing: grayscale;\n\n    /* Support for IE. */\n    font-feature-settings: 'liga';\n  }\n\n  .fs {\n    display: block;\n    color: #333;\n    text-decoration: none;\n    border-bottom: 1px solid #eee;\n    &:before {\n      @extend .icon;\n    }\n    &:hover {\n      background-color: #ddd;\n    }\n  }\n\n  .file {\n    @extend .fs;\n    &:before {\n      content: \"insert_drive_file\";\n    }\n  }\n\n  .dir {\n    @extend .fs;\n    &:before {\n      content: \"folder\";\n    }\n  }\n\n  .dirOpened {\n    @extend .dir;\n    &:before {\n      content: \"folder_open\"\n    }\n  }\n\n  .dirClosed {\n    @extend .dir;\n  }\n\n}\n"],"sourceRoot":"webpack://"}]);
 
 	// exports
 	exports.locals = {
-		"header": "h8rplDPLVeDLmTndCDi-3",
-		"files": "_3XXpQACdS3nsvEH3aBhKLy",
-		"closed": "_3__TbHfLgY6XY-FGzUZa5n",
-		"file": "_10PwQgq9AmdjFjsJNSjIRo",
-		"dir": "_2PMYQm-qMrv_5b6GmzyQvH"
+		"files": "_8npOnjgWwwy2oEW3NlkmZ",
+		"filesOpened": "_1yKgf5anV4wULZMA6G-Ecs",
+		"filesClosed": "_3wOjvdEY1FTqUNU6cYPIZ0",
+		"icon": "_32A8cTPE1anEW9MlSZEJCe",
+		"fs": "_3Grs1q6lVMePk6cHSsrEvU",
+		"file": "_1tySOrPA3PPvAxgkkZtiJj",
+		"dir": "_3p0tpNf0aub2U6v5u7mjO",
+		"dirOpened": "FYiV1jfcl_SEDf4Ael808",
+		"dirClosed": "_21kU_e4l27Di2hyA2g0aTp"
 	};
 
 /***/ },
 /* 212 */
-/***/ function(module, exports) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function() {
-		var list = [];
-
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for(var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if(item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-
-		// import a list of modules into the list
-		list.i = function(modules, mediaQuery) {
-			if(typeof modules === "string")
-				modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for(var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if(typeof id === "number")
-					alreadyImportedModules[id] = true;
-			}
-			for(i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if(mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if(mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-
-/***/ },
-/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -38860,7 +38802,7 @@
 
 
 /***/ },
-/* 214 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38876,11 +38818,13 @@
 	        _super.apply(this, arguments);
 	    }
 	    Link.prototype.render = function () {
-	        var _a = this.props, active = _a.active, children = _a.children, onClick = _a.onClick;
+	        var _a = this.props, indent = _a.indent, className = _a.className, active = _a.active, children = _a.children, onClick = _a.onClick;
 	        if (!active) {
 	            return (React.createElement("span", null, children));
 	        }
-	        return (React.createElement("a", {href: "#", onClick: function (e) {
+	        return (React.createElement("a", {className: className, style: {
+	            paddingLeft: 10 * indent
+	        }, href: "#", onClick: function (e) {
 	            e.preventDefault();
 	            onClick(e);
 	        }}, children));
@@ -38892,7 +38836,105 @@
 
 
 /***/ },
+/* 214 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(215);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(212)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/stylus-loader/index.js!./header.styl");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
 /* 215 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(216)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 300px;\n  word-break: break-all;\n}\n", ""]);
+
+	// exports
+	exports.locals = {
+		"header": "h8rplDPLVeDLmTndCDi-3"
+	};
+
+/***/ },
+/* 216 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38902,9 +38944,9 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var TodoItem_1 = __webpack_require__(216);
-	var Footer_1 = __webpack_require__(217);
-	var TodoFilters_1 = __webpack_require__(218);
+	var TodoItem_1 = __webpack_require__(218);
+	var Footer_1 = __webpack_require__(219);
+	var TodoFilters_1 = __webpack_require__(220);
 	var TODO_FILTERS = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = function () { return true; },
 	    _a[TodoFilters_1.SHOW_ACTIVE] = function (todo) { return !todo.completed; },
@@ -38961,7 +39003,7 @@
 
 
 /***/ },
-/* 216 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39016,7 +39058,7 @@
 
 
 /***/ },
-/* 217 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39027,7 +39069,7 @@
 	};
 	var React = __webpack_require__(1);
 	var classNames = __webpack_require__(207);
-	var TodoFilters_1 = __webpack_require__(218);
+	var TodoFilters_1 = __webpack_require__(220);
 	var FILTER_TITLES = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = 'All',
 	    _a[TodoFilters_1.SHOW_ACTIVE] = 'Active',
@@ -39069,7 +39111,7 @@
 
 
 /***/ },
-/* 218 */
+/* 220 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39079,7 +39121,7 @@
 
 
 /***/ },
-/* 219 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39101,16 +39143,16 @@
 
 
 /***/ },
-/* 220 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(221);
+	var content = __webpack_require__(223);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(213)(content, {});
+	var update = __webpack_require__(212)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -39127,20 +39169,291 @@
 	}
 
 /***/ },
-/* 221 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(212)();
+	exports = module.exports = __webpack_require__(216)();
 	// imports
-
+	exports.i(__webpack_require__(224), "");
 
 	// module
-	exports.push([module.id, "html,\nbody {\n  margin: 0;\n  padding: 0;\n}\nbody {\n  font-size: 14px;\n}\n._1XwTGklUWSGtdsfgYjXa7B {\n  display: -webkit-box;\n  width: 100%;\n}\n", ""]);
+	exports.push([module.id, "html,\nbody {\n  margin: 0;\n  padding: 0;\n}\nbody {\n  font-size: 14px;\n}\nul {\n  margin: 0;\n}\nli {\n  padding: 0;\n  list-style-type: none;\n}\n._1XwTGklUWSGtdsfgYjXa7B {\n  display: -webkit-box;\n  width: 100%;\n}\n", ""]);
 
 	// exports
 	exports.locals = {
 		"app": "_1XwTGklUWSGtdsfgYjXa7B"
 	};
+
+/***/ },
+/* 224 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(216)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "@font-face {\n  font-family: 'Material Icons';\n  font-style: normal;\n  font-weight: 400;\n  src: url(" + __webpack_require__(225) + "); /* For IE6-8 */\n  src: local('Material Icons'),\n       local('MaterialIcons-Regular'),\n       url(" + __webpack_require__(226) + ") format('woff2'),\n       url(" + __webpack_require__(227) + ") format('woff'),\n       url(" + __webpack_require__(228) + ") format('truetype');\n}\n\n.material-icons {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  font-size: 24px;  /* Preferred icon size */\n  display: inline-block;\n  width: 1em;\n  height: 1em;\n  line-height: 1;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n\n  /* Support for IE. */\n  font-feature-settings: 'liga';\n}\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 225 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "e79bfd88537def476913f3ed52f4f4b3.eot";
+
+/***/ },
+/* 226 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "c58629e330eaf128316a142320407d74.woff2";
+
+/***/ },
+/* 227 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "3c3d0242794b4682460a3f7c7a2126ee.woff";
+
+/***/ },
+/* 228 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "a37b0c01c0baf1888ca812cc0508f6e2.ttf";
+
+/***/ },
+/* 229 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
+	var repeat = function repeat(str, times) {
+	  return new Array(times + 1).join(str);
+	};
+	var pad = function pad(num, maxLength) {
+	  return repeat("0", maxLength - num.toString().length) + num;
+	};
+	var formatTime = function formatTime(time) {
+	  return "@ " + pad(time.getHours(), 2) + ":" + pad(time.getMinutes(), 2) + ":" + pad(time.getSeconds(), 2) + "." + pad(time.getMilliseconds(), 3);
+	};
+
+	// Use the new performance api to get better precision if available
+	var timer = typeof performance !== "undefined" && typeof performance.now === "function" ? performance : Date;
+
+	/**
+	 * parse the level option of createLogger
+	 *
+	 * @property {string | function | object} level - console[level]
+	 * @property {object} action
+	 * @property {array} payload
+	 * @property {string} type
+	 */
+
+	function getLogLevel(level, action, payload, type) {
+	  switch (typeof level === "undefined" ? "undefined" : _typeof(level)) {
+	    case "object":
+	      return typeof level[type] === "function" ? level[type].apply(level, _toConsumableArray(payload)) : level[type];
+	    case "function":
+	      return level(action);
+	    default:
+	      return level;
+	  }
+	}
+
+	/**
+	 * Creates logger with followed options
+	 *
+	 * @namespace
+	 * @property {object} options - options for logger
+	 * @property {string | function | object} options.level - console[level]
+	 * @property {boolean} options.duration - print duration of each action?
+	 * @property {boolean} options.timestamp - print timestamp with each action?
+	 * @property {object} options.colors - custom colors
+	 * @property {object} options.logger - implementation of the `console` API
+	 * @property {boolean} options.logErrors - should errors in action execution be caught, logged, and re-thrown?
+	 * @property {boolean} options.collapsed - is group collapsed?
+	 * @property {boolean} options.predicate - condition which resolves logger behavior
+	 * @property {function} options.stateTransformer - transform state before print
+	 * @property {function} options.actionTransformer - transform action before print
+	 * @property {function} options.errorTransformer - transform error before print
+	 */
+
+	function createLogger() {
+	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var _options$level = options.level;
+	  var level = _options$level === undefined ? "log" : _options$level;
+	  var _options$logger = options.logger;
+	  var logger = _options$logger === undefined ? console : _options$logger;
+	  var _options$logErrors = options.logErrors;
+	  var logErrors = _options$logErrors === undefined ? true : _options$logErrors;
+	  var collapsed = options.collapsed;
+	  var predicate = options.predicate;
+	  var _options$duration = options.duration;
+	  var duration = _options$duration === undefined ? false : _options$duration;
+	  var _options$timestamp = options.timestamp;
+	  var timestamp = _options$timestamp === undefined ? true : _options$timestamp;
+	  var transformer = options.transformer;
+	  var _options$stateTransfo = options.stateTransformer;
+	  var // deprecated
+	  stateTransformer = _options$stateTransfo === undefined ? function (state) {
+	    return state;
+	  } : _options$stateTransfo;
+	  var _options$actionTransf = options.actionTransformer;
+	  var actionTransformer = _options$actionTransf === undefined ? function (actn) {
+	    return actn;
+	  } : _options$actionTransf;
+	  var _options$errorTransfo = options.errorTransformer;
+	  var errorTransformer = _options$errorTransfo === undefined ? function (error) {
+	    return error;
+	  } : _options$errorTransfo;
+	  var _options$colors = options.colors;
+	  var colors = _options$colors === undefined ? {
+	    title: function title() {
+	      return "#000000";
+	    },
+	    prevState: function prevState() {
+	      return "#9E9E9E";
+	    },
+	    action: function action() {
+	      return "#03A9F4";
+	    },
+	    nextState: function nextState() {
+	      return "#4CAF50";
+	    },
+	    error: function error() {
+	      return "#F20404";
+	    }
+	  } : _options$colors;
+
+	  // exit if console undefined
+
+	  if (typeof logger === "undefined") {
+	    return function () {
+	      return function (next) {
+	        return function (action) {
+	          return next(action);
+	        };
+	      };
+	    };
+	  }
+
+	  if (transformer) {
+	    console.error("Option 'transformer' is deprecated, use stateTransformer instead");
+	  }
+
+	  var logBuffer = [];
+	  function printBuffer() {
+	    logBuffer.forEach(function (logEntry, key) {
+	      var started = logEntry.started;
+	      var startedTime = logEntry.startedTime;
+	      var action = logEntry.action;
+	      var prevState = logEntry.prevState;
+	      var error = logEntry.error;
+	      var took = logEntry.took;
+	      var nextState = logEntry.nextState;
+
+	      var nextEntry = logBuffer[key + 1];
+	      if (nextEntry) {
+	        nextState = nextEntry.prevState;
+	        took = nextEntry.started - started;
+	      }
+	      // message
+	      var formattedAction = actionTransformer(action);
+	      var isCollapsed = typeof collapsed === "function" ? collapsed(function () {
+	        return nextState;
+	      }, action) : collapsed;
+
+	      var formattedTime = formatTime(startedTime);
+	      var titleCSS = colors.title ? "color: " + colors.title(formattedAction) + ";" : null;
+	      var title = "action " + (timestamp ? formattedTime : "") + " " + formattedAction.type + " " + (duration ? "(in " + took.toFixed(2) + " ms)" : "");
+
+	      // render
+	      try {
+	        if (isCollapsed) {
+	          if (colors.title) logger.groupCollapsed("%c " + title, titleCSS);else logger.groupCollapsed(title);
+	        } else {
+	          if (colors.title) logger.group("%c " + title, titleCSS);else logger.group(title);
+	        }
+	      } catch (e) {
+	        logger.log(title);
+	      }
+
+	      var prevStateLevel = getLogLevel(level, formattedAction, [prevState], "prevState");
+	      var actionLevel = getLogLevel(level, formattedAction, [formattedAction], "action");
+	      var errorLevel = getLogLevel(level, formattedAction, [error, prevState], "error");
+	      var nextStateLevel = getLogLevel(level, formattedAction, [nextState], "nextState");
+
+	      if (prevStateLevel) {
+	        if (colors.prevState) logger[level]("%c prev state", "color: " + colors.prevState(prevState) + "; font-weight: bold", prevState);else logger[level]("prev state", prevState);
+	      }
+
+	      if (actionLevel) {
+	        if (colors.action) logger[level]("%c action", "color: " + colors.action(formattedAction) + "; font-weight: bold", formattedAction);else logger[level]("action", formattedAction);
+	      }
+
+	      if (error && errorLevel) {
+	        if (colors.error) logger[level]("%c error", "color: " + colors.error(error, prevState) + "; font-weight: bold", error);else logger[level]("error", error);
+	      }
+
+	      if (nextStateLevel) {
+	        if (colors.nextState) logger[level]("%c next state", "color: " + colors.nextState(nextState) + "; font-weight: bold", nextState);else logger[level]("next state", nextState);
+	      }
+
+	      try {
+	        logger.groupEnd();
+	      } catch (e) {
+	        logger.log("—— log end ——");
+	      }
+	    });
+	    logBuffer.length = 0;
+	  }
+
+	  return function (_ref) {
+	    var getState = _ref.getState;
+	    return function (next) {
+	      return function (action) {
+	        // exit early if predicate function returns false
+	        if (typeof predicate === "function" && !predicate(getState, action)) {
+	          return next(action);
+	        }
+
+	        var logEntry = {};
+	        logBuffer.push(logEntry);
+
+	        logEntry.started = timer.now();
+	        logEntry.startedTime = new Date();
+	        logEntry.prevState = stateTransformer(getState());
+	        logEntry.action = action;
+
+	        var returnedValue = undefined;
+	        if (logErrors) {
+	          try {
+	            returnedValue = next(action);
+	          } catch (e) {
+	            logEntry.error = errorTransformer(e);
+	          }
+	        } else {
+	          returnedValue = next(action);
+	        }
+
+	        logEntry.took = timer.now() - logEntry.started;
+	        logEntry.nextState = stateTransformer(getState());
+
+	        printBuffer();
+
+	        if (logEntry.error) throw logEntry.error;
+	        return returnedValue;
+	      };
+	    };
+	  };
+	}
+
+	module.exports = createLogger;
 
 /***/ }
 /******/ ]);

@@ -14,19 +14,18 @@ import {
   Provider
 } from 'react-redux';
 import * as thunkMiddleware from 'redux-thunk'
-import createLogger from 'redux-logger'
-// import { Action } from 'redux-actions';
+const createLogger = require('redux-logger')
 
 import { rootReducer } from './reducers/rootReducer';
 import { openSocket  } from './actions/socket'
 import { fetchFiles } from './actions/files'
 import App from './containers/App';
 
-// const loggerMiddleware = createLogger()
+const loggerMiddleware = createLogger()
 const store: Store = createStore(rootReducer,
   applyMiddleware(
-    thunkMiddleware
-    // loggerMiddleware
+    thunkMiddleware,
+    loggerMiddleware
   )
 );
 

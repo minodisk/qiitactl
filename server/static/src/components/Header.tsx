@@ -26,7 +26,12 @@ export default class Header extends React.Component<HeaderProps, void> {
           <h1>files</h1>
           {(() => {
             if (file != null) {
-              return <File file={file}/>
+              return (
+                <File
+                  indent={0}
+                  file={file}
+                  />
+              )
             }
           })()}
         </nav>

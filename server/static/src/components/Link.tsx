@@ -1,6 +1,8 @@
 import * as React from 'react';
 
 interface LinkProps {
+  indent: number;
+  className: string;
   active: boolean
   children: any
   onClick: Function
@@ -8,7 +10,7 @@ interface LinkProps {
 
 export default class Link extends React.Component<LinkProps, void> {
   render() {
-    const {active, children, onClick} = this.props
+    const {indent, className, active, children, onClick} = this.props
     if (!active) {
       return (
         <span>{children}</span>
@@ -16,6 +18,10 @@ export default class Link extends React.Component<LinkProps, void> {
     }
     return (
       <a
+        className={className}
+        style={{
+          paddingLeft: 10*indent
+        }}
         href="#"
         onClick={(e) => {
           e.preventDefault()
