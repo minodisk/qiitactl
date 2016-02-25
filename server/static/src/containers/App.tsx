@@ -8,7 +8,7 @@ import * as TodoActions from '../actions/todos';
 import { File } from '../models/files';
 import { Todo } from '../models/todos';
 
-const style = require('../styles/app.styl')
+const styles = require('../styles/app.scss')
 
 interface AppProps {
   todos?: Todo[];
@@ -21,7 +21,7 @@ class App extends React.Component<AppProps, void> {
     const { todos, file, dispatch } = this.props;
     const actions = bindActionCreators(TodoActions, dispatch);
     return (
-      <div className={style.app}>
+      <div className={styles.app}>
         <Header
           file={file}
           addTodo={actions.addTodo} />
