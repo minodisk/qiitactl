@@ -50,11 +50,11 @@
 	var redux_1 = __webpack_require__(159);
 	var react_redux_1 = __webpack_require__(169);
 	var thunkMiddleware = __webpack_require__(180);
-	var createLogger = __webpack_require__(229);
-	var rootReducer_1 = __webpack_require__(181);
-	var socket_1 = __webpack_require__(199);
-	var files_1 = __webpack_require__(203);
-	var App_1 = __webpack_require__(204);
+	var createLogger = __webpack_require__(181);
+	var rootReducer_1 = __webpack_require__(182);
+	var socket_1 = __webpack_require__(200);
+	var files_1 = __webpack_require__(204);
+	var App_1 = __webpack_require__(205);
 	var loggerMiddleware = createLogger();
 	var store = redux_1.createStore(rootReducer_1.rootReducer, redux_1.applyMiddleware(thunkMiddleware, loggerMiddleware));
 	store
@@ -21139,12 +21139,245 @@
 
 /***/ },
 /* 181 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
+	var repeat = function repeat(str, times) {
+	  return new Array(times + 1).join(str);
+	};
+	var pad = function pad(num, maxLength) {
+	  return repeat("0", maxLength - num.toString().length) + num;
+	};
+	var formatTime = function formatTime(time) {
+	  return "@ " + pad(time.getHours(), 2) + ":" + pad(time.getMinutes(), 2) + ":" + pad(time.getSeconds(), 2) + "." + pad(time.getMilliseconds(), 3);
+	};
+
+	// Use the new performance api to get better precision if available
+	var timer = typeof performance !== "undefined" && typeof performance.now === "function" ? performance : Date;
+
+	/**
+	 * parse the level option of createLogger
+	 *
+	 * @property {string | function | object} level - console[level]
+	 * @property {object} action
+	 * @property {array} payload
+	 * @property {string} type
+	 */
+
+	function getLogLevel(level, action, payload, type) {
+	  switch (typeof level === "undefined" ? "undefined" : _typeof(level)) {
+	    case "object":
+	      return typeof level[type] === "function" ? level[type].apply(level, _toConsumableArray(payload)) : level[type];
+	    case "function":
+	      return level(action);
+	    default:
+	      return level;
+	  }
+	}
+
+	/**
+	 * Creates logger with followed options
+	 *
+	 * @namespace
+	 * @property {object} options - options for logger
+	 * @property {string | function | object} options.level - console[level]
+	 * @property {boolean} options.duration - print duration of each action?
+	 * @property {boolean} options.timestamp - print timestamp with each action?
+	 * @property {object} options.colors - custom colors
+	 * @property {object} options.logger - implementation of the `console` API
+	 * @property {boolean} options.logErrors - should errors in action execution be caught, logged, and re-thrown?
+	 * @property {boolean} options.collapsed - is group collapsed?
+	 * @property {boolean} options.predicate - condition which resolves logger behavior
+	 * @property {function} options.stateTransformer - transform state before print
+	 * @property {function} options.actionTransformer - transform action before print
+	 * @property {function} options.errorTransformer - transform error before print
+	 */
+
+	function createLogger() {
+	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var _options$level = options.level;
+	  var level = _options$level === undefined ? "log" : _options$level;
+	  var _options$logger = options.logger;
+	  var logger = _options$logger === undefined ? console : _options$logger;
+	  var _options$logErrors = options.logErrors;
+	  var logErrors = _options$logErrors === undefined ? true : _options$logErrors;
+	  var collapsed = options.collapsed;
+	  var predicate = options.predicate;
+	  var _options$duration = options.duration;
+	  var duration = _options$duration === undefined ? false : _options$duration;
+	  var _options$timestamp = options.timestamp;
+	  var timestamp = _options$timestamp === undefined ? true : _options$timestamp;
+	  var transformer = options.transformer;
+	  var _options$stateTransfo = options.stateTransformer;
+	  var // deprecated
+	  stateTransformer = _options$stateTransfo === undefined ? function (state) {
+	    return state;
+	  } : _options$stateTransfo;
+	  var _options$actionTransf = options.actionTransformer;
+	  var actionTransformer = _options$actionTransf === undefined ? function (actn) {
+	    return actn;
+	  } : _options$actionTransf;
+	  var _options$errorTransfo = options.errorTransformer;
+	  var errorTransformer = _options$errorTransfo === undefined ? function (error) {
+	    return error;
+	  } : _options$errorTransfo;
+	  var _options$colors = options.colors;
+	  var colors = _options$colors === undefined ? {
+	    title: function title() {
+	      return "#000000";
+	    },
+	    prevState: function prevState() {
+	      return "#9E9E9E";
+	    },
+	    action: function action() {
+	      return "#03A9F4";
+	    },
+	    nextState: function nextState() {
+	      return "#4CAF50";
+	    },
+	    error: function error() {
+	      return "#F20404";
+	    }
+	  } : _options$colors;
+
+	  // exit if console undefined
+
+	  if (typeof logger === "undefined") {
+	    return function () {
+	      return function (next) {
+	        return function (action) {
+	          return next(action);
+	        };
+	      };
+	    };
+	  }
+
+	  if (transformer) {
+	    console.error("Option 'transformer' is deprecated, use stateTransformer instead");
+	  }
+
+	  var logBuffer = [];
+	  function printBuffer() {
+	    logBuffer.forEach(function (logEntry, key) {
+	      var started = logEntry.started;
+	      var startedTime = logEntry.startedTime;
+	      var action = logEntry.action;
+	      var prevState = logEntry.prevState;
+	      var error = logEntry.error;
+	      var took = logEntry.took;
+	      var nextState = logEntry.nextState;
+
+	      var nextEntry = logBuffer[key + 1];
+	      if (nextEntry) {
+	        nextState = nextEntry.prevState;
+	        took = nextEntry.started - started;
+	      }
+	      // message
+	      var formattedAction = actionTransformer(action);
+	      var isCollapsed = typeof collapsed === "function" ? collapsed(function () {
+	        return nextState;
+	      }, action) : collapsed;
+
+	      var formattedTime = formatTime(startedTime);
+	      var titleCSS = colors.title ? "color: " + colors.title(formattedAction) + ";" : null;
+	      var title = "action " + (timestamp ? formattedTime : "") + " " + formattedAction.type + " " + (duration ? "(in " + took.toFixed(2) + " ms)" : "");
+
+	      // render
+	      try {
+	        if (isCollapsed) {
+	          if (colors.title) logger.groupCollapsed("%c " + title, titleCSS);else logger.groupCollapsed(title);
+	        } else {
+	          if (colors.title) logger.group("%c " + title, titleCSS);else logger.group(title);
+	        }
+	      } catch (e) {
+	        logger.log(title);
+	      }
+
+	      var prevStateLevel = getLogLevel(level, formattedAction, [prevState], "prevState");
+	      var actionLevel = getLogLevel(level, formattedAction, [formattedAction], "action");
+	      var errorLevel = getLogLevel(level, formattedAction, [error, prevState], "error");
+	      var nextStateLevel = getLogLevel(level, formattedAction, [nextState], "nextState");
+
+	      if (prevStateLevel) {
+	        if (colors.prevState) logger[level]("%c prev state", "color: " + colors.prevState(prevState) + "; font-weight: bold", prevState);else logger[level]("prev state", prevState);
+	      }
+
+	      if (actionLevel) {
+	        if (colors.action) logger[level]("%c action", "color: " + colors.action(formattedAction) + "; font-weight: bold", formattedAction);else logger[level]("action", formattedAction);
+	      }
+
+	      if (error && errorLevel) {
+	        if (colors.error) logger[level]("%c error", "color: " + colors.error(error, prevState) + "; font-weight: bold", error);else logger[level]("error", error);
+	      }
+
+	      if (nextStateLevel) {
+	        if (colors.nextState) logger[level]("%c next state", "color: " + colors.nextState(nextState) + "; font-weight: bold", nextState);else logger[level]("next state", nextState);
+	      }
+
+	      try {
+	        logger.groupEnd();
+	      } catch (e) {
+	        logger.log("—— log end ——");
+	      }
+	    });
+	    logBuffer.length = 0;
+	  }
+
+	  return function (_ref) {
+	    var getState = _ref.getState;
+	    return function (next) {
+	      return function (action) {
+	        // exit early if predicate function returns false
+	        if (typeof predicate === "function" && !predicate(getState, action)) {
+	          return next(action);
+	        }
+
+	        var logEntry = {};
+	        logBuffer.push(logEntry);
+
+	        logEntry.started = timer.now();
+	        logEntry.startedTime = new Date();
+	        logEntry.prevState = stateTransformer(getState());
+	        logEntry.action = action;
+
+	        var returnedValue = undefined;
+	        if (logErrors) {
+	          try {
+	            returnedValue = next(action);
+	          } catch (e) {
+	            logEntry.error = errorTransformer(e);
+	          }
+	        } else {
+	          returnedValue = next(action);
+	        }
+
+	        logEntry.took = timer.now() - logEntry.started;
+	        logEntry.nextState = stateTransformer(getState());
+
+	        printBuffer();
+
+	        if (logEntry.error) throw logEntry.error;
+	        return returnedValue;
+	      };
+	    };
+	  };
+	}
+
+	module.exports = createLogger;
+
+/***/ },
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var redux_1 = __webpack_require__(159);
-	var todos_1 = __webpack_require__(182);
-	var file_1 = __webpack_require__(198);
+	var todos_1 = __webpack_require__(183);
+	var file_1 = __webpack_require__(199);
 	var rootReducer = redux_1.combineReducers({
 	    todos: todos_1.default,
 	    file: file_1.default
@@ -21153,13 +21386,13 @@
 
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var lodash_1 = __webpack_require__(183);
-	var redux_actions_1 = __webpack_require__(185);
-	var ActionTypes_1 = __webpack_require__(197);
+	var lodash_1 = __webpack_require__(184);
+	var redux_actions_1 = __webpack_require__(186);
+	var ActionTypes_1 = __webpack_require__(198);
 	var initialState = [{
 	        text: 'Use Redux with TypeScript',
 	        completed: false,
@@ -21208,7 +21441,7 @@
 
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/**
@@ -36145,10 +36378,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(184)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(185)(module), (function() { return this; }())))
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -36164,7 +36397,7 @@
 
 
 /***/ },
-/* 185 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36173,15 +36406,15 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _createAction = __webpack_require__(186);
+	var _createAction = __webpack_require__(187);
 
 	var _createAction2 = _interopRequireDefault(_createAction);
 
-	var _handleAction = __webpack_require__(187);
+	var _handleAction = __webpack_require__(188);
 
 	var _handleAction2 = _interopRequireDefault(_handleAction);
 
-	var _handleActions = __webpack_require__(194);
+	var _handleActions = __webpack_require__(195);
 
 	var _handleActions2 = _interopRequireDefault(_handleActions);
 
@@ -36190,7 +36423,7 @@
 	exports.handleActions = _handleActions2['default'];
 
 /***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -36230,7 +36463,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36238,7 +36471,7 @@
 	exports.__esModule = true;
 	exports['default'] = handleAction;
 
-	var _fluxStandardAction = __webpack_require__(188);
+	var _fluxStandardAction = __webpack_require__(189);
 
 	function isFunction(val) {
 	  return typeof val === 'function';
@@ -36266,7 +36499,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 188 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36277,7 +36510,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _lodashIsplainobject = __webpack_require__(189);
+	var _lodashIsplainobject = __webpack_require__(190);
 
 	var _lodashIsplainobject2 = _interopRequireDefault(_lodashIsplainobject);
 
@@ -36296,7 +36529,7 @@
 	}
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -36307,9 +36540,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var baseFor = __webpack_require__(190),
-	    isArguments = __webpack_require__(191),
-	    keysIn = __webpack_require__(192);
+	var baseFor = __webpack_require__(191),
+	    isArguments = __webpack_require__(192),
+	    keysIn = __webpack_require__(193);
 
 	/** `Object#toString` result references. */
 	var objectTag = '[object Object]';
@@ -36405,7 +36638,7 @@
 
 
 /***/ },
-/* 190 */
+/* 191 */
 /***/ function(module, exports) {
 
 	/**
@@ -36459,7 +36692,7 @@
 
 
 /***/ },
-/* 191 */
+/* 192 */
 /***/ function(module, exports) {
 
 	/**
@@ -36709,7 +36942,7 @@
 
 
 /***/ },
-/* 192 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -36720,8 +36953,8 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var isArguments = __webpack_require__(191),
-	    isArray = __webpack_require__(193);
+	var isArguments = __webpack_require__(192),
+	    isArray = __webpack_require__(194);
 
 	/** Used to detect unsigned integer values. */
 	var reIsUint = /^\d+$/;
@@ -36847,7 +37080,7 @@
 
 
 /***/ },
-/* 193 */
+/* 194 */
 /***/ function(module, exports) {
 
 	/**
@@ -37033,7 +37266,7 @@
 
 
 /***/ },
-/* 194 */
+/* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37043,15 +37276,15 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _handleAction = __webpack_require__(187);
+	var _handleAction = __webpack_require__(188);
 
 	var _handleAction2 = _interopRequireDefault(_handleAction);
 
-	var _ownKeys = __webpack_require__(195);
+	var _ownKeys = __webpack_require__(196);
 
 	var _ownKeys2 = _interopRequireDefault(_ownKeys);
 
-	var _reduceReducers = __webpack_require__(196);
+	var _reduceReducers = __webpack_require__(197);
 
 	var _reduceReducers2 = _interopRequireDefault(_reduceReducers);
 
@@ -37069,7 +37302,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 195 */
+/* 196 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -37094,7 +37327,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 196 */
+/* 197 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -37117,7 +37350,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 197 */
+/* 198 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -37127,20 +37360,20 @@
 	exports.COMPLETE_TODO = 'COMPLETE_TODO';
 	exports.COMPLETE_ALL = 'COMPLETE_ALL';
 	exports.CLEAR_COMPLETED = 'CLEAR_COMPLETED';
-	exports.OPEN_SOCKET = 'OPEN_SOCKET';
-	exports.OPENED_SOCKET = 'OPENED_SOCKET';
+	exports.WILL_OPEN_SOCKET = 'WILL_OPEN_SOCKET';
+	exports.DID_OPEN_SOCKET = 'DID_OPEN_SOCKET';
 	exports.REQUEST_FILES = 'REQUEST_FILES';
 	exports.RECIEVE_FILES = 'RECIEVE_FILES';
 	exports.START_FILE = 'START_FILE';
 
 
 /***/ },
-/* 198 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var redux_actions_1 = __webpack_require__(185);
-	var ActionTypes_1 = __webpack_require__(197);
+	var redux_actions_1 = __webpack_require__(186);
+	var ActionTypes_1 = __webpack_require__(198);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = redux_actions_1.handleActions((_a = {},
 	    _a[ActionTypes_1.REQUEST_FILES] = function (state, action) {
@@ -37150,18 +37383,18 @@
 	        return action.payload;
 	    },
 	    _a
-	), {});
+	), { name: 'loading...', children: [] });
 	var _a;
 
 
 /***/ },
-/* 199 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var redux_actions_1 = __webpack_require__(185);
-	var types = __webpack_require__(197);
-	var es6_promise_1 = __webpack_require__(200);
+	var redux_actions_1 = __webpack_require__(186);
+	var ActionTypes_1 = __webpack_require__(198);
+	var es6_promise_1 = __webpack_require__(201);
 	var Socket = (function () {
 	    function Socket() {
 	        this.onError = function (e) {
@@ -37242,8 +37475,8 @@
 	    }
 	    return Res;
 	}());
-	exports.openingSocket = redux_actions_1.createAction(types.OPEN_SOCKET);
-	exports.openedSocket = redux_actions_1.createAction(types.OPENED_SOCKET);
+	exports.openingSocket = redux_actions_1.createAction(ActionTypes_1.WILL_OPEN_SOCKET);
+	exports.openedSocket = redux_actions_1.createAction(ActionTypes_1.DID_OPEN_SOCKET);
 	exports.openSocket = function () {
 	    return function (dispatch, getState) {
 	        dispatch(exports.openingSocket());
@@ -37257,10 +37490,10 @@
 
 
 /***/ },
-/* 200 */
+/* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -37390,7 +37623,7 @@
 	    function lib$es6$promise$asap$$attemptVertx() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(201);
+	        var vertx = __webpack_require__(202);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -38203,7 +38436,7 @@
 	    };
 
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(202)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(203)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -38215,29 +38448,29 @@
 	}).call(this);
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), (function() { return this; }()), __webpack_require__(184)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), (function() { return this; }()), __webpack_require__(185)(module)))
 
 /***/ },
-/* 201 */
+/* 202 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 202 */
+/* 203 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 203 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var redux_actions_1 = __webpack_require__(185);
-	var types = __webpack_require__(197);
-	var socket_1 = __webpack_require__(199);
+	var redux_actions_1 = __webpack_require__(186);
+	var types = __webpack_require__(198);
+	var socket_1 = __webpack_require__(200);
 	var requestFile = redux_actions_1.createAction(types.REQUEST_FILES);
 	var recieveFile = redux_actions_1.createAction(types.RECIEVE_FILES, function (file) { return file; });
 	exports.fetchFiles = function () {
@@ -38251,7 +38484,7 @@
 
 
 /***/ },
-/* 204 */
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38263,10 +38496,10 @@
 	var redux_1 = __webpack_require__(159);
 	var react_redux_1 = __webpack_require__(169);
 	var React = __webpack_require__(1);
-	var Header_1 = __webpack_require__(205);
-	var MainSection_1 = __webpack_require__(217);
-	var TodoActions = __webpack_require__(221);
-	var style = __webpack_require__(222);
+	var Header_1 = __webpack_require__(206);
+	var MainSection_1 = __webpack_require__(304);
+	var TodoActions = __webpack_require__(308);
+	var style = __webpack_require__(309);
 	var App = (function (_super) {
 	    __extends(App, _super);
 	    function App() {
@@ -38288,7 +38521,7 @@
 
 
 /***/ },
-/* 205 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38298,9 +38531,9 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var TodoTextInput_1 = __webpack_require__(206);
-	var File_1 = __webpack_require__(208);
-	var style = __webpack_require__(214);
+	var TodoTextInput_1 = __webpack_require__(267);
+	var File_1 = __webpack_require__(269);
+	var style = __webpack_require__(302);
 	;
 	var Header = (function (_super) {
 	    __extends(Header, _super);
@@ -38314,7 +38547,7 @@
 	    };
 	    Header.prototype.render = function () {
 	        var file = this.props.file;
-	        return (React.createElement("header", {className: style.header}, React.createElement("nav", null, React.createElement("h1", null, "files"), (function () {
+	        return (React.createElement("header", {className: style.header}, React.createElement("nav", null, (function () {
 	            if (file != null) {
 	                return (React.createElement(File_1.default, {indent: 0, file: file}));
 	            }
@@ -38327,7 +38560,67 @@
 
 
 /***/ },
-/* 206 */
+/* 207 */,
+/* 208 */,
+/* 209 */,
+/* 210 */,
+/* 211 */,
+/* 212 */,
+/* 213 */,
+/* 214 */,
+/* 215 */,
+/* 216 */,
+/* 217 */,
+/* 218 */,
+/* 219 */,
+/* 220 */,
+/* 221 */,
+/* 222 */,
+/* 223 */,
+/* 224 */,
+/* 225 */,
+/* 226 */,
+/* 227 */,
+/* 228 */,
+/* 229 */,
+/* 230 */,
+/* 231 */,
+/* 232 */,
+/* 233 */,
+/* 234 */,
+/* 235 */,
+/* 236 */,
+/* 237 */,
+/* 238 */,
+/* 239 */,
+/* 240 */,
+/* 241 */,
+/* 242 */,
+/* 243 */,
+/* 244 */,
+/* 245 */,
+/* 246 */,
+/* 247 */,
+/* 248 */,
+/* 249 */,
+/* 250 */,
+/* 251 */,
+/* 252 */,
+/* 253 */,
+/* 254 */,
+/* 255 */,
+/* 256 */,
+/* 257 */,
+/* 258 */,
+/* 259 */,
+/* 260 */,
+/* 261 */,
+/* 262 */,
+/* 263 */,
+/* 264 */,
+/* 265 */,
+/* 266 */,
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38337,7 +38630,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(207);
+	var classNames = __webpack_require__(268);
 	var TodoTextInput = (function (_super) {
 	    __extends(TodoTextInput, _super);
 	    function TodoTextInput(props, context) {
@@ -38376,7 +38669,7 @@
 
 
 /***/ },
-/* 207 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -38430,7 +38723,7 @@
 
 
 /***/ },
-/* 208 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38440,9 +38733,9 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var Files_1 = __webpack_require__(209);
-	var Link_1 = __webpack_require__(213);
-	var styles = __webpack_require__(210);
+	var Files_1 = __webpack_require__(316);
+	var Link_1 = __webpack_require__(317);
+	var styles = __webpack_require__(298);
 	var File = (function (_super) {
 	    __extends(File, _super);
 	    function File(props, context) {
@@ -38470,44 +38763,44 @@
 
 
 /***/ },
-/* 209 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var React = __webpack_require__(1);
-	var File_1 = __webpack_require__(208);
-	var _a = __webpack_require__(210), filesOpened = _a.filesOpened, filesClosed = _a.filesClosed;
-	var Files = (function (_super) {
-	    __extends(Files, _super);
-	    function Files() {
-	        _super.apply(this, arguments);
-	    }
-	    Files.prototype.render = function () {
-	        var _a = this.props, indent = _a.indent, files = _a.files, opened = _a.opened;
-	        return (React.createElement("ul", {className: opened ? filesOpened : filesClosed}, files.map(function (file, i) { return React.createElement("li", {key: i}, React.createElement(File_1.default, {indent: indent, file: file})); })));
-	    };
-	    return Files;
-	}(React.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Files;
-
-
-/***/ },
-/* 210 */
+/* 270 */,
+/* 271 */,
+/* 272 */,
+/* 273 */,
+/* 274 */,
+/* 275 */,
+/* 276 */,
+/* 277 */,
+/* 278 */,
+/* 279 */,
+/* 280 */,
+/* 281 */,
+/* 282 */,
+/* 283 */,
+/* 284 */,
+/* 285 */,
+/* 286 */,
+/* 287 */,
+/* 288 */,
+/* 289 */,
+/* 290 */,
+/* 291 */,
+/* 292 */,
+/* 293 */,
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(211);
+	var content = __webpack_require__(299);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(212)(content, {});
+	var update = __webpack_require__(301)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -38524,15 +38817,15 @@
 	}
 
 /***/ },
-/* 211 */
+/* 299 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(216)();
+	exports = module.exports = __webpack_require__(300)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "._8npOnjgWwwy2oEW3NlkmZ, ._1yKgf5anV4wULZMA6G-Ecs, ._3wOjvdEY1FTqUNU6cYPIZ0 {\n  font-size: 12px;\n  list-style-type: none;\n  padding-left: 0; }\n\n._3wOjvdEY1FTqUNU6cYPIZ0 {\n  display: none; }\n\n._32A8cTPE1anEW9MlSZEJCe, ._3Grs1q6lVMePk6cHSsrEvU:before, ._1tySOrPA3PPvAxgkkZtiJj:before, ._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  display: inline-block;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n  position: relative;\n  top: 2px;\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n  /* Support for IE. */\n  font-feature-settings: 'liga'; }\n\n._3Grs1q6lVMePk6cHSsrEvU, ._1tySOrPA3PPvAxgkkZtiJj, ._3p0tpNf0aub2U6v5u7mjO, .FYiV1jfcl_SEDf4Ael808, ._21kU_e4l27Di2hyA2g0aTp {\n  display: block;\n  color: #333;\n  text-decoration: none;\n  border-bottom: 1px solid #eee; }\n  ._3Grs1q6lVMePk6cHSsrEvU:hover, ._1tySOrPA3PPvAxgkkZtiJj:hover, ._3p0tpNf0aub2U6v5u7mjO:hover, .FYiV1jfcl_SEDf4Ael808:hover, ._21kU_e4l27Di2hyA2g0aTp:hover {\n    background-color: #ddd; }\n\n._1tySOrPA3PPvAxgkkZtiJj:before {\n  content: \"insert_drive_file\"; }\n\n._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before {\n  content: \"folder\"; }\n\n.FYiV1jfcl_SEDf4Ael808:before {\n  content: \"folder_open\"; }\n", "", {"version":3,"sources":["/./src/styles/src/styles/file.scss"],"names":[],"mappings":"AAAA;EAGI,gBAAgB;EAChB,sBAAsB;EACtB,gBAAgB,EACjB;;AANH;EAcI,cAAc,EACf;;AAfH;EAkBI,8BAA8B;EAC9B,oBAAoB;EACpB,mBAAmB;EACnB,sBAAsB;EACtB,qBAAqB;EACrB,uBAAuB;EACvB,kBAAkB;EAClB,oBAAoB;EACpB,eAAe;EAEf,mBAAmB;EACnB,SAAS;EAET,sCAAsC;EACtC,oCAAoC;EACpC,oCAAoC;EACpC,mCAAmC;EAEnC,0BAA0B;EAC1B,mCAAmC;EAEnC,qBAAqB;EACrB,8BAA8B,EAC/B;;AAzCH;EA4CI,eAAe;EACf,YAAY;EACZ,sBAAsB;EACtB,8BAA8B,EAO/B;EAtDH;IAoDM,uBAAuB,EACxB;;AArDL;EA2DM,6BAA6B,EAC9B;;AA5DL;EAkEM,kBAAkB,EACnB;;AAnEL;EAyEM,uBACD,EAAC","file":"file.scss","sourcesContent":[":local {\n\n  .files {\n    font-size: 12px;\n    list-style-type: none;\n    padding-left: 0;\n  }\n\n  .filesOpened {\n    @extend .files;\n  }\n\n  .filesClosed {\n    @extend .files;\n    display: none;\n  }\n\n  .icon {\n    font-family: 'Material Icons';\n    font-weight: normal;\n    font-style: normal;\n    display: inline-block;\n    text-transform: none;\n    letter-spacing: normal;\n    word-wrap: normal;\n    white-space: nowrap;\n    direction: ltr;\n\n    position: relative;\n    top: 2px;\n\n    /* Support for all WebKit browsers. */\n    -webkit-font-smoothing: antialiased;\n    /* Support for Safari and Chrome. */\n    text-rendering: optimizeLegibility;\n\n    /* Support for Firefox. */\n    -moz-osx-font-smoothing: grayscale;\n\n    /* Support for IE. */\n    font-feature-settings: 'liga';\n  }\n\n  .fs {\n    display: block;\n    color: #333;\n    text-decoration: none;\n    border-bottom: 1px solid #eee;\n    &:before {\n      @extend .icon;\n    }\n    &:hover {\n      background-color: #ddd;\n    }\n  }\n\n  .file {\n    @extend .fs;\n    &:before {\n      content: \"insert_drive_file\";\n    }\n  }\n\n  .dir {\n    @extend .fs;\n    &:before {\n      content: \"folder\";\n    }\n  }\n\n  .dirOpened {\n    @extend .dir;\n    &:before {\n      content: \"folder_open\"\n    }\n  }\n\n  .dirClosed {\n    @extend .dir;\n  }\n\n}\n"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "._8npOnjgWwwy2oEW3NlkmZ, ._1yKgf5anV4wULZMA6G-Ecs, ._3wOjvdEY1FTqUNU6cYPIZ0 {\n  list-style-type: none;\n  padding-left: 0; }\n\n._3wOjvdEY1FTqUNU6cYPIZ0 {\n  display: none; }\n\n._32A8cTPE1anEW9MlSZEJCe, ._3Grs1q6lVMePk6cHSsrEvU:before, ._1tySOrPA3PPvAxgkkZtiJj:before, ._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before, ._3p0tpNf0aub2U6v5u7mjO:after, .FYiV1jfcl_SEDf4Ael808:after, ._21kU_e4l27Di2hyA2g0aTp:after {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  display: inline-block;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n  position: relative;\n  top: 2px;\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n  /* Support for IE. */\n  font-feature-settings: 'liga'; }\n\n._3Grs1q6lVMePk6cHSsrEvU, ._1tySOrPA3PPvAxgkkZtiJj, ._3p0tpNf0aub2U6v5u7mjO, .FYiV1jfcl_SEDf4Ael808, ._21kU_e4l27Di2hyA2g0aTp {\n  display: block;\n  color: #333;\n  text-decoration: none;\n  border-bottom: 1px solid #eee; }\n  ._3Grs1q6lVMePk6cHSsrEvU:before, ._1tySOrPA3PPvAxgkkZtiJj:before, ._3p0tpNf0aub2U6v5u7mjO:before, .FYiV1jfcl_SEDf4Ael808:before, ._21kU_e4l27Di2hyA2g0aTp:before {\n    padding-right: 0.5em; }\n  ._3Grs1q6lVMePk6cHSsrEvU:hover, ._1tySOrPA3PPvAxgkkZtiJj:hover, ._3p0tpNf0aub2U6v5u7mjO:hover, .FYiV1jfcl_SEDf4Ael808:hover, ._21kU_e4l27Di2hyA2g0aTp:hover {\n    background-color: #ddd; }\n\n._1tySOrPA3PPvAxgkkZtiJj:before {\n  content: \"insert_drive_file\"; }\n\n._3p0tpNf0aub2U6v5u7mjO:after, .FYiV1jfcl_SEDf4Ael808:after, ._21kU_e4l27Di2hyA2g0aTp:after {\n  float: right; }\n\n.FYiV1jfcl_SEDf4Ael808:before {\n  content: \"folder_open\"; }\n\n.FYiV1jfcl_SEDf4Ael808:after {\n  content: \"arrow_drop_down\"; }\n\n._21kU_e4l27Di2hyA2g0aTp:before {\n  content: \"folder\"; }\n\n._21kU_e4l27Di2hyA2g0aTp:after {\n  content: \"arrow_drop_up\"; }\n", "", {"version":3,"sources":["/./src/styles/src/styles/file.scss"],"names":[],"mappings":"AAAA;EAII,sBAAsB;EACtB,gBAAgB,EACjB;;AANH;EAcI,cAAc,EACf;;AAfH;EAkBI,8BAA8B;EAC9B,oBAAoB;EACpB,mBAAmB;EACnB,sBAAsB;EACtB,qBAAqB;EACrB,uBAAuB;EACvB,kBAAkB;EAClB,oBAAoB;EACpB,eAAe;EAEf,mBAAmB;EACnB,SAAS;EAET,sCAAsC;EACtC,oCAAoC;EACpC,oCAAoC;EACpC,mCAAmC;EAEnC,0BAA0B;EAC1B,mCAAmC;EAEnC,qBAAqB;EACrB,8BAA8B,EAC/B;;AAzCH;EA4CI,eAAe;EACf,YAAY;EACZ,sBAAsB;EACtB,8BAA8B,EAW/B;EA1DH;IAkDM,qBAAqB,EACtB;EAnDL;IAqDM,uBAAuB,EACxB;;AAtDL;EA+DM,6BAA6B,EAC9B;;AAhEL;EAuEM,aAAa,EACd;;AAxEL;EA8EM,uBACD,EAAC;;AA/EN;EAiFM,2BACD,EAAC;;AAlFN;EAwFM,kBAAkB,EACnB;;AAzFL;EA2FM,yBACD,EAAC","file":"file.scss","sourcesContent":[":local {\n\n  .files {\n    // font-size: 13px;\n    list-style-type: none;\n    padding-left: 0;\n  }\n\n  .filesOpened {\n    @extend .files;\n  }\n\n  .filesClosed {\n    @extend .files;\n    display: none;\n  }\n\n  .icon {\n    font-family: 'Material Icons';\n    font-weight: normal;\n    font-style: normal;\n    display: inline-block;\n    text-transform: none;\n    letter-spacing: normal;\n    word-wrap: normal;\n    white-space: nowrap;\n    direction: ltr;\n\n    position: relative;\n    top: 2px;\n\n    /* Support for all WebKit browsers. */\n    -webkit-font-smoothing: antialiased;\n    /* Support for Safari and Chrome. */\n    text-rendering: optimizeLegibility;\n\n    /* Support for Firefox. */\n    -moz-osx-font-smoothing: grayscale;\n\n    /* Support for IE. */\n    font-feature-settings: 'liga';\n  }\n\n  .fs {\n    display: block;\n    color: #333;\n    text-decoration: none;\n    border-bottom: 1px solid #eee;\n    &:before {\n      @extend .icon;\n      padding-right: 0.5em;\n    }\n    &:hover {\n      background-color: #ddd;\n    }\n    &:before {\n      @extend .icon;\n    }\n  }\n\n  .file {\n    @extend .fs;\n    &:before {\n      content: \"insert_drive_file\";\n    }\n  }\n\n  .dir {\n    @extend .fs;\n    &:after {\n      @extend .icon;\n      float: right;\n    }\n  }\n\n  .dirOpened {\n    @extend .dir;\n    &:before {\n      content: \"folder_open\"\n    }\n    &:after {\n      content: \"arrow_drop_down\"\n    }\n  }\n\n  .dirClosed {\n    @extend .dir;\n    &:before {\n      content: \"folder\";\n    }\n    &:after {\n      content: \"arrow_drop_up\"\n    }\n  }\n\n}\n"],"sourceRoot":"webpack://"}]);
 
 	// exports
 	exports.locals = {
@@ -38548,7 +38841,63 @@
 	};
 
 /***/ },
-/* 212 */
+/* 300 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 301 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -38802,50 +39151,16 @@
 
 
 /***/ },
-/* 213 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var React = __webpack_require__(1);
-	var Link = (function (_super) {
-	    __extends(Link, _super);
-	    function Link() {
-	        _super.apply(this, arguments);
-	    }
-	    Link.prototype.render = function () {
-	        var _a = this.props, indent = _a.indent, className = _a.className, active = _a.active, children = _a.children, onClick = _a.onClick;
-	        if (!active) {
-	            return (React.createElement("span", null, children));
-	        }
-	        return (React.createElement("a", {className: className, style: {
-	            paddingLeft: 10 * indent
-	        }, href: "#", onClick: function (e) {
-	            e.preventDefault();
-	            onClick(e);
-	        }}, children));
-	    };
-	    return Link;
-	}(React.Component));
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Link;
-
-
-/***/ },
-/* 214 */
+/* 302 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(215);
+	var content = __webpack_require__(303);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(212)(content, {});
+	var update = __webpack_require__(301)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -38862,15 +39177,15 @@
 	}
 
 /***/ },
-/* 215 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(216)();
+	exports = module.exports = __webpack_require__(300)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  width: 300px;\n  word-break: break-all;\n}\n", ""]);
+	exports.push([module.id, ".h8rplDPLVeDLmTndCDi-3 {\n  word-break: break-all;\n}\n", ""]);
 
 	// exports
 	exports.locals = {
@@ -38878,63 +39193,7 @@
 	};
 
 /***/ },
-/* 216 */
-/***/ function(module, exports) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function() {
-		var list = [];
-
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for(var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if(item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-
-		// import a list of modules into the list
-		list.i = function(modules, mediaQuery) {
-			if(typeof modules === "string")
-				modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for(var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if(typeof id === "number")
-					alreadyImportedModules[id] = true;
-			}
-			for(i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if(mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if(mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-
-/***/ },
-/* 217 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38944,9 +39203,9 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var TodoItem_1 = __webpack_require__(218);
-	var Footer_1 = __webpack_require__(219);
-	var TodoFilters_1 = __webpack_require__(220);
+	var TodoItem_1 = __webpack_require__(305);
+	var Footer_1 = __webpack_require__(306);
+	var TodoFilters_1 = __webpack_require__(307);
 	var TODO_FILTERS = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = function () { return true; },
 	    _a[TodoFilters_1.SHOW_ACTIVE] = function (todo) { return !todo.completed; },
@@ -39003,7 +39262,7 @@
 
 
 /***/ },
-/* 218 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39013,8 +39272,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(207);
-	var TodoTextInput_1 = __webpack_require__(206);
+	var classNames = __webpack_require__(268);
+	var TodoTextInput_1 = __webpack_require__(267);
 	;
 	var TodoItem = (function (_super) {
 	    __extends(TodoItem, _super);
@@ -39058,7 +39317,7 @@
 
 
 /***/ },
-/* 219 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39068,8 +39327,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(207);
-	var TodoFilters_1 = __webpack_require__(220);
+	var classNames = __webpack_require__(268);
+	var TodoFilters_1 = __webpack_require__(307);
 	var FILTER_TITLES = (_a = {},
 	    _a[TodoFilters_1.SHOW_ALL] = 'All',
 	    _a[TodoFilters_1.SHOW_ACTIVE] = 'Active',
@@ -39111,7 +39370,7 @@
 
 
 /***/ },
-/* 220 */
+/* 307 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39121,13 +39380,13 @@
 
 
 /***/ },
-/* 221 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var redux_actions_1 = __webpack_require__(185);
-	var lodash_1 = __webpack_require__(183);
-	var types = __webpack_require__(197);
+	var redux_actions_1 = __webpack_require__(186);
+	var lodash_1 = __webpack_require__(184);
+	var types = __webpack_require__(198);
 	var addTodo = redux_actions_1.createAction(types.ADD_TODO, function (text) { return ({ text: text, completed: false }); });
 	exports.addTodo = addTodo;
 	var deleteTodo = redux_actions_1.createAction(types.DELETE_TODO, function (todo) { return todo; });
@@ -39143,16 +39402,16 @@
 
 
 /***/ },
-/* 222 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(223);
+	var content = __webpack_require__(310);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(212)(content, {});
+	var update = __webpack_require__(301)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -39169,12 +39428,12 @@
 	}
 
 /***/ },
-/* 223 */
+/* 310 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(216)();
+	exports = module.exports = __webpack_require__(300)();
 	// imports
-	exports.i(__webpack_require__(224), "");
+	exports.i(__webpack_require__(311), "");
 
 	// module
 	exports.push([module.id, "html,\nbody {\n  margin: 0;\n  padding: 0;\n}\nbody {\n  font-size: 14px;\n}\nul {\n  margin: 0;\n}\nli {\n  padding: 0;\n  list-style-type: none;\n}\n._1XwTGklUWSGtdsfgYjXa7B {\n  display: -webkit-box;\n  width: 100%;\n}\n", ""]);
@@ -39185,275 +39444,104 @@
 	};
 
 /***/ },
-/* 224 */
+/* 311 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(216)();
+	exports = module.exports = __webpack_require__(300)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "@font-face {\n  font-family: 'Material Icons';\n  font-style: normal;\n  font-weight: 400;\n  src: url(" + __webpack_require__(225) + "); /* For IE6-8 */\n  src: local('Material Icons'),\n       local('MaterialIcons-Regular'),\n       url(" + __webpack_require__(226) + ") format('woff2'),\n       url(" + __webpack_require__(227) + ") format('woff'),\n       url(" + __webpack_require__(228) + ") format('truetype');\n}\n\n.material-icons {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  font-size: 24px;  /* Preferred icon size */\n  display: inline-block;\n  width: 1em;\n  height: 1em;\n  line-height: 1;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n\n  /* Support for IE. */\n  font-feature-settings: 'liga';\n}\n", ""]);
+	exports.push([module.id, "@font-face {\n  font-family: 'Material Icons';\n  font-style: normal;\n  font-weight: 400;\n  src: url(" + __webpack_require__(312) + "); /* For IE6-8 */\n  src: local('Material Icons'),\n       local('MaterialIcons-Regular'),\n       url(" + __webpack_require__(313) + ") format('woff2'),\n       url(" + __webpack_require__(314) + ") format('woff'),\n       url(" + __webpack_require__(315) + ") format('truetype');\n}\n\n.material-icons {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  font-size: 24px;  /* Preferred icon size */\n  display: inline-block;\n  width: 1em;\n  height: 1em;\n  line-height: 1;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n\n  /* Support for IE. */\n  font-feature-settings: 'liga';\n}\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 225 */
+/* 312 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "e79bfd88537def476913f3ed52f4f4b3.eot";
 
 /***/ },
-/* 226 */
+/* 313 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "c58629e330eaf128316a142320407d74.woff2";
 
 /***/ },
-/* 227 */
+/* 314 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "3c3d0242794b4682460a3f7c7a2126ee.woff";
 
 /***/ },
-/* 228 */
+/* 315 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "a37b0c01c0baf1888ca812cc0508f6e2.ttf";
 
 /***/ },
-/* 229 */
-/***/ function(module, exports) {
+/* 316 */
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
-	var repeat = function repeat(str, times) {
-	  return new Array(times + 1).join(str);
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var pad = function pad(num, maxLength) {
-	  return repeat("0", maxLength - num.toString().length) + num;
-	};
-	var formatTime = function formatTime(time) {
-	  return "@ " + pad(time.getHours(), 2) + ":" + pad(time.getMinutes(), 2) + ":" + pad(time.getSeconds(), 2) + "." + pad(time.getMilliseconds(), 3);
-	};
-
-	// Use the new performance api to get better precision if available
-	var timer = typeof performance !== "undefined" && typeof performance.now === "function" ? performance : Date;
-
-	/**
-	 * parse the level option of createLogger
-	 *
-	 * @property {string | function | object} level - console[level]
-	 * @property {object} action
-	 * @property {array} payload
-	 * @property {string} type
-	 */
-
-	function getLogLevel(level, action, payload, type) {
-	  switch (typeof level === "undefined" ? "undefined" : _typeof(level)) {
-	    case "object":
-	      return typeof level[type] === "function" ? level[type].apply(level, _toConsumableArray(payload)) : level[type];
-	    case "function":
-	      return level(action);
-	    default:
-	      return level;
-	  }
-	}
-
-	/**
-	 * Creates logger with followed options
-	 *
-	 * @namespace
-	 * @property {object} options - options for logger
-	 * @property {string | function | object} options.level - console[level]
-	 * @property {boolean} options.duration - print duration of each action?
-	 * @property {boolean} options.timestamp - print timestamp with each action?
-	 * @property {object} options.colors - custom colors
-	 * @property {object} options.logger - implementation of the `console` API
-	 * @property {boolean} options.logErrors - should errors in action execution be caught, logged, and re-thrown?
-	 * @property {boolean} options.collapsed - is group collapsed?
-	 * @property {boolean} options.predicate - condition which resolves logger behavior
-	 * @property {function} options.stateTransformer - transform state before print
-	 * @property {function} options.actionTransformer - transform action before print
-	 * @property {function} options.errorTransformer - transform error before print
-	 */
-
-	function createLogger() {
-	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-	  var _options$level = options.level;
-	  var level = _options$level === undefined ? "log" : _options$level;
-	  var _options$logger = options.logger;
-	  var logger = _options$logger === undefined ? console : _options$logger;
-	  var _options$logErrors = options.logErrors;
-	  var logErrors = _options$logErrors === undefined ? true : _options$logErrors;
-	  var collapsed = options.collapsed;
-	  var predicate = options.predicate;
-	  var _options$duration = options.duration;
-	  var duration = _options$duration === undefined ? false : _options$duration;
-	  var _options$timestamp = options.timestamp;
-	  var timestamp = _options$timestamp === undefined ? true : _options$timestamp;
-	  var transformer = options.transformer;
-	  var _options$stateTransfo = options.stateTransformer;
-	  var // deprecated
-	  stateTransformer = _options$stateTransfo === undefined ? function (state) {
-	    return state;
-	  } : _options$stateTransfo;
-	  var _options$actionTransf = options.actionTransformer;
-	  var actionTransformer = _options$actionTransf === undefined ? function (actn) {
-	    return actn;
-	  } : _options$actionTransf;
-	  var _options$errorTransfo = options.errorTransformer;
-	  var errorTransformer = _options$errorTransfo === undefined ? function (error) {
-	    return error;
-	  } : _options$errorTransfo;
-	  var _options$colors = options.colors;
-	  var colors = _options$colors === undefined ? {
-	    title: function title() {
-	      return "#000000";
-	    },
-	    prevState: function prevState() {
-	      return "#9E9E9E";
-	    },
-	    action: function action() {
-	      return "#03A9F4";
-	    },
-	    nextState: function nextState() {
-	      return "#4CAF50";
-	    },
-	    error: function error() {
-	      return "#F20404";
+	var React = __webpack_require__(1);
+	var File_1 = __webpack_require__(269);
+	var _a = __webpack_require__(298), filesOpened = _a.filesOpened, filesClosed = _a.filesClosed;
+	var Files = (function (_super) {
+	    __extends(Files, _super);
+	    function Files() {
+	        _super.apply(this, arguments);
 	    }
-	  } : _options$colors;
-
-	  // exit if console undefined
-
-	  if (typeof logger === "undefined") {
-	    return function () {
-	      return function (next) {
-	        return function (action) {
-	          return next(action);
-	        };
-	      };
+	    Files.prototype.render = function () {
+	        var _a = this.props, indent = _a.indent, files = _a.files, opened = _a.opened;
+	        return (React.createElement("ul", {className: opened ? filesOpened : filesClosed}, files.map(function (file, i) { return React.createElement("li", {key: i}, React.createElement(File_1.default, {indent: indent, file: file})); })));
 	    };
-	  }
+	    return Files;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Files;
 
-	  if (transformer) {
-	    console.error("Option 'transformer' is deprecated, use stateTransformer instead");
-	  }
 
-	  var logBuffer = [];
-	  function printBuffer() {
-	    logBuffer.forEach(function (logEntry, key) {
-	      var started = logEntry.started;
-	      var startedTime = logEntry.startedTime;
-	      var action = logEntry.action;
-	      var prevState = logEntry.prevState;
-	      var error = logEntry.error;
-	      var took = logEntry.took;
-	      var nextState = logEntry.nextState;
+/***/ },
+/* 317 */
+/***/ function(module, exports, __webpack_require__) {
 
-	      var nextEntry = logBuffer[key + 1];
-	      if (nextEntry) {
-	        nextState = nextEntry.prevState;
-	        took = nextEntry.started - started;
-	      }
-	      // message
-	      var formattedAction = actionTransformer(action);
-	      var isCollapsed = typeof collapsed === "function" ? collapsed(function () {
-	        return nextState;
-	      }, action) : collapsed;
-
-	      var formattedTime = formatTime(startedTime);
-	      var titleCSS = colors.title ? "color: " + colors.title(formattedAction) + ";" : null;
-	      var title = "action " + (timestamp ? formattedTime : "") + " " + formattedAction.type + " " + (duration ? "(in " + took.toFixed(2) + " ms)" : "");
-
-	      // render
-	      try {
-	        if (isCollapsed) {
-	          if (colors.title) logger.groupCollapsed("%c " + title, titleCSS);else logger.groupCollapsed(title);
-	        } else {
-	          if (colors.title) logger.group("%c " + title, titleCSS);else logger.group(title);
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var Link = (function (_super) {
+	    __extends(Link, _super);
+	    function Link() {
+	        _super.apply(this, arguments);
+	    }
+	    Link.prototype.render = function () {
+	        var _a = this.props, indent = _a.indent, className = _a.className, active = _a.active, children = _a.children, onClick = _a.onClick;
+	        if (!active) {
+	            return (React.createElement("span", null, children));
 	        }
-	      } catch (e) {
-	        logger.log(title);
-	      }
-
-	      var prevStateLevel = getLogLevel(level, formattedAction, [prevState], "prevState");
-	      var actionLevel = getLogLevel(level, formattedAction, [formattedAction], "action");
-	      var errorLevel = getLogLevel(level, formattedAction, [error, prevState], "error");
-	      var nextStateLevel = getLogLevel(level, formattedAction, [nextState], "nextState");
-
-	      if (prevStateLevel) {
-	        if (colors.prevState) logger[level]("%c prev state", "color: " + colors.prevState(prevState) + "; font-weight: bold", prevState);else logger[level]("prev state", prevState);
-	      }
-
-	      if (actionLevel) {
-	        if (colors.action) logger[level]("%c action", "color: " + colors.action(formattedAction) + "; font-weight: bold", formattedAction);else logger[level]("action", formattedAction);
-	      }
-
-	      if (error && errorLevel) {
-	        if (colors.error) logger[level]("%c error", "color: " + colors.error(error, prevState) + "; font-weight: bold", error);else logger[level]("error", error);
-	      }
-
-	      if (nextStateLevel) {
-	        if (colors.nextState) logger[level]("%c next state", "color: " + colors.nextState(nextState) + "; font-weight: bold", nextState);else logger[level]("next state", nextState);
-	      }
-
-	      try {
-	        logger.groupEnd();
-	      } catch (e) {
-	        logger.log("—— log end ——");
-	      }
-	    });
-	    logBuffer.length = 0;
-	  }
-
-	  return function (_ref) {
-	    var getState = _ref.getState;
-	    return function (next) {
-	      return function (action) {
-	        // exit early if predicate function returns false
-	        if (typeof predicate === "function" && !predicate(getState, action)) {
-	          return next(action);
-	        }
-
-	        var logEntry = {};
-	        logBuffer.push(logEntry);
-
-	        logEntry.started = timer.now();
-	        logEntry.startedTime = new Date();
-	        logEntry.prevState = stateTransformer(getState());
-	        logEntry.action = action;
-
-	        var returnedValue = undefined;
-	        if (logErrors) {
-	          try {
-	            returnedValue = next(action);
-	          } catch (e) {
-	            logEntry.error = errorTransformer(e);
-	          }
-	        } else {
-	          returnedValue = next(action);
-	        }
-
-	        logEntry.took = timer.now() - logEntry.started;
-	        logEntry.nextState = stateTransformer(getState());
-
-	        printBuffer();
-
-	        if (logEntry.error) throw logEntry.error;
-	        return returnedValue;
-	      };
+	        return (React.createElement("a", {className: className, style: {
+	            paddingLeft: (1.5 * indent) + 'em'
+	        }, href: "#", onClick: function (e) {
+	            e.preventDefault();
+	            onClick(e);
+	        }}, children));
 	    };
-	  };
-	}
+	    return Link;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Link;
 
-	module.exports = createLogger;
 
 /***/ }
 /******/ ]);

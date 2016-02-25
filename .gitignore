@@ -31,3 +31,9 @@ homebrew-qiitactl
 bindata.go
 node_modules
 *.log
+
+# Fonts
+*.eot
+*.ttf
+*.woff
+*.woff2

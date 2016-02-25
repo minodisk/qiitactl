@@ -20,7 +20,7 @@ export default class Link extends React.Component<LinkProps, void> {
       <a
         className={className}
         style={{
-          paddingLeft: 10*indent
+          paddingLeft: (1.5 * indent) + 'em'
         }}
         href="#"
         onClick={(e) => {

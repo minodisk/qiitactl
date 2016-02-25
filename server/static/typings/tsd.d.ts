@@ -10,3 +10,4 @@
 /// <reference path="redux-thunk/redux-thunk.d.ts" />
 /// <reference path="es6-promise/es6-promise.d.ts" />
 /// <reference path="require.d.ts" />
+/// <reference path="material-ui/material-ui.d.ts" />

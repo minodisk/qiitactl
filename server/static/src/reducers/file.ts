@@ -14,4 +14,4 @@ export default handleActions<File>({
   [RECIEVE_FILES]: (state: File, action: Action): File => {
     return action.payload;
   }
-}, <File>{});
+}, <File>{name: 'loading...', children: []});

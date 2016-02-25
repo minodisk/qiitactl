@@ -1,5 +1,5 @@
 import { createAction } from 'redux-actions';
-import * as types from '../constants/ActionTypes';
+import { WILL_OPEN_SOCKET, DID_OPEN_SOCKET } from '../constants/ActionTypes';
 import { Promise } from 'es6-promise';
 
 export class Socket {
@@ -96,11 +96,11 @@ class Res {
 }
 
 export const openingSocket = createAction<void>(
-  types.OPEN_SOCKET
+  WILL_OPEN_SOCKET
 )
 
 export const openedSocket = createAction<void>(
-  types.OPENED_SOCKET
+  DID_OPEN_SOCKET
 )
 
 export let socket

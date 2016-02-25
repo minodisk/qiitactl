@@ -72,6 +72,20 @@ type Element struct {
 }
 
 func findMarkdownFiles() (root Element, err error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	dir = strings.TrimLeft(dir, "/")
+	dir = strings.TrimRight(dir, "/")
+	if dir == "" {
+		dir = "."
+	} else {
+		dirs := strings.Split(dir, "/")
+		dir = dirs[len(dirs)-1]
+	}
+	root.Name = dir
+
 	err = filepath.Walk(".", func(path string, i os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e

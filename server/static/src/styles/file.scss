@@ -1,7 +1,7 @@
 :local {
 
   .files {
-    font-size: 12px;
+    // font-size: 13px;
     list-style-type: none;
     padding-left: 0;
   }
@@ -48,9 +48,13 @@
     border-bottom: 1px solid #eee;
     &:before {
       @extend .icon;
+      padding-right: 0.5em;
     }
     &:hover {
       background-color: #ddd;
+    }
+    &:before {
+      @extend .icon;
     }
   }
 
@@ -63,8 +67,9 @@
 
   .dir {
     @extend .fs;
-    &:before {
-      content: "folder";
+    &:after {
+      @extend .icon;
+      float: right;
     }
   }
 
@@ -73,10 +78,19 @@
     &:before {
       content: "folder_open"
     }
+    &:after {
+      content: "arrow_drop_down"
+    }
   }
 
   .dirClosed {
     @extend .dir;
+    &:before {
+      content: "folder";
+    }
+    &:after {
+      content: "arrow_drop_up"
+    }
   }
 
 }
