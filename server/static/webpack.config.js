@@ -3,8 +3,10 @@ var LiveReloadPlugin = require('webpack-livereload-plugin')
 module.exports = {
   entry: './src/main.tsx',
   output: {
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: 'http://localhost:9000/'
   },
+  devtool: 'source-map',
   resolve: {
     extensions: [
       '',
@@ -14,25 +16,35 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.tsx?$/, loaders: ['ts'] },
+      {
+        test: /\.tsx?$/,
+        loaders: [
+          'ts'
+        ]
+      },
       {
         test: /\.css/,
         loaders: [
-          'style?sourceMap',
-          'css'
+          'style',
+          'css?sourceMap',
+          'postcss',
         ]
       },
       {
-        test: /\.s[ac]ss/,
-        loaders: [
-          'style',
-          'css?sourceMap',
-          'sass?sourceMap'
-        ]
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
-      { test: /\.styl/, loaders: ['style', 'css', 'stylus'] },
-      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader" }
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'file-loader'
+      }
+    ]
+  },
+  postcss: function () {
+    return [
+      require('autoprefixer'),
+      require('precss'),
+      require('postcss-url')
     ]
   },
   plugins: [

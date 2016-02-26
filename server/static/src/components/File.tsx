@@ -4,7 +4,7 @@ import Files from './Files'
 import Link from './Link'
 import * as models from '../models/files'
 
-const styles = require('../styles/file.scss')
+const styles = require('../styles/file.css')
 
 interface FileProps {
   indent: number;

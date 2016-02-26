@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "jsx": "react"
+    "jsx": "react",
+    "sourceMap": true
   },
   "files": [
     "src/main.tsx",

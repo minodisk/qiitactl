@@ -1,0 +1,26 @@
+@import '../../node_modules/material-design-icons/iconfont/material-icons.css';
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: 14px;
+}
+
+ul {
+  margin: 0;
+}
+
+li {
+  padding: 0;
+  list-style-type: none;
+}
+
+:local {
+  .app {
+    display: flex;
+    width: 100%;
+  }
+}

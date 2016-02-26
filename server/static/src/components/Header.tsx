@@ -4,7 +4,7 @@ import TodoTextInput from './TodoTextInput';
 import File from './File'
 import * as model from '../models/files'
 
-const style = require('../styles/header.scss')
+const style = require('../styles/header.css')
 
 interface HeaderProps {
   file: model.File;

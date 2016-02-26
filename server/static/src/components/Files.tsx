@@ -5,7 +5,7 @@ import File from './File'
 import * as models from '../models/files'
 import * as classnames from 'classnames'
 
-const {filesOpened, filesClosed} = require('../styles/file.scss')
+const {filesOpened, filesClosed} = require('../styles/file.css')
 
 interface FilesProps {
   indent: number;

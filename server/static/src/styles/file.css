@@ -1,0 +1,96 @@
+@define-extend files {
+  // font-size: 13px;
+  list-style-type: none;
+  padding-left: 0;
+}
+
+@define-extend icon {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  position: relative;
+  top: 2px;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+@define-mixin fs {
+  display: block;
+  color: #333;
+  text-decoration: none;
+  border-bottom: 1px solid #eee;
+  &:before {
+    @extend icon;
+    padding-right: 0.5em;
+  }
+  &:hover {
+    background-color: #ddd;
+  }
+  &:before {
+    @extend icon;
+  }
+}
+
+@define-mixin dir {
+  @mixin fs;
+  &:after {
+    @extend icon;
+    float: right;
+  }
+}
+
+:local {
+
+  .filesOpened {
+    @extend files;
+  }
+
+  .filesClosed {
+    @extend files;
+    display: none;
+  }
+
+  .file {
+    @mixin fs;
+    &:before {
+      content: "insert_drive_file";
+    }
+  }
+
+  .dirOpened {
+    @mixin dir;
+    &:before {
+      content: "folder_open"
+    }
+    &:after {
+      content: "arrow_drop_down"
+    }
+  }
+
+  .dirClosed {
+    @mixin dir;
+    &:before {
+      content: "folder";
+    }
+    &:after {
+      content: "arrow_drop_up"
+    }
+  }
+
+}

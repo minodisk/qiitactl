@@ -8,7 +8,7 @@ import * as TodoActions from '../actions/todos';
 import { File } from '../models/files';
 import { Todo } from '../models/todos';
 
-const styles = require('../styles/app.scss')
+const styles = require('../styles/app.css')
 
 interface AppProps {
   todos?: Todo[];
