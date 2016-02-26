@@ -58,7 +58,9 @@
 	var socket_1 = __webpack_require__(267);
 	var files_1 = __webpack_require__(271);
 	var App_1 = __webpack_require__(272);
-	var routes = (React.createElement(react_router_1.Route, {path: "/", component: App_1.default}));
+	var Markdown_1 = __webpack_require__(417);
+	var NotFound_1 = __webpack_require__(418);
+	var routes = (React.createElement(react_router_1.Route, {path: "/", component: App_1.default}, React.createElement(react_router_1.Route, {path: "**/*.md", component: Markdown_1.default}), React.createElement(react_router_1.Route, {path: "*", component: NotFound_1.default})));
 	var loggerMiddleware = createLogger();
 	var store = redux_1.compose(redux_1.applyMiddleware(thunkMiddleware, loggerMiddleware), redux_router_1.reduxReactRouter({
 	    routes: routes,
@@ -60732,6 +60734,62 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "a37b0c01c0baf1888ca812cc0508f6e2.ttf";
+
+/***/ },
+/* 417 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var styles = __webpack_require__(408);
+	;
+	;
+	var Markdown = (function (_super) {
+	    __extends(Markdown, _super);
+	    function Markdown() {
+	        _super.apply(this, arguments);
+	    }
+	    Markdown.prototype.render = function () {
+	        return (React.createElement("p", null, "Markdown"));
+	    };
+	    return Markdown;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Markdown;
+
+
+/***/ },
+/* 418 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var styles = __webpack_require__(408);
+	;
+	;
+	var NotFound = (function (_super) {
+	    __extends(NotFound, _super);
+	    function NotFound() {
+	        _super.apply(this, arguments);
+	    }
+	    NotFound.prototype.render = function () {
+	        return (React.createElement("p", null, "NotFound"));
+	    };
+	    return NotFound;
+	}(React.Component));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = NotFound;
+
 
 /***/ }
 /******/ ]);

@@ -25,9 +25,13 @@ import { rootReducer } from './reducers/rootReducer';
 import { openSocket  } from './actions/socket'
 import { fetchFiles } from './actions/files'
 import App from './containers/App';
+import Markdown from './components/Markdown'
+import NotFound from './components/NotFound'
 
 const routes = (
   <Route path="/" component={App}>
+    <Route path="**/*.md" component={Markdown}/>
+    <Route path="*" component={NotFound}/>
   </Route>
 )
 
