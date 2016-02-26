@@ -1,6 +1,7 @@
 export type File = {
   id: string;
   name: string;
-  path: string;
+  abs: string;
+  rel: string;
   children: File[];
 };

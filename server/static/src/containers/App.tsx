@@ -1,5 +1,6 @@
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import {pushState} from 'redux-router'
 import * as React from 'react';
 const AppBar = require('material-ui/lib/app-bar')
 const IconButton = require('material-ui/lib/icon-button')
@@ -47,8 +48,12 @@ class App extends React.Component<AppProps, void> {
 }
 
 const mapStateToProps = state => ({
+  q: state.router.location.query.q,
   todos: state.todos,
-  file: state.file
+  file: state.file,
 });
 
-export default connect(mapStateToProps)(App);
+export default connect(
+  mapStateToProps,
+  {pushState}
+)(App);

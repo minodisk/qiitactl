@@ -70,14 +70,19 @@ func socket(ws *websocket.Conn) {
 type Element struct {
 	ID       string     `json:"id"`
 	Name     string     `json:"name"`
-	Path     string     `json:"path"`
+	Rel      string     `json:"rel"`
+	Abs      string     `json:"abs"`
 	Children []*Element `json:"children"`
 }
 
-func NewElement(path string, name string) (el Element) {
-	el.Path = path
+func NewElement(path, rootPath, name string) (el Element, err error) {
+	el.Abs = path
+	el.Rel, err = filepath.Rel(rootPath, path)
+	if err != nil {
+		return
+	}
 	hasher := md5.New()
-	hasher.Write([]byte(el.Path))
+	hasher.Write([]byte(el.Abs))
 	el.ID = hex.EncodeToString(hasher.Sum(nil))
 	if name == "" {
 		names := strings.Split(path, "/")
@@ -89,15 +94,18 @@ func NewElement(path string, name string) (el Element) {
 }
 
 func findMarkdownFiles() (root Element, err error) {
-	path, err := os.Getwd()
+	rootPath, err := os.Getwd()
 	if err != nil {
 		return
 	}
-	root = NewElement(path, "")
+	root, err = NewElement(rootPath, rootPath, "")
+	if err != nil {
+		return
+	}
 
 	var paths []string
 
-	err = filepath.Walk(root.Path, func(path string, i os.FileInfo, e error) (err error) {
+	err = filepath.Walk(rootPath, func(path string, i os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
@@ -109,7 +117,7 @@ func findMarkdownFiles() (root Element, err error) {
 			return
 		}
 
-		path, err = filepath.Rel(root.Path, path)
+		path, err = filepath.Rel(root.Abs, path)
 		if err != nil {
 			return
 		}
@@ -119,7 +127,7 @@ func findMarkdownFiles() (root Element, err error) {
 
 	for _, path := range paths {
 		names := strings.Split(path, "/")
-		p := root.Path
+		p := root.Abs
 		parent := &root
 		for _, name := range names {
 			p = filepath.Join(p, name)
@@ -132,7 +140,10 @@ func findMarkdownFiles() (root Element, err error) {
 				}
 			}
 			if !found {
-				el := NewElement(p, name)
+				el, err := NewElement(p, rootPath, name)
+				if err != nil {
+					return root, err
+				}
 				child = &el
 				parent.Children = append(parent.Children, child)
 			}
