@@ -19,10 +19,10 @@ export default class Files extends React.Component<FilesProps, void> {
     return (
       <ul
         className={opened ? filesOpened : filesClosed}
-        >
-      {
-        files.map((file, i) => <li key={i}><File indent={indent} file={file} /></li>)
-      }
+      >
+        {
+          files.map((file) => <li key={file.id}><File indent={indent} file={file} /></li>)
+        }
       </ul>
     )
   }

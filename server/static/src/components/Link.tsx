@@ -1,16 +1,17 @@
 import * as React from 'react';
 
-interface LinkProps {
+interface Props {
   indent: number;
   className: string;
   active: boolean
+  title: string
   children: any
   onClick: Function
 }
 
-export default class Link extends React.Component<LinkProps, void> {
+export default class Link extends React.Component<Props, void> {
   render() {
-    const {indent, className, active, children, onClick} = this.props
+    const {indent, className, active, title, children, onClick} = this.props
     if (!active) {
       return (
         <span>{children}</span>
@@ -23,6 +24,7 @@ export default class Link extends React.Component<LinkProps, void> {
           paddingLeft: (1.5 * indent) + 'em'
         }}
         href="#"
+        title={title}
         onClick={(e) => {
           e.preventDefault()
           onClick(e)

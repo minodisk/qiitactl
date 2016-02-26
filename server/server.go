@@ -1,6 +1,8 @@
 package server
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"io"
 	"net/http"
 	"os"
@@ -68,25 +70,34 @@ func socket(ws *websocket.Conn) {
 type Element struct {
 	ID       string     `json:"id"`
 	Name     string     `json:"name"`
+	Path     string     `json:"path"`
 	Children []*Element `json:"children"`
 }
 
+func NewElement(path string, name string) (el Element) {
+	el.Path = path
+	hasher := md5.New()
+	hasher.Write([]byte(el.Path))
+	el.ID = hex.EncodeToString(hasher.Sum(nil))
+	if name == "" {
+		names := strings.Split(path, "/")
+		el.Name = names[len(names)-1]
+	} else {
+		el.Name = name
+	}
+	return
+}
+
 func findMarkdownFiles() (root Element, err error) {
-	dir, err := os.Getwd()
+	path, err := os.Getwd()
 	if err != nil {
 		return
 	}
-	dir = strings.TrimLeft(dir, "/")
-	dir = strings.TrimRight(dir, "/")
-	if dir == "" {
-		dir = "."
-	} else {
-		dirs := strings.Split(dir, "/")
-		dir = dirs[len(dirs)-1]
-	}
-	root.Name = dir
+	root = NewElement(path, "")
 
-	err = filepath.Walk(".", func(path string, i os.FileInfo, e error) (err error) {
+	var paths []string
+
+	err = filepath.Walk(root.Path, func(path string, i os.FileInfo, e error) (err error) {
 		if e != nil {
 			err = e
 			return
@@ -98,34 +109,36 @@ func findMarkdownFiles() (root Element, err error) {
 			return
 		}
 
-		parent := &root
-
-		dir, file := filepath.Split(path)
-		dir = strings.TrimLeft(dir, "/")
-		dir = strings.TrimRight(dir, "/")
-		if dir != "" {
-			dirs := strings.Split(dir, "/")
-			for _, name := range dirs {
-				found := false
-				for _, c := range parent.Children {
-					if c.Name == name {
-						parent = c
-						found = true
-						break
-					}
-				}
-
-				if !found {
-					e := &Element{Name: name}
-					parent.Children = append(parent.Children, e)
-					parent = e
-				}
-			}
+		path, err = filepath.Rel(root.Path, path)
+		if err != nil {
+			return
 		}
-
-		parent.Children = append(parent.Children, &Element{Name: file})
-
+		paths = append(paths, path)
 		return
 	})
+
+	for _, path := range paths {
+		names := strings.Split(path, "/")
+		p := root.Path
+		parent := &root
+		for _, name := range names {
+			p = filepath.Join(p, name)
+			found := false
+			var child *Element
+			for _, child = range parent.Children {
+				if child.Name == name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				el := NewElement(p, name)
+				child = &el
+				parent.Children = append(parent.Children, child)
+			}
+			parent = child
+		}
+	}
+
 	return
 }

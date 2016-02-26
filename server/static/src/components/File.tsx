@@ -13,19 +13,24 @@ interface Props {
 
 interface State {
   opened: boolean;
+  showing: boolean;
 }
 
 export default class File extends React.Component<Props, State> {
   constructor(props, context) {
     super(props, context)
     this.state = {
-      opened: true
+      opened: true,
+      showing: false
     }
   }
 
   toggleOpen() {
     const {opened} = this.state
-    this.setState({opened: !opened})
+    this.setState({
+      opened: !opened,
+      showing: this.state.showing
+    })
   }
 
   render() {
@@ -37,8 +42,9 @@ export default class File extends React.Component<Props, State> {
             indent={indent}
             className={styles.file}
             active={true}
+            title={file.path}
             children={file.name}
-            onClick={() => console.log('start')} />
+            onClick={this.handleClick} />
         </div>
       )
     }
@@ -48,6 +54,7 @@ export default class File extends React.Component<Props, State> {
           indent={indent}
           className={this.state.opened ? styles.dirOpened : styles.dirClosed}
           active={true}
+          title={file.path}
           children={file.name}
           onClick={() => this.toggleOpen()} />
         <Files
@@ -56,5 +63,12 @@ export default class File extends React.Component<Props, State> {
           opened={this.state.opened} />
       </div>
     )
+  }
+
+  handleClick = (e) => {
+    this.setState({
+      opened: this.state.opened,
+      showing: true
+    })
   }
 }
