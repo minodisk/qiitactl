@@ -2,12 +2,13 @@ import * as React from 'react';
 
 import { Todo } from '../models/todos';
 import TodoItem from './TodoItem';
-import Footer from './Footer';
 import {
   SHOW_ALL,
   SHOW_COMPLETED,
   SHOW_ACTIVE
 } from '../constants/TodoFilters';
+
+const styles = require('../styles/content.css')
 
 const TODO_FILTERS = {
   [SHOW_ALL]: () => true,
@@ -15,15 +16,15 @@ const TODO_FILTERS = {
   [SHOW_COMPLETED]: todo => todo.completed
 };
 
-interface MainSectionProps {
+interface Props {
   todos: Todo[];
   actions: any;
 };
-interface MainSectionState {
+interface State {
   filter: string;
 };
 
-class MainSection extends React.Component<MainSectionProps, MainSectionState> {
+export default class Content extends React.Component<Props, State> {
   constructor(props, context) {
     super(props, context);
     this.state = { filter: SHOW_ALL };
@@ -52,22 +53,6 @@ class MainSection extends React.Component<MainSectionProps, MainSectionState> {
     }
   }
 
-  renderFooter(completedCount) {
-    const { todos } = this.props;
-    const { filter } = this.state;
-    const activeCount = todos.length - completedCount;
-
-    if (todos.length) {
-      return (
-        <Footer completedCount={completedCount}
-                activeCount={activeCount}
-                filter={filter}
-                onClearCompleted={this.handleClearCompleted.bind(this)}
-                onShow={this.handleShow.bind(this)} />
-      );
-    }
-  }
-
   render() {
     const { todos, actions } = this.props;
     const { filter } = this.state;
@@ -79,20 +64,19 @@ class MainSection extends React.Component<MainSectionProps, MainSectionState> {
     );
 
     return (
-      <section className="main">
-        {this.renderToggleAll(completedCount)}
-        <ul className="todo-list">
-          {filteredTodos.map(todo =>
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              { ...actions }/>
-          )}
-        </ul>
-        {this.renderFooter(completedCount)}
+      <section className={styles.content}>
+        <div className={styles.contentInner}>
+          {this.renderToggleAll(completedCount)}
+          <ul className="todo-list">
+            {filteredTodos.map(todo =>
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                { ...actions }/>
+            )}
+          </ul>
+        </div>
       </section>
     );
   }
 }
-
-export default MainSection;

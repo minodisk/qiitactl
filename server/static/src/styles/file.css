@@ -1,5 +1,4 @@
 @define-extend files {
-  // font-size: 13px;
   list-style-type: none;
   padding-left: 0;
 }
@@ -33,6 +32,7 @@
 @define-mixin fs {
   display: block;
   color: #333;
+  word-break: break-all;
   text-decoration: none;
   border-bottom: 1px solid #eee;
   &:before {
@@ -55,42 +55,38 @@
   }
 }
 
-:local {
+.filesOpened {
+  @extend files;
+}
 
-  .filesOpened {
-    @extend files;
+.filesClosed {
+  @extend files;
+  display: none;
+}
+
+.file {
+  @mixin fs;
+  &:before {
+    content: "insert_drive_file";
   }
+}
 
-  .filesClosed {
-    @extend files;
-    display: none;
+.dirOpened {
+  @mixin dir;
+  &:before {
+    content: "folder_open"
   }
-
-  .file {
-    @mixin fs;
-    &:before {
-      content: "insert_drive_file";
-    }
+  &:after {
+    content: "arrow_drop_down"
   }
+}
 
-  .dirOpened {
-    @mixin dir;
-    &:before {
-      content: "folder_open"
-    }
-    &:after {
-      content: "arrow_drop_down"
-    }
+.dirClosed {
+  @mixin dir;
+  &:before {
+    content: "folder";
   }
-
-  .dirClosed {
-    @mixin dir;
-    &:before {
-      content: "folder";
-    }
-    &:after {
-      content: "arrow_drop_up"
-    }
+  &:after {
+    content: "arrow_drop_up"
   }
-
 }

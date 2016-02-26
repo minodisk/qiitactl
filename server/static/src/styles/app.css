@@ -17,10 +17,3 @@ li {
   padding: 0;
   list-style-type: none;
 }
-
-:local {
-  .app {
-    display: flex;
-    width: 100%;
-  }
-}

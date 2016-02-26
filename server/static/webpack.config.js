@@ -42,9 +42,27 @@ module.exports = {
   },
   postcss: function () {
     return [
+      require('postcss-modules-local-by-default'),
       require('autoprefixer'),
+
+      // require('postcss-partial-import'),
+      // require('postcss-mixins'),
+      // require('postcss-advanced-variables'),
+      // require('postcss-custom-media'),
+      // require('postcss-custom-properties'),
+      // require('postcss-media-minmax'),
+      // require('postcss-color-function'),
+      // require('postcss-nesting'),
+      // require('postcss-nested'),
+      // require('postcss-custom-selectors'),
+      // require('postcss-atroot'),
+      // require('postcss-property-lookup'),
+      // require('postcss-extend'),
+      // require('postcss-selector-matches'),
+      // require('postcss-selector-not'),
       require('precss'),
-      require('postcss-url')
+
+      require('postcss-url'),
     ]
   },
   plugins: [

@@ -6,16 +6,16 @@ import * as models from '../models/files'
 
 const styles = require('../styles/file.css')
 
-interface FileProps {
+interface Props {
   indent: number;
   file: models.File
 }
 
-interface FileState {
+interface State {
   opened: boolean;
 }
 
-export default class File extends React.Component<FileProps, FileState> {
+export default class File extends React.Component<Props, State> {
   constructor(props, context) {
     super(props, context)
     this.state = {
