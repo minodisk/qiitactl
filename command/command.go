@@ -50,7 +50,7 @@ func New(info info.Info, client api.Client, out io.Writer, err io.Writer) (c Com
 	c.Out = out
 	c.Error = err
 
-	c.Application = kingpin.New("qiitactl", "Command line interface to manage the posts in Qitta.")
+	c.Application = kingpin.New("qiitactl", "Command line interface to manage the posts in Qiita.")
 	c.Application.Version(info.Version)
 	c.Application.Author(info.Author)
 	c.GlobalOptions = GlobalOptions{
@@ -73,7 +73,7 @@ func New(info info.Info, client api.Client, out io.Writer, err io.Writer) (c Com
 	}
 
 	c.Show = c.Application.Command("show", "Display resources.")
-	c.ShowPost = c.Show.Command("post", "Display detail of a post in Qitta.")
+	c.ShowPost = c.Show.Command("post", "Display detail of a post in Qiita.")
 	c.ShowPostRunner = ShowPostRunner{
 		ID:   c.ShowPost.Flag("id", "The ID of the post to be printed detail.").Short('i').String(),
 		File: c.ShowPost.Flag("filename", "The filename of the post to be created.").Short('f').File(),
