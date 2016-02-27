@@ -1,6 +1,6 @@
 # qiitactl [![Circle CI](https://img.shields.io/circleci/project/minodisk/qiitactl/master.svg?style=flat-square)](https://circleci.com/gh/minodisk/qiitactl) [![Coverage Status](https://img.shields.io/coveralls/minodisk/qiitactl/master.svg?style=flat-square)](https://coveralls.io/github/minodisk/qiitactl?branch=master)
 
-Command line interface to manage your posts in Qitta.
+Command line interface to manage your posts in Qiita.
 
 ## Description
 
