@@ -4,11 +4,14 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
 
 	"golang.org/x/net/websocket"
 )
@@ -35,12 +38,27 @@ func NewReqRes(req Message, data interface{}) Message {
 }
 
 func Start() (err error) {
-	http.Handle("/", http.FileServer(http.Dir("server/static")))
-	http.Handle("/socket", websocket.Handler(socket))
-	err = http.ListenAndServe(":9000", nil)
-	if err != nil {
-		return
-	}
+	// http.Handle("/", http.FileServer(http.Dir("server/static")))
+	// http.Handle("/socket", websocket.Handler(socket))
+	// err = http.ListenAndServe(":9000", nil)
+	// if err != nil {
+	// 	return
+	// }
+	// return
+
+	router := httprouter.New()
+	router.GET("/", func(w http.ResponseWriter, r *http.Request, p Params) {
+		b, err := ioutil.ReadFile("server/static/index.html")
+		if err != nil {
+			panic(err)
+		}
+		w.Write(b)
+	})
+	router.ServeFiles("/assets/*filepath", http.Dir("server/static"))
+	router.Handler("GET", "/socket", websocket.Handler(socket))
+	// router.GET("/", Index)
+	// router.GET("/hello/:name", Hello)
+	err = http.ListenAndServe(":9000", router)
 	return
 }
 
