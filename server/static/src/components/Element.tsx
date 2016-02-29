@@ -27,9 +27,8 @@ export default class Element extends React.Component<Props, void> {
           style={{
             paddingLeft: (1.5 * indent) + 'em'
           }}
-          href="#"
           title={title}
-          to={linkTo}
+          to={'/markdown/' + linkTo}
         >
           {children}
         </Link>

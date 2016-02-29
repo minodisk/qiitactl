@@ -7,6 +7,7 @@ interface State {};
 
 export default class NotFound extends React.Component<Props, State> {
   render() {
+    console.log('NotFound.render')
     return (
       <p>NotFound</p>
     );

@@ -1,9 +1,8 @@
 import * as React from 'react';
 import {render} from 'react-dom';
 import {createHistory} from 'history'
-import {Route} from 'react-router'
+import {Router, Route, IndexRoute, browserHistory} from 'react-router'
 import {
-  connect,
   Provider
 } from 'react-redux';
 import {
@@ -30,7 +29,8 @@ import NotFound from './components/NotFound'
 
 const routes = (
   <Route path="/" component={App}>
-    <Route path="**/*.md" component={Markdown}/>
+    <IndexRoute component={Markdown}/>
+    <Route path="/**/*.md" component={Markdown}/>
     <Route path="*" component={NotFound}/>
   </Route>
 )

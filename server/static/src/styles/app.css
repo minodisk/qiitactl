@@ -17,3 +17,11 @@ li {
   padding: 0;
   list-style-type: none;
 }
+
+.content {
+  margin-top: 48px;
+  margin-left: calc(72px + 256px);
+  margin-bottom: 48px;
+  margin-right: 72px;
+  min-height: 400px;
+}

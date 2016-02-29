@@ -1,12 +1,15 @@
 import { createAction } from 'redux-actions';
 import { WILL_OPEN_SOCKET, DID_OPEN_SOCKET } from '../constants/ActionTypes';
 import { Promise } from 'es6-promise';
+import * as EventEmitter from 'eventemitter3';
 
-export class Socket {
+export class Socket extends EventEmitter {
 
   s: WebSocket
 
-  constructor() {}
+  constructor() {
+    super()
+  }
 
   open() {
     return new Promise((resolve, reject) => {
@@ -21,23 +24,27 @@ export class Socket {
   }
 
   close() {
-    this.s.close()
     this.removeEventListeners()
+    this.s.close()
   }
 
   addEventListener() {
     this.removeEventListeners()
     this.s.addEventListener('error', this.onError, false);
     this.s.addEventListener('open', this.onOpen, false);
-    this.s.addEventListener('message', this.onMessage, false);
     this.s.addEventListener('close', this.onClose, false);
+    this.s.addEventListener('message', this.onMessage, false);
   }
 
   removeEventListeners() {
     this.s.removeEventListener('error', this.onError, false);
     this.s.removeEventListener('open', this.onOpen, false);
-    this.s.removeEventListener('message', this.onMessage, false);
     this.s.removeEventListener('close', this.onClose, false);
+    this.s.removeEventListener('message', this.onMessage, false);
+  }
+
+  send(req: Req) {
+    this.s.send(JSON.stringify(req))
   }
 
   call(method: string, data?: any) {
@@ -55,25 +62,30 @@ export class Socket {
         }
       }
       this.s.addEventListener('message', cb, false)
-      // console.log('send', req)
-      this.s.send(JSON.stringify(req));
+      this.send(req);
     })
   }
 
+  reopen() {
+    this.close()
+    this.open()
+  }
+
   onError = (e) => {
-    // console.log('socket error:', e)
+    this.reopen()
   }
 
   onOpen = (e) => {
     // console.log('socket opened:', e)
   }
 
-  onMessage = (e) => {
-    // console.log('socket messaged:', e)
+  onClose = (e) => {
+    this.reopen()
   }
 
-  onClose = (e) => {
-    // console.log('socket closed:', e)
+  onMessage = (e) => {
+    let res = JSON.parse(e.data) as Res
+    this.emit(res.method, res.data)
   }
 }
 

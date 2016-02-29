@@ -10,4 +10,8 @@ export const DID_OPEN_SOCKET = 'DID_OPEN_SOCKET'
 
 export const REQUEST_FILES = 'REQUEST_FILES';
 export const RECIEVE_FILES = 'RECIEVE_FILES';
-export const START_FILE = 'START_FILE';
+
+export const WILL_WATCH_FILE = 'WILL_WATCH_FILE'
+export const DID_WATCH_FILE = 'DID_WATCH_FILE'
+export const DID_UNWATCH_FILE = 'DID_UNWATCH_FILE'
+export const CHANGE_FILE = 'CHANGE_FILE'

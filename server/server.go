@@ -38,28 +38,21 @@ func NewReqRes(req Message, data interface{}) Message {
 }
 
 func Start() (err error) {
-	// http.Handle("/", http.FileServer(http.Dir("server/static")))
-	// http.Handle("/socket", websocket.Handler(socket))
-	// err = http.ListenAndServe(":9000", nil)
-	// if err != nil {
-	// 	return
-	// }
-	// return
-
 	router := httprouter.New()
-	router.GET("/", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		b, err := ioutil.ReadFile("server/static/dist/index.html")
-		if err != nil {
-			panic(err)
-		}
-		w.Write(b)
-	})
+	router.GET("/", handleIndex)
+	router.GET("/markdown/*filepath", handleIndex)
 	router.ServeFiles("/assets/*filepath", http.Dir("server/static/dist/assets"))
 	router.Handler("GET", "/socket", websocket.Handler(socket))
-	// router.GET("/", Index)
-	// router.GET("/hello/:name", Hello)
 	err = http.ListenAndServe(":9000", router)
 	return
+}
+
+func handleIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	b, err := ioutil.ReadFile("server/static/dist/index.html")
+	if err != nil {
+		panic(err)
+	}
+	w.Write(b)
 }
 
 func socket(ws *websocket.Conn) {

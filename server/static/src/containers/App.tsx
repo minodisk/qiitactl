@@ -23,11 +23,12 @@ interface AppProps {
   todos?: Todo[];
   file?: File;
   dispatch?: Dispatch;
+  children: any;
 }
 
 class App extends React.Component<AppProps, void> {
   render() {
-    const { todos, file, dispatch } = this.props;
+    const { todos, file, dispatch, children } = this.props;
     const actions = bindActionCreators(TodoActions, dispatch);
     return (
       <div>
@@ -38,10 +39,9 @@ class App extends React.Component<AppProps, void> {
           file={file}
           addTodo={actions.addTodo}
         />
-        <Content
-          todos={todos}
-          actions={actions}
-        />
+        <section className={styles.content}>
+          {children}
+        </section>
       </div>
     );
   }

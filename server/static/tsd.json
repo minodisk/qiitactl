@@ -49,6 +49,9 @@
     },
     "react-router/history.d.ts": {
       "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+    },
+    "eventemitter3/eventemitter3.d.ts": {
+      "commit": "4d2d0653003a4d1df4d7c68054cce4f4ace58bdf"
     }
   }
 }
