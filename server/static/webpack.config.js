@@ -1,10 +1,16 @@
+var path = require('path')
 var LiveReloadPlugin = require('webpack-livereload-plugin')
+var tsconfig = require('./tsconfig.json')
+var entry = tsconfig.files.filter(function (file) {
+  return path.basename(file, path.extname(file)) === 'index'
+})[0]
 
 module.exports = {
-  entry: './src/main.tsx',
+  entry: entry,
   output: {
+    path: 'dist/assets',
     filename: 'bundle.js',
-    publicPath: 'http://localhost:9000/'
+    publicPath: 'http://localhost:9000/assets/'
   },
   devtool: 'source-map',
   resolve: {
@@ -32,11 +38,11 @@ module.exports = {
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader?name=[sha512:hash:base64:7].[ext]&limit=10000&mimetype=application/font-woff'
       },
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file-loader'
+        loader: 'file-loader?name=[sha512:hash:base64:7].[ext]'
       }
     ]
   },

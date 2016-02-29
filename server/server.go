@@ -47,14 +47,14 @@ func Start() (err error) {
 	// return
 
 	router := httprouter.New()
-	router.GET("/", func(w http.ResponseWriter, r *http.Request, p Params) {
-		b, err := ioutil.ReadFile("server/static/index.html")
+	router.GET("/", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		b, err := ioutil.ReadFile("server/static/dist/index.html")
 		if err != nil {
 			panic(err)
 		}
 		w.Write(b)
 	})
-	router.ServeFiles("/assets/*filepath", http.Dir("server/static"))
+	router.ServeFiles("/assets/*filepath", http.Dir("server/static/dist/assets"))
 	router.Handler("GET", "/socket", websocket.Handler(socket))
 	// router.GET("/", Index)
 	// router.GET("/hello/:name", Hello)

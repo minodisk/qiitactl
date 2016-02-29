@@ -5,7 +5,7 @@
     "sourceMap": true
   },
   "files": [
-    "src/main.tsx",
+    "./src/index.tsx",
     "./typings/tsd.d.ts"
   ],
   "exclude": [
