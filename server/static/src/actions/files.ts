@@ -36,16 +36,16 @@ const didUnwatchFile = createAction<string>(
 
 export const watchFile = (file) => {
   return (dispatch, getState) => {
-    console.log('watchFile:', file)
     return socket.call('WatchFile', file)
       .then(file => dispatch(didWatchFile))
+      .catch(err => console.error(err))
   }
 }
 
 export const unwatchFile = (file) => {
   return (dispatch, getState) => {
-    console.log('unwatchFile:', file)
     return socket.call('UnwatchFile', file)
       .then(file => dispatch(didUnwatchFile))
+      .catch(err => console.error(err))
   }
 }

@@ -10,6 +10,6 @@ import (
 type ServeRunner struct{}
 
 func (r ServeRunner) Run(c api.Client, o GlobalOptions, w io.Writer) (err error) {
-	err = server.Start()
+	server.Start()
 	return
 }

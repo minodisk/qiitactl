@@ -67,23 +67,27 @@ export class Socket extends EventEmitter {
   }
 
   reopen() {
+    console.log("websocket: reopen")
     this.close()
     this.open()
   }
 
   onError = (e) => {
+    console.log("websocket: error")
     this.reopen()
   }
 
   onOpen = (e) => {
-    // console.log('socket opened:', e)
+    console.log("websocket: opened")
   }
 
   onClose = (e) => {
+    console.log("websocket: closed")
     this.reopen()
   }
 
   onMessage = (e) => {
+    console.log("websocket: messaged")
     let res = JSON.parse(e.data) as Res
     this.emit(res.method, res.data)
   }

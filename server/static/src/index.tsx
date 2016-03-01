@@ -49,12 +49,12 @@ const store: Store = compose(
 
 store
   .dispatch(openSocket())
-  .then(() => store.dispatch(fetchFiles()))
-  .then(() => console.log('done:', store.getState()))
-
-render(
-  <Provider store={store}>
-    <ReduxRouter/>
-  </Provider>,
-  document.querySelector('#app')
-);
+  .then(() => {
+    store.dispatch(fetchFiles())
+    render(
+      <Provider store={store}>
+        <ReduxRouter/>
+      </Provider>,
+      document.querySelector('#app')
+    );
+  })

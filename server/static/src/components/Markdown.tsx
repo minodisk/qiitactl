@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 
 import {
   watchFile,
@@ -9,22 +10,22 @@ const styles = require('../styles/content.css')
 
 interface Props {
   location: any;
+  startWatching: Function;
+  stopWatching: Function;
 };
 interface State {};
 
-export default class Markdown extends React.Component<Props, State> {
+class Markdown extends React.Component<Props, State> {
   componentWillMount() {
-    watchFile(this.props.location.pathname)
+    this.props.startWatching()
   }
 
   componentWillReceiveProps(nextProps) {
-    unwatchFile(this.props.location.pathname)
-    watchFile(nextProps.location.pathname)
+    nextProps.startWatching()
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount')
-    unwatchFile(this.props.location.pathname)
+    this.props.stopWatching()
   }
 
   render() {
@@ -33,3 +34,20 @@ export default class Markdown extends React.Component<Props, State> {
     );
   }
 }
+
+const mapStateToProps = state => ({
+})
+
+const mapDispatchToProps = (dispatch, props) => ({
+  startWatching: () => {
+    dispatch(watchFile(props.location.pathname))
+  },
+  stopWatching: () => {
+    dispatch(unwatchFile(props.location.pathname))
+  },
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Markdown)

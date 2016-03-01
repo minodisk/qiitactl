@@ -3,13 +3,16 @@ package server
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
-	"time"
+	"sync"
+
+	"gopkg.in/fsnotify.v1"
 
 	"github.com/julienschmidt/httprouter"
 
@@ -37,13 +40,84 @@ func NewReqRes(req Message, data interface{}) Message {
 	}
 }
 
-func Start() (err error) {
+func Start() {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		err := initWatcher()
+		if err != nil {
+			log.Println(err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		err := initServer()
+		if err != nil {
+			log.Println(err)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+	return
+}
+
+var watcher *fsnotify.Watcher
+
+func initWatcher() (err error) {
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return
+	}
+	defer watcher.Close()
+
+	log.Println("init watcher")
+
+	done := make(chan bool)
+	log.Printf("num goroutune: %d", runtime.NumGoroutine())
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				log.Println(event.Name)
+			case err := <-watcher.Errors:
+				log.Println("error: ", err)
+			}
+		}
+	}()
+	<-done
+
+	log.Println("init watcher complete")
+
+	return
+}
+
+func watchFile(pathname string) (err error) {
+	if err != nil {
+		return
+	}
+	err = watcher.Add(pathname)
+	return
+}
+
+func unwatchFile(pathname string) (err error) {
+	err = watcher.Remove(pathname)
+	return
+}
+
+func initServer() (err error) {
+	log.Println("init server")
+
 	router := httprouter.New()
 	router.GET("/", handleIndex)
 	router.GET("/markdown/*filepath", handleIndex)
 	router.ServeFiles("/assets/*filepath", http.Dir("server/static/dist/assets"))
 	router.Handler("GET", "/socket", websocket.Handler(socket))
 	err = http.ListenAndServe(":9000", router)
+
+	log.Println("init server complete")
 	return
 }
 
@@ -56,26 +130,54 @@ func handleIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 }
 
 func socket(ws *websocket.Conn) {
-	for {
+	log.Println("start socket")
+
+	wsChan := make(chan Message)
+
+	go func() {
+		log.Println("start receive")
+		defer close(wsChan)
 		var req Message
-		websocket.JSON.Receive(ws, &req)
-		switch req.Method {
-		case "echo":
-			io.Copy(ws, ws)
-		case "ping":
-			err := websocket.JSON.Send(ws, NewReqRes(req, "pong"))
-			if err != nil {
-				panic(err)
-			}
-		case "GetAllFiles":
-			paths, err := findMarkdownFiles()
-			if err != nil {
-				websocket.JSON.Send(ws, NewErrorRes(err))
-			}
-			websocket.JSON.Send(ws, NewReqRes(req, paths))
+		err := websocket.JSON.Receive(ws, &req)
+		if err != nil {
+			log.Println(err)
+			return
 		}
-		time.Sleep(time.Second)
+		wsChan <- req
+		log.Println("complete receive")
+	}()
+
+	for {
+		// var req Message
+		// websocket.JSON.Receive(ws, &req)
+		select {
+		case req, ok := <-wsChan:
+			if !ok {
+				log.Println("not ok", req)
+				break
+			}
+			switch req.Method {
+			case "GetAllFiles":
+				paths, err := findMarkdownFiles()
+				if err != nil {
+					websocket.JSON.Send(ws, NewErrorRes(err))
+				}
+				websocket.JSON.Send(ws, NewReqRes(req, paths))
+			case "WatchFile":
+				err := watchFile(req.Data.(string))
+				if err != nil {
+					log.Println(err)
+				}
+			case "UnwatchFile":
+				err := unwatchFile(req.Data.(string))
+				if err != nil {
+					log.Println(err)
+				}
+			}
+		}
 	}
+
+	log.Println("complete socket")
 }
 
 type Element struct {
