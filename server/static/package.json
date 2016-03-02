@@ -20,6 +20,7 @@
     "resolve-url-loader": "^1.4.3",
     "style-loader": "^0.13.0",
     "ts-loader": "^0.8.1",
+    "typescript": "^1.8.7",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.14",
     "webpack-livereload-plugin": "^0.5.3"
