@@ -25,7 +25,7 @@ export class Socket extends EventEmitter {
 
   close() {
     this.removeEventListeners()
-    this.s.close()
+    // this.s.close()
   }
 
   addEventListener() {
@@ -74,7 +74,7 @@ export class Socket extends EventEmitter {
 
   onError = (e) => {
     console.log("websocket: error")
-    this.reopen()
+    // this.reopen()
   }
 
   onOpen = (e) => {
@@ -83,7 +83,7 @@ export class Socket extends EventEmitter {
 
   onClose = (e) => {
     console.log("websocket: closed")
-    this.reopen()
+    // this.reopen()
   }
 
   onMessage = (e) => {

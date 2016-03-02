@@ -1,0 +1,47 @@
+package server
+
+import (
+	"log"
+
+	"gopkg.in/fsnotify.v1"
+)
+
+var watcher *fsnotify.Watcher
+
+func initWatcher() (err error) {
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return
+	}
+	defer watcher.Close()
+
+	log.Println("init watcher")
+
+	// go func() {
+	for {
+		select {
+		case event := <-watcher.Events:
+			log.Printf("%+v", event)
+			watcher.Add(event.Name)
+		case err := <-watcher.Errors:
+			log.Println("error: ", err)
+		}
+	}
+	// }()
+
+	log.Println("init watcher complete")
+
+	return
+}
+
+func watchFile(pathname string) (err error) {
+	log.Printf("watchFile: %s", pathname)
+	err = watcher.Add(pathname)
+	return
+}
+
+func unwatchFile(pathname string) (err error) {
+	log.Printf("unwatchFile: %s", pathname)
+	err = watcher.Remove(pathname)
+	return
+}

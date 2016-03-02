@@ -35,15 +35,17 @@ class Markdown extends React.Component<Props, State> {
   }
 }
 
+const ejectRootPath = path => path.replace(/^\/markdown\//, '')
+
 const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = (dispatch, props) => ({
   startWatching: () => {
-    dispatch(watchFile(props.location.pathname))
+    dispatch(watchFile(ejectRootPath(props.location.pathname)))
   },
   stopWatching: () => {
-    dispatch(unwatchFile(props.location.pathname))
+    dispatch(unwatchFile(ejectRootPath(props.location.pathname)))
   },
 })
 
