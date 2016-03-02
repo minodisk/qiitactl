@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io/ioutil"
 	"log"
 
 	"gopkg.in/fsnotify.v1"
@@ -22,6 +23,17 @@ func initWatcher() (err error) {
 		select {
 		case event := <-watcher.Events:
 			log.Printf("%+v", event)
+
+			if (event.Op&fsnotify.Write == fsnotify.Write) ||
+				(event.Op&fsnotify.Rename == fsnotify.Rename) {
+				b, err := ioutil.ReadFile(event.Name)
+				if err != nil {
+					write(NewErrorRes("", err))
+					continue
+				}
+				write(Message{Method: "ModifiedFile", Data: string(b)})
+			}
+
 			watcher.Add(event.Name)
 		case err := <-watcher.Errors:
 			log.Println("error: ", err)

@@ -83,7 +83,7 @@ export class Socket extends EventEmitter {
 
   onClose = (e) => {
     console.log("websocket: closed")
-    // this.reopen()
+    this.reopen()
   }
 
   onMessage = (e) => {
@@ -119,12 +119,11 @@ export const openedSocket = createAction<void>(
   DID_OPEN_SOCKET
 )
 
-export let socket
+export const socket = new Socket()
 
 export const openSocket = () => {
   return (dispatch, getState) => {
     dispatch(openingSocket())
-    socket = new Socket()
     return socket.open()
       .then(() => {
         dispatch(openedSocket())

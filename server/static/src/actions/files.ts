@@ -1,3 +1,4 @@
+import { bindActionCreators } from 'redux'
 import { createAction, Action } from 'redux-actions';
 import { assign } from 'lodash';
 import { Promise } from 'es6-promise';
@@ -6,6 +7,9 @@ import { File } from '../models/files';
 import * as types from '../constants/ActionTypes';
 import { socket } from './socket'
 
+socket.on('ModifiedFile', (data) => {
+  // dispatch(modifiedFile)
+})
 
 const requestFile = createAction<void>(
   types.REQUEST_FILES
@@ -19,6 +23,7 @@ const recieveFile = createAction<File>(
 export const fetchFiles = () => {
   return (dispatch, getState) => {
     dispatch(requestFile())
+    console.log(socket)
     return socket.call('GetAllFiles', null)
       .then(file => dispatch(recieveFile(file)))
   }
@@ -49,3 +54,7 @@ export const unwatchFile = (file) => {
       .catch(err => console.error(err))
   }
 }
+
+const changeFile = createAction<string>(
+  types.CHANGE_FILE
+)

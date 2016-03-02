@@ -9,7 +9,6 @@ import {
   Store,
   compose,
   createStore,
-  bindActionCreators,
   combineReducers,
   applyMiddleware
 } from 'redux';

@@ -20,9 +20,9 @@ type Message struct {
 	Data   interface{} `json:"data"`
 }
 
-func NewErrorRes(req Message, err error) Message {
+func NewErrorRes(id string, err error) Message {
 	return Message{
-		ID:     req.ID,
+		ID:     id,
 		Method: "error",
 		Data:   err.Error(),
 	}
@@ -47,62 +47,76 @@ func serveWebsocket(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		conn.Close()
 	}()
 
+	done := make(chan bool)
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-	go reader(conn, wg)
-	go writer(conn, wg)
+	go reader(conn, wg, done)
+	go writer(conn, wg, done)
 	wg.Wait()
-
-	log.Println("end of handler")
 }
 
-func reader(conn *websocket.Conn, wg *sync.WaitGroup) {
+func reader(conn *websocket.Conn, wg *sync.WaitGroup, done chan bool) {
+loop:
 	for {
-		var msg Message
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			log.Printf("read error: %s", err, msg)
-			continue
-		}
-
-		log.Printf("receive: %s %v", msg.Method, msg.Data)
-
-		switch msg.Method {
-		case "GetAllFiles":
-			paths, err := findMarkdownFiles()
+		select {
+		case <-done:
+			wg.Done()
+			return
+		default:
+			var msg Message
+			err := conn.ReadJSON(&msg)
 			if err != nil {
-				write(NewErrorRes(msg, err))
-				continue
+				log.Printf("read error: %s", err)
+				break loop
 			}
-			write(NewReqRes(msg, paths))
-		case "WatchFile":
-			err := watchFile(msg.Data.(string))
-			if err != nil {
-				write(NewErrorRes(msg, err))
-			}
-		case "UnwatchFile":
-			err := unwatchFile(msg.Data.(string))
-			if err != nil {
-				write(NewErrorRes(msg, err))
+
+			log.Printf("receive: %s %v", msg.Method, msg.Data)
+
+			switch msg.Method {
+			case "GetAllFiles":
+				paths, err := findMarkdownFiles()
+				if err != nil {
+					write(NewErrorRes(msg.ID, err))
+					continue
+				}
+				write(NewReqRes(msg, paths))
+			case "WatchFile":
+				err := watchFile(msg.Data.(string))
+				if err != nil {
+					write(NewErrorRes(msg.ID, err))
+				}
+			case "UnwatchFile":
+				err := unwatchFile(msg.Data.(string))
+				if err != nil {
+					write(NewErrorRes(msg.ID, err))
+				}
 			}
 		}
 	}
+
+	close(done)
 	wg.Done()
 }
 
 var writeChan = make(chan Message)
 
-func writer(conn *websocket.Conn, wg *sync.WaitGroup) {
+func writer(conn *websocket.Conn, wg *sync.WaitGroup, done chan bool) {
+loop:
 	for {
 		select {
+		case <-done:
+			wg.Done()
+			return
 		case msg := <-writeChan:
 			err := conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("write error: %s", err)
-				break
+				break loop
 			}
 		}
 	}
+
+	close(done)
 	wg.Done()
 }
 
