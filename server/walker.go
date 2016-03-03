@@ -34,7 +34,7 @@ func NewElement(path, rootPath, name string) (el Element, err error) {
 	return
 }
 
-func findMarkdownFiles() (root Element, err error) {
+func getTree() (root Element, err error) {
 	rootPath, err := os.Getwd()
 	if err != nil {
 		return

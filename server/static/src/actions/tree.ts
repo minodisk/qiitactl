@@ -18,7 +18,7 @@ const didGetTree = createAction<Tree>(
 export const getTree = () => {
   return (dispatch, getState) => {
     dispatch(willGetTree())
-    return socket.call('GetAllFiles', null)
+    return socket.call('GetTree', null)
       .then(tree => dispatch(didGetTree(tree)))
       .catch(err => console.error(err))
   }

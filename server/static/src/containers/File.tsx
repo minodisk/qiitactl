@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import { File } from '../models/file'
 import {
   getFile,
   watchFile,
@@ -11,6 +12,7 @@ const styles = require('../styles/content.css')
 
 interface Props {
   location: any;
+  file: File;
   getFile: Function;
   watchFile: Function;
   unwatchFile: Function;
@@ -23,6 +25,9 @@ class Markdown extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (nextProps.location.pathname == this.props.location.pathname) {
+      return
+    }
     nextProps.watchFile()
   }
 
@@ -31,8 +36,12 @@ class Markdown extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.props.file)
+    if (this.props.file == null) {
+      return (<pre></pre>)
+    }
     return (
-      <p>{this.props.location.pathname}</p>
+      <pre>{this.props.file.content}</pre>
     );
   }
 }
@@ -40,6 +49,7 @@ class Markdown extends React.Component<Props, State> {
 const ejectRootPath = path => path.replace(/^\/markdown\//, '')
 
 const mapStateToProps = state => ({
+  file: state.file,
 })
 
 const mapDispatchToProps = (dispatch, props) => ({

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
@@ -55,6 +56,21 @@ func serveWebsocket(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	wg.Wait()
 }
 
+type File struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
+func getFile(path string) (file File, err error) {
+	file.Path = path
+	b, err := ioutil.ReadFile(file.Path)
+	if err != nil {
+		return
+	}
+	file.Content = string(b)
+	return
+}
+
 func reader(conn *websocket.Conn, wg *sync.WaitGroup, done chan bool) {
 loop:
 	for {
@@ -73,13 +89,21 @@ loop:
 			log.Printf("receive: %s %v", msg.Method, msg.Data)
 
 			switch msg.Method {
-			case "GetAllFiles":
-				paths, err := findMarkdownFiles()
+			case "GetTree":
+				paths, err := getTree()
 				if err != nil {
 					write(NewErrorRes(msg.ID, err))
 					continue
 				}
 				write(NewReqRes(msg, paths))
+			case "GetFile":
+				path := msg.Data.(string)
+				file, err := getFile(path)
+				if err != nil {
+					write(NewErrorRes(msg.ID, err))
+					continue
+				}
+				write(NewReqRes(msg, file))
 			case "WatchFile":
 				err := watchFile(msg.Data.(string))
 				if err != nil {

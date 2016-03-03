@@ -1,12 +1,14 @@
 import { createAction } from 'redux-actions';
-import { WILL_OPEN_SOCKET, DID_OPEN_SOCKET } from '../constants/ActionTypes';
+
+import * as types from '../constants/ActionTypes';
+import { File } from '../models/file'
 
 const willOpenSocket = createAction<void>(
-  WILL_OPEN_SOCKET
+  types.WILL_OPEN_SOCKET
 )
 
 const didOpenSocket = createAction<void>(
-  DID_OPEN_SOCKET
+  types.DID_OPEN_SOCKET
 )
 
 export const openSocket = (socket) => {
@@ -14,5 +16,16 @@ export const openSocket = (socket) => {
     dispatch(willOpenSocket())
     return socket.open()
       .then(() => didOpenSocket())
+  }
+}
+
+const didChangeFile = createAction<File>(
+  types.DID_CHANGE_FILE,
+  (file:File) => file
+)
+
+export const changeFile = (file:File) => {
+  return (dispatch, getState) => {
+    return dispatch(didChangeFile(file))
   }
 }

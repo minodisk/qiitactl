@@ -50,14 +50,3 @@ export const unwatchFile = (file) => {
       .catch(err => console.error(err))
   }
 }
-
-const didChangeFile = createAction<File>(
-  types.DID_CHANGE_FILE,
-  (file:File) => file
-)
-
-export const changeFile = (file:File) => {
-  return (dispatch, getState) => {
-    return dispatch(didChangeFile(file))
-  }
-}

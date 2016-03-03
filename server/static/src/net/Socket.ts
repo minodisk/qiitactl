@@ -1,5 +1,7 @@
 import { Promise } from 'es6-promise';
 
+import { changeFile } from '../actions/socket'
+
 export class Socket {
 
   private static _instance: Socket
@@ -102,10 +104,12 @@ export class Socket {
   }
 
   onMessage = (e) => {
-    console.log("websocket: messaged")
+    // console.log("websocket: messaged")
     let res = JSON.parse(e.data) as Res
-    console.log(res);
     switch (res.method) {
+      case "ChangeFile":
+        console.log(res.data)
+        this._dispatch(changeFile(res.data))
     }
   }
 }

@@ -7,11 +7,6 @@ import (
 	"gopkg.in/fsnotify.v1"
 )
 
-type Markdown struct {
-	path    string
-	content string
-}
-
 var watcher *fsnotify.Watcher
 
 func initWatcher() (err error) {
@@ -27,8 +22,6 @@ func initWatcher() (err error) {
 	for {
 		select {
 		case event := <-watcher.Events:
-			log.Printf("%+v", event)
-
 			if (event.Op&fsnotify.Write == fsnotify.Write) ||
 				(event.Op&fsnotify.Rename == fsnotify.Rename) {
 				b, err := ioutil.ReadFile(event.Name)
@@ -36,7 +29,7 @@ func initWatcher() (err error) {
 					write(NewErrorRes("", err))
 					continue
 				}
-				write(Message{Method: "ChangeFile", Data: Markdown{path: event.Name, content: string(b)}})
+				write(Message{Method: "ChangeFile", Data: File{Path: event.Name, Content: string(b)}})
 			}
 
 			watcher.Add(event.Name)
