@@ -1,16 +1,18 @@
 import * as React from 'react';
-import {render} from 'react-dom';
-import {createHistory} from 'history'
-import {Router, Route, IndexRoute, browserHistory} from 'react-router'
+import { render } from 'react-dom';
+import { createHistory } from 'history'
+import {
+  Route,
+  IndexRoute,
+} from 'react-router'
 import {
   Provider
 } from 'react-redux';
 import {
   Store,
   compose,
+  applyMiddleware,
   createStore,
-  combineReducers,
-  applyMiddleware
 } from 'redux';
 import {
   ReduxRouter,
@@ -20,22 +22,23 @@ import * as thunkMiddleware from 'redux-thunk'
 const createLogger = require('redux-logger')
 
 import { rootReducer } from './reducers/rootReducer';
-import { openSocket  } from './actions/socket'
-import { fetchFiles } from './actions/files'
+import { Socket } from './net/socket'
+import { openSocket } from './actions/socket'
+import { getTree } from './actions/tree'
 import App from './containers/App';
-import Markdown from './components/Markdown'
-import NotFound from './components/NotFound'
+import File from './containers/File'
+import NotFound from './containers/NotFound'
 
 const routes = (
   <Route path="/" component={App}>
-    <IndexRoute component={Markdown}/>
-    <Route path="/**/*.md" component={Markdown}/>
+    <IndexRoute component={File}/>
+    <Route path="/**/*.md" component={File}/>
     <Route path="*" component={NotFound}/>
   </Route>
 )
 
 const loggerMiddleware = createLogger()
-const store: Store = compose(
+const store:Store = compose(
   applyMiddleware(
     thunkMiddleware,
     loggerMiddleware
@@ -46,10 +49,13 @@ const store: Store = compose(
   })
 )(createStore)(rootReducer);
 
+const socket: Socket = Socket.getInstance()
+socket.dispatch = store.dispatch
+
 store
-  .dispatch(openSocket())
+  .dispatch(openSocket(socket))
   .then(() => {
-    store.dispatch(fetchFiles())
+    store.dispatch(getTree())
     render(
       <Provider store={store}>
         <ReduxRouter/>
@@ -57,3 +63,4 @@ store
       document.querySelector('#app')
     );
   })
+  .catch(err => console.error(err))

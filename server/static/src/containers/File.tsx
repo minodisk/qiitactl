@@ -2,30 +2,32 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import {
+  getFile,
   watchFile,
   unwatchFile
-} from '../actions/files'
+} from '../actions/file'
 
 const styles = require('../styles/content.css')
 
 interface Props {
   location: any;
-  startWatching: Function;
-  stopWatching: Function;
+  getFile: Function;
+  watchFile: Function;
+  unwatchFile: Function;
 };
 interface State {};
 
 class Markdown extends React.Component<Props, State> {
   componentWillMount() {
-    this.props.startWatching()
+    this.props.watchFile()
   }
 
   componentWillReceiveProps(nextProps) {
-    nextProps.startWatching()
+    nextProps.watchFile()
   }
 
   componentWillUnmount() {
-    this.props.stopWatching()
+    this.props.unwatchFile()
   }
 
   render() {
@@ -41,11 +43,14 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = (dispatch, props) => ({
-  startWatching: () => {
-    dispatch(watchFile(ejectRootPath(props.location.pathname)))
+  watchFile: () => {
+    const pathname = ejectRootPath(props.location.pathname)
+    dispatch(getFile(pathname))
+    dispatch(watchFile(pathname))
   },
-  stopWatching: () => {
-    dispatch(unwatchFile(ejectRootPath(props.location.pathname)))
+  unwatchFile: () => {
+    const pathname = ejectRootPath(props.location.pathname)
+    dispatch(unwatchFile(pathname))
   },
 })
 

@@ -1,7 +1,7 @@
-export type File = {
+export type Tree = {
   id: string;
   name: string;
   abs: string;
   rel: string;
-  children: File[];
+  children: Tree[];
 };

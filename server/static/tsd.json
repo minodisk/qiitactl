@@ -21,10 +21,10 @@
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
     "redux-actions/redux-actions.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "12f9b621f914fe2b9486a74e0f2e130621837bfc"
     },
     "lodash/lodash.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "12f9b621f914fe2b9486a74e0f2e130621837bfc"
     },
     "redux-logger/redux-logger.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
@@ -33,7 +33,7 @@
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
     "es6-promise/es6-promise.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "12f9b621f914fe2b9486a74e0f2e130621837bfc"
     },
     "material-ui/material-ui.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
@@ -51,7 +51,7 @@
       "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
     },
     "eventemitter3/eventemitter3.d.ts": {
-      "commit": "4d2d0653003a4d1df4d7c68054cce4f4ace58bdf"
+      "commit": "12f9b621f914fe2b9486a74e0f2e130621837bfc"
     }
   }
 }

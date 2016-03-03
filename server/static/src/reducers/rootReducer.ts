@@ -2,12 +2,12 @@ import { combineReducers } from 'redux';
 import { routerStateReducer } from 'redux-router'
 
 import todos from './todos';
-import file from './file';
+import tree from './tree';
 
 const rootReducer = combineReducers({
   router: routerStateReducer,
   todos: todos,
-  file: file
+  tree: tree,
 });
 
 export { rootReducer };

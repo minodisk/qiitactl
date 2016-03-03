@@ -11,36 +11,36 @@ const MoreVertIcon = require('material-ui/lib/svg-icons/navigation/more-vert')
 const injectTouchTapEvent = require('react-tap-event-plugin');
 injectTouchTapEvent();
 
-import FileList from '../components/FileList';
-import Content from '../components/Content';
+import TreeNav from '../components/TreeNav';
 import * as TodoActions from '../actions/todos';
-import { File } from '../models/files';
+import { Tree } from '../models/tree';
 import { Todo } from '../models/todos';
 
 const styles = require('../styles/app.css')
 
 interface AppProps {
   todos?: Todo[];
-  file?: File;
+  tree?: Tree;
   dispatch?: Dispatch;
   children: any;
 }
 
 class App extends React.Component<AppProps, void> {
   render() {
-    const { todos, file, dispatch, children } = this.props;
+    const { todos, tree, dispatch, children } = this.props;
     const actions = bindActionCreators(TodoActions, dispatch);
+
     return (
       <div>
         <AppBar
           title='qiitactl'
         />
-        <FileList
-          file={file}
+        <TreeNav
           addTodo={actions.addTodo}
+          tree={tree}
         />
         <section className={styles.content}>
-          {children}
+          { children }
         </section>
       </div>
     );
@@ -50,7 +50,7 @@ class App extends React.Component<AppProps, void> {
 const mapStateToProps = state => ({
   q: state.router.location.query.q,
   todos: state.todos,
-  file: state.file,
+  tree: state.tree,
 });
 
 export default connect(

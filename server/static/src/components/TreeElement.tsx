@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Link} from 'react-router'
+import { Link } from 'react-router'
 
 interface Props {
   indent: number;
@@ -11,7 +11,7 @@ interface Props {
   onClick?: Function
 }
 
-export default class Element extends React.Component<Props, void> {
+export default class TreeElement extends React.Component<Props, void> {
   render() {
     const {indent, className, active, title, children, linkTo, onClick} = this.props
     if (!active) {

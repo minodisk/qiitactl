@@ -7,6 +7,11 @@ import (
 	"gopkg.in/fsnotify.v1"
 )
 
+type Markdown struct {
+	path    string
+	content string
+}
+
 var watcher *fsnotify.Watcher
 
 func initWatcher() (err error) {
@@ -31,7 +36,7 @@ func initWatcher() (err error) {
 					write(NewErrorRes("", err))
 					continue
 				}
-				write(Message{Method: "ModifiedFile", Data: string(b)})
+				write(Message{Method: "ChangeFile", Data: Markdown{path: event.Name, content: string(b)}})
 			}
 
 			watcher.Add(event.Name)

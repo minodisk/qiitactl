@@ -1,21 +1,20 @@
 import * as React from 'react';
 
-import Files from './Files'
-import Element from './Element'
-import * as models from '../models/files'
+import TreeElement from './TreeElement'
+import * as tree from '../models/tree'
 
 const styles = require('../styles/file.css')
 
 interface Props {
-  indent: number;
-  file: models.File
+  indent:number;
+  tree:tree.Tree;
 }
 
 interface State {
   opened: boolean;
 }
 
-export default class File extends React.Component<Props, State> {
+export default class Tree extends React.Component<Props, State> {
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -31,38 +30,43 @@ export default class File extends React.Component<Props, State> {
   }
 
   render() {
-    const {indent, file} = this.props
-    if (file.children == null) {
+    const {indent, tree} = this.props
+    if (tree.children == null) {
       return (
         <div>
-          <Element
+          <TreeElement
             indent={indent}
             className={styles.file}
             active={true}
-            title={file.abs}
-            children={file.name}
-            linkTo={file.rel}
+            title={tree.abs}
+            children={tree.name}
+            linkTo={tree.rel}
           />
         </div>
       )
     }
     return (
       <div>
-        <Element
+        <TreeElement
           indent={indent}
           className={this.state.opened ? styles.dirOpened : styles.dirClosed}
           active={true}
-          title={file.abs}
-          children={file.name}
+          title={tree.abs}
+          children={tree.name}
           onClick={() => this.toggleOpen()}
         />
-        <Files
-          indent={indent + 1}
-          files={file.children}
-          opened={this.state.opened}
-        />
+        <ul
+          className={this.state.opened ? styles.filesOpened : styles.filesClosed}
+        >
+          {
+            tree.children.map((t:tree.Tree) => (
+              <li key={t.id}>
+                <Tree indent={indent + 1} tree={t} />
+              </li>
+            ))
+          }
+        </ul>
       </div>
     )
   }
-
 }
