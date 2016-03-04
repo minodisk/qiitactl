@@ -1,11 +1,17 @@
 import { Promise } from 'es6-promise';
 
-import { changeFile } from '../actions/socket'
+import {
+  openSocket,
+  didCloseSocket,
+  changeFile,
+} from '../actions/socket'
+// import { Stack } from '../models/stack'
 
 export class Socket {
 
   private static _instance: Socket
   private static _internal: boolean
+  private static _url:string = "ws://localhost:9000/socket"
 
   static getInstance(): Socket {
     if (Socket._instance == null) {
@@ -18,6 +24,7 @@ export class Socket {
 
   private _ws: WebSocket
   private _dispatch: Function
+  // private _stacks:Stack[]
 
   set dispatch(dispatch: Function) {
     this._dispatch = dispatch
@@ -31,13 +38,21 @@ export class Socket {
 
   open() {
     return new Promise((resolve, reject) => {
-      this._ws = new WebSocket("ws://localhost:9000/socket")
-      this.addEventListener()
-      const cb = (e) => {
-        this._ws.removeEventListener('open', cb, false)
+      this._ws = new WebSocket(Socket._url)
+      this.addEventListeners()
+      const onOpened = (e) => {
+        removeEventListeners()
         resolve()
       }
-      this._ws.addEventListener('open', cb, false)
+      const onClosed = (e) => {
+        removeEventListeners()
+      }
+      const removeEventListeners = () => {
+        this._ws.removeEventListener('open', onOpened, false)
+        this._ws.removeEventListener('close', onClosed, false)
+      }
+      this._ws.addEventListener('open', onOpened, false)
+      this._ws.addEventListener('close', onClosed, false)
     })
   }
 
@@ -46,7 +61,7 @@ export class Socket {
     this._ws.close()
   }
 
-  addEventListener() {
+  addEventListeners() {
     this.removeEventListeners()
     this._ws.addEventListener('error', this.onError, false);
     this._ws.addEventListener('open', this.onOpen, false);
@@ -61,7 +76,25 @@ export class Socket {
     this._ws.removeEventListener('message', this.onMessage, false);
   }
 
+  // stack(s:Stack) {
+  //   this._stacks.push(s)
+  // }
+  //
+  // doStack() {
+  //   while (this._stacks.length > 0) {
+  //     const stack = this._stacks.shift()
+  //     this[stack.method].apply(this, stack.args)
+  //   }
+  // }
+
   send(req: Req) {
+    // if (this._ws.readyState !== WebSocket.OPEN) {
+    //   this.stack({
+    //     method: 'send',
+    //     args: [req],
+    //   })
+    //   return
+    // }
     this._ws.send(JSON.stringify(req))
   }
 
@@ -84,10 +117,16 @@ export class Socket {
     })
   }
 
+  private _timeoutID:number;
+
   reopen() {
     console.log("websocket: reopen")
     this.removeEventListeners()
-    this.open()
+
+    clearTimeout(this._timeoutID)
+    this._timeoutID = setTimeout(() => {
+      this._dispatch(openSocket(this))
+    }, 1000)
   }
 
   onError = (e) => {
@@ -95,11 +134,13 @@ export class Socket {
   }
 
   onOpen = (e) => {
+    clearTimeout(this._timeoutID)
     console.log("websocket: opened")
   }
 
   onClose = (e) => {
     console.log("websocket: closed")
+    this._dispatch(didCloseSocket())
     this.reopen()
   }
 

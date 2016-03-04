@@ -7,6 +7,7 @@ export const CLEAR_COMPLETED = 'CLEAR_COMPLETED';
 
 export const WILL_OPEN_SOCKET = 'WILL_OPEN_SOCKET'
 export const DID_OPEN_SOCKET = 'DID_OPEN_SOCKET'
+export const DID_CLOSE_SOCKET = 'DID_CLOSE_SOCKET'
 
 export const WILL_GET_TREE = 'WILL_GET_TREE';
 export const DID_GET_TREE = 'DID_GET_TREE';

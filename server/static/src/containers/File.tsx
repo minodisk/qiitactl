@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import { Connection } from '../models/socket'
 import { File } from '../models/file'
 import {
   getFile,
@@ -12,6 +13,7 @@ const styles = require('../styles/content.css')
 
 interface Props {
   location: any;
+  connection: Connection;
   file: File;
   getFile: Function;
   watchFile: Function;
@@ -25,10 +27,15 @@ class Markdown extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.location.pathname == this.props.location.pathname) {
-      return
+    if (nextProps.location.pathname != this.props.location.pathname) {
+      nextProps.watchFile()
     }
-    nextProps.watchFile()
+    console.log(this.props.connection.opened, '->', nextProps.connection.opened);
+    if (nextProps.connection.opened != this.props.connection.opened) {
+      if (nextProps.connection.opened) {
+        nextProps.watchFile()
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -36,7 +43,6 @@ class Markdown extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.props.file)
     if (this.props.file == null) {
       return (<pre></pre>)
     }
@@ -50,6 +56,7 @@ const ejectRootPath = path => path.replace(/^\/markdown\//, '')
 
 const mapStateToProps = state => ({
   file: state.file,
+  connection: state.connection,
 })
 
 const mapDispatchToProps = (dispatch, props) => ({
